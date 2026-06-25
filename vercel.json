@@ -1,0 +1,29 @@
+{
+  "buildCommand": "npm install",
+  "functions": {
+    "api/transcribe.js": {
+      "maxDuration": 900,
+      "memory": 3008
+    }
+  },
+  "env": {
+    "OPENAI_API_KEY": "@openai_api_key",
+    "SUPABASE_URL": "@supabase_url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        }
+      ]
+    }
+  ]
+}
