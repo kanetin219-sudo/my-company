@@ -10,14 +10,16 @@
       "healthCheckPath": "/health",
       "envVars": [
         {
-          "key": "OPENAI_API_KEY"
+          "key": "OPENAI_API_KEY",
+          "value": ""
         },
         {
           "key": "SUPABASE_URL",
           "value": "https://abeekodehorlwsmnhoza.supabase.co"
         },
         {
-          "key": "SUPABASE_SERVICE_ROLE_KEY"
+          "key": "SUPABASE_SERVICE_ROLE_KEY",
+          "value": ""
         }
       ]
     }
