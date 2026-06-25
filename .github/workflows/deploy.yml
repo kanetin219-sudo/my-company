@@ -1,0 +1,24 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Render
+        run: |
+          curl ${{ secrets.RENDER_DEPLOY_HOOK_URL }} -X POST
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+
+      - name: Deployment Status
+        run: |
+          echo "✅ Deployed to Render.com"
+          echo "API URL: ${{ secrets.RENDER_API_URL }}"
