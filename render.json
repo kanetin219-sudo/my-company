@@ -1,0 +1,30 @@
+{
+  "services": [
+    {
+      "type": "web",
+      "name": "komon-mtg-api",
+      "runtime": "node",
+      "buildCommand": "npm install",
+      "startCommand": "node transcribe-server.js",
+      "plan": "free",
+      "healthCheckPath": "/health",
+      "envVars": [
+        {
+          "key": "OPENAI_API_KEY",
+          "scope": "build,runtime",
+          "sync": false
+        },
+        {
+          "key": "SUPABASE_URL",
+          "value": "https://abeekodehorlwsmnhoza.supabase.co",
+          "scope": "runtime"
+        },
+        {
+          "key": "SUPABASE_SERVICE_ROLE_KEY",
+          "scope": "runtime",
+          "sync": false
+        }
+      ]
+    }
+  ]
+}
