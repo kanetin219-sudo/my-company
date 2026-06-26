@@ -7,6 +7,9 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 const { createClient } = require('@supabase/supabase-js');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
+const execFileAsync = promisify(execFile);
 
 const app = express();
 const upload = multer({ dest: '/tmp/uploads' });
@@ -97,6 +100,122 @@ app.use(express.json());
 app.use(express.static('/Users/nakurashun/Desktop/my-company'));
 
 // 動画をアップロードして文字起こし
+// テキスト入力から要約・アクション抽出
+app.post('/api/extract-text', express.json(), async (req, res) => {
+  try {
+    const { transcript, clientId } = req.body;
+
+    if (!transcript) {
+      return res.status(400).json({ error: 'テキストが入力されていません' });
+    }
+
+    console.log('📝 GPT で内容をまとめ中...');
+
+    // GPT で内容をまとめる
+    const summaryResponse = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'あなたはビジネス会議の議事録作成の専門家です。以下のMTG議事内容を、簡潔で分かりやすい議事録にまとめてください。セクション分けやポイント番号付けなど、読みやすくしてください。'
+          },
+          {
+            role: 'user',
+            content: `以下のMTG議事内容を簡潔な議事録にまとめてください：\n\n${transcript}`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const summary = summaryResponse.data.choices[0].message.content;
+    console.log('✅ 要約完了');
+
+    // ネクストアクション抽出
+    console.log('✨ ネクストアクション抽出中...');
+    const nextActions = await extractNextActions(summary);
+    console.log(`✅ ${nextActions.length}個のネクストアクション抽出完了`);
+
+    // clientId があれば Supabase に保存
+    let savedToDatabase = false;
+    const mtgDate = new Date().toISOString().slice(0, 10);
+
+    if (clientId) {
+      try {
+        console.log(`💾 Supabase に保存中... (顧問先: ${clientId})`);
+
+        // 既存のクライアント データを取得
+        const { data, error } = await supabase
+          .from('komon_clients')
+          .select('client_data')
+          .eq('id', clientId)
+          .single();
+
+        if (error) {
+          console.error('❌ Supabase 取得エラー:', error.message);
+        } else if (data) {
+          const clientData = data.client_data || {};
+
+          // MTG記録を追加
+          if (!clientData.mtgs) clientData.mtgs = [];
+          clientData.mtgs.push({
+            date: mtgDate,
+            content: summary,
+            actions: nextActions.map(a => ({ text: a.text, done: false }))
+          });
+
+          // Supabase に更新
+          const { error: updateError } = await supabase
+            .from('komon_clients')
+            .update({
+              client_data: clientData,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', clientId);
+
+          if (updateError) {
+            console.error('❌ Supabase 更新エラー:', updateError.message);
+          } else {
+            console.log('✅ Supabase に保存完了');
+            savedToDatabase = true;
+          }
+        }
+      } catch (error) {
+        console.error('❌ Supabase 保存処理エラー:', error.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      transcript: transcript,
+      summary: summary,
+      nextActions: nextActions,
+      date: mtgDate,
+      clientId: clientId,
+      savedToDatabase: savedToDatabase
+    });
+
+  } catch (error) {
+    console.error('❌ エラー:', error.message);
+    if (error.response) {
+      console.error('API エラー:', error.response.data);
+    }
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 app.post('/api/transcribe', upload.single('video'), async (req, res) => {
   try {
     if (!req.file) {
@@ -124,27 +243,40 @@ app.post('/api/transcribe', upload.single('video'), async (req, res) => {
         .run();
     });
 
-    // OpenAI Whisper API に送信
-    console.log('🤖 OpenAI Whisper で文字起こし中...');
-    const audioStream = fs.createReadStream(audioPath);
-    const formData = new FormData();
-    formData.append('file', audioStream);
-    formData.append('model', 'whisper-1');
-    formData.append('language', 'ja');
+    // Python Whisper で文字起こし
+    console.log('🤖 Whisper で文字起こし中...');
 
-    const response = await axios.post(
-      'https://api.openai.com/v1/audio/transcriptions',
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
-        }
+    const outputJsonPath = `/tmp/${Date.now()}_whisper.json`;
+
+    try {
+      await execFileAsync('python3', [
+        '-m', 'whisper',
+        audioPath,
+        '--language', 'ja',
+        '--model', 'large-v3',
+        '--output_format', 'json',
+        '--output_dir', '/tmp'
+      ]);
+
+      const outputPath = audioPath.replace(/\.[^.]+$/, '.json');
+      const jsonContent = await fs.promises.readFile(outputPath, 'utf-8');
+      const jsonData = JSON.parse(jsonContent);
+      const transcript = jsonData.text;
+
+      if (!transcript) {
+        throw new Error('文字起こしテキストが取得できませんでした');
       }
-    );
 
-    const transcript = response.data.text;
-    console.log('✅ 文字起こし完了');
+      // JSON ファイルをクリーンアップ
+      try {
+        await fs.promises.unlink(outputPath);
+      } catch (e) {}
+
+      console.log('✅ 文字起こし完了');
+    } catch (error) {
+      console.error('❌ Whisper エラー:', error.message);
+      throw new Error('文字起こし処理に失敗しました: ' + error.message);
+    }
     console.log('📝 GPT で内容をまとめ中...');
 
     // GPT で内容をまとめる

@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>顧問先管理アプリ</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ナビ */
+  header {
+    background: var(--primary);
+    color: white;
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+  header h1 { font-size: 18px; font-weight: 700; }
+  .header-actions { display: flex; gap: 8px; }
+
+  /* ボタン共通 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-white { background: white; color: var(--primary); }
+  .btn-white:hover { background: var(--primary-light); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: 50%; }
+
+  /* ページ */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* 一覧画面 */
+  .list-header {
+    padding: 20px 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .list-header h2 { font-size: 20px; font-weight: 700; }
+  .search-box {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    margin: 0 16px 12px;
+  }
+  .search-box:focus { outline: none; border-color: var(--primary); }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 0 16px 80px;
+  }
+
+  .client-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 4px solid var(--primary);
+    position: relative;
+  }
+  .client-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .card-name { font-size: 17px; font-weight: 700; }
+  .card-industry {
+    font-size: 11px;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .card-company { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+  .card-contact { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+  .card-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .card-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .badge-mtg { background: #fef9c3; color: #a16207; }
+  .badge-action { background: #dcfce7; color: #166534; }
+  .badge-status { background: #f1f5f9; color: #475569; }
+
+  .card-next-action {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #f0fdf4;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #166534;
+    border-left: 3px solid var(--success);
+  }
+  .card-next-action-label { font-size: 10px; font-weight: 700; color: var(--success); margin-bottom: 2px; }
+
+  /* 空状態 */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    grid-column: 1/-1;
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* カルテ画面 */
+  .karte-header {
+    background: white;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--primary);
+    padding: 4px;
+    line-height: 1;
+  }
+  .karte-title { flex: 1; }
+  .karte-title h2 { font-size: 18px; font-weight: 700; }
+  .karte-title p { font-size: 12px; color: var(--text-muted); }
+
+  /* タブ */
+  .tabs {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  .tab-content { display: none; padding: 16px; padding-bottom: 80px; }
+  .tab-content.active { display: block; }
+
+  /* セクション */
+  .section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* フォーム */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus { outline: none; border-color: var(--primary); }
+  textarea.form-input { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* MTGカード */
+  .mtg-item {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--primary);
+  }
+  .mtg-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .mtg-date { font-size: 12px; font-weight: 700; color: var(--primary); }
+  .mtg-content { font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .mtg-actions-section { margin-top: 10px; }
+  .mtg-actions-label { font-size: 11px; font-weight: 700; color: var(--success); margin-bottom: 4px; }
+  .mtg-action-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    padding: 4px 0;
+  }
+  .mtg-action-item input[type="checkbox"] { width: 14px; height: 14px; }
+  .mtg-action-done { text-decoration: line-through; color: var(--text-muted); }
+
+  /* 録音エリア */
+  .record-area {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .record-area-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .record-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .record-btn-wrap { position: relative; }
+
+  .record-btn {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--danger);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 0 0 rgba(220,38,38,0.4);
+    transition: all 0.3s;
+  }
+  .record-btn.recording {
+    animation: pulse 1.2s infinite;
+    background: #b91c1c;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+    70% { box-shadow: 0 0 0 16px rgba(220,38,38,0); }
+    100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+  }
+  .record-status { font-size: 12px; color: var(--text-muted); }
+  .record-status.active { color: var(--danger); font-weight: 700; }
+
+  .transcript-box {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    min-height: 100px;
+    resize: vertical;
+    background: #fafafa;
+    line-height: 1.6;
+  }
+  .transcript-box:focus { outline: none; border-color: var(--primary); background: white; }
+
+  .extract-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+  /* ネクストアクションリスト */
+  .action-list { list-style: none; }
+  .action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: var(--bg);
+    transition: background 0.15s;
+  }
+  .action-item:hover { background: var(--primary-light); }
+  .action-item input[type="checkbox"] { margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0; }
+  .action-text { font-size: 14px; flex: 1; line-height: 1.5; }
+  .action-text.done { text-decoration: line-through; color: var(--text-muted); }
+  .action-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .action-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 0 4px; flex-shrink: 0; }
+
+  /* モーダル */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 56px; height: 56px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 99;
+  }
+  .fab:hover { background: var(--primary-dark); transform: scale(1.08); }
+  .fab:active { transform: scale(0.95); }
+
+  /* ステータスバッジ */
+  .status-active { background: #dcfce7; color: #166534; }
+  .status-paused { background: #fef9c3; color: #92400e; }
+  .status-ended { background: #fee2e2; color: #991b1b; }
+
+  /* トースト */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 300;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* データエクスポート */
+  .data-actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 16px 16px; }
+
+  /* 共有モーダル */
+  .share-url-box {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    word-break: break-all;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    max-height: 80px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    user-select: all;
+  }
+  .qr-wrap { text-align: center; margin: 12px 0; }
+  .qr-wrap img { border-radius: 8px; border: 4px solid white; box-shadow: var(--shadow); }
+  .sync-note {
+    background: #fef9c3;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #92400e;
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+
+  /* 共有ページ（読み取り専用） */
+  .share-page-header {
+    background: var(--primary);
+    color: white;
+    padding: 20px 20px 16px;
+    text-align: center;
+  }
+  .share-page-header h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .share-page-header p { font-size: 12px; opacity: 0.85; }
+  .share-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.22);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+  .share-content-box {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 0 16px 16px;
+    box-shadow: var(--shadow);
+  }
+  .share-content-text {
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+  }
+  .share-section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 16px 16px 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .share-action-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .share-action-row:last-child { border-bottom: none; }
+  .share-footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .tab { padding: 10px 14px; font-size: 13px; }
+  }
+
+  /* 動物占いセクション */
+  .animal-section-title {
+    font-size: 13px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin: 16px 0 8px; padding: 12px 0 8px;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .animal-cards {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;
+  }
+  .animal-card {
+    flex: 1; min-width: 90px; max-width: 140px;
+    background: var(--bg); border-radius: 12px; padding: 14px 8px 10px;
+    text-align: center; border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .animal-emoji { font-size: 40px; line-height: 1; margin-bottom: 6px; display: block; }
+  .animal-role {
+    font-size: 10px; color: white; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; display: inline-block;
+    margin-bottom: 4px;
+  }
+  .role-core    { background: #e11d48; }
+  .role-surface { background: #2563eb; }
+  .role-decision{ background: #7c3aed; }
+  .role-hope    { background: #16a34a; }
+  .role-hidden  { background: #92400e; }
+  .animal-name { font-size: 14px; font-weight: 700; margin: 6px 0 8px; }
+  .animal-tags { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .animal-tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    font-weight: 700; white-space: nowrap;
+  }
+  .tag-right  { background: #fce7f3; color: #9d174d; }
+  .tag-left   { background: #e0f2fe; color: #0c4a6e; }
+  .tag-past   { background: #fef3c7; color: #92400e; }
+  .tag-future { background: #d1fae5; color: #065f46; }
+  .tag-goal   { background: #ede9fe; color: #4c1d95; }
+  .tag-sit    { background: #ffedd5; color: #9a3412; }
+
+  .animal-form-divider {
+    font-size: 13px; font-weight: 700; color: var(--text-muted);
+    margin: 16px 0 10px; padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header>
+  <h1>📋 顧問先管理</h1>
+  <div class="header-actions">
+    <button class="btn btn-white btn-sm" onclick="openApiSettings()">⚙️ API設定</button>
+    <button class="btn btn-white btn-sm" onclick="openShareModal()">📱 共有URL</button>
+    <button class="btn btn-white btn-sm" onclick="exportData()">⬇ 保存</button>
+    <button class="btn btn-white btn-sm" onclick="importData()">⬆ 読込</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+  </div>
+</header>
+
+<!-- 顧問先一覧 -->
+<div id="page-list" class="page active">
+  <div class="list-header">
+    <h2>顧問先一覧 <span id="client-count" style="font-size:14px;color:var(--text-muted);"></span></h2>
+  </div>
+  <input class="search-box" type="search" placeholder="🔍 顧問先を検索..." oninput="renderList(this.value)">
+  <div class="data-actions">
+    <button class="btn btn-ghost btn-sm" onclick="filterByStatus('all')">全て</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterByStatus('active')">契約中</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterByStatus('paused')">一時停止</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterByStatus('ended')">終了</button>
+  </div>
+  <div id="cards-container" class="cards-grid"></div>
+  <button class="fab" onclick="openAddClient()">＋</button>
+</div>
+
+<!-- 顧客カルテ -->
+<div id="page-karte" class="page">
+  <div class="karte-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="karte-title">
+      <h2 id="karte-name"></h2>
+      <p id="karte-company"></p>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="syncFromSupabase()" title="相手のチェックを同期">🔄</button>
+    <button class="btn btn-ghost btn-sm" onclick="openClientShareModal()">📤 共有</button>
+    <button class="btn btn-ghost btn-sm" onclick="openEditClient()">編集</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('info')">基本情報</div>
+    <div class="tab" onclick="switchTab('mtg')">MTG記録</div>
+    <div class="tab" onclick="switchTab('action')">ネクストアクション</div>
+  </div>
+
+  <!-- 基本情報タブ -->
+  <div id="tab-info" class="tab-content active">
+    <div class="section">
+      <div class="section-title">基本情報</div>
+      <div id="info-content"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">メモ</div>
+      <div id="info-memo" style="font-size:14px;line-height:1.7;white-space:pre-wrap;"></div>
+    </div>
+  </div>
+
+  <!-- MTG記録タブ -->
+  <div id="tab-mtg" class="tab-content">
+    <div class="record-area">
+      <div class="record-area-title">🎙 MTG記録を追加</div>
+      <div class="form-group">
+        <label class="form-label">MTG日付</label>
+        <input type="date" id="mtg-date" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">議事内容（テキスト入力 または 音声録音）</label>
+        <div class="record-controls">
+          <button class="record-btn" id="recordBtn" onclick="toggleRecording()" title="音声録音">🎤</button>
+          <div>
+            <div class="record-status" id="record-status">タップで録音開始</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">音声が自動でテキスト化されます</div>
+          </div>
+        </div>
+        <textarea id="transcript" class="transcript-box" placeholder="ここに議事内容を入力、または音声録音してください..."></textarea>
+      </div>
+      <div class="extract-btn-row">
+        <button class="btn btn-success btn-sm" onclick="extractActions()">✨ ネクストアクションを自動抽出</button>
+        <button class="btn btn-primary btn-sm" onclick="saveMtg()">💾 MTGを保存</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearTranscript()">クリア</button>
+      </div>
+      <div id="extract-preview" style="display:none;margin-top:12px;"></div>
+    </div>
+
+    <div id="mtg-list"></div>
+  </div>
+
+  <!-- ネクストアクションタブ -->
+  <div id="tab-action" class="tab-content">
+    <div class="section">
+      <div class="section-title">ネクストアクション</div>
+      <div class="form-row" style="margin-bottom:10px;">
+        <input type="text" id="new-action-text" class="form-input" placeholder="アクションを入力...">
+        <input type="date" id="new-action-date" class="form-input">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addManualAction()">＋ 追加</button>
+    </div>
+    <ul id="action-list" class="action-list" style="padding:0 0 16px;"></ul>
+  </div>
+</div>
+
+<!-- 顧問先追加/編集モーダル -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-client-title">顧問先を追加</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">担当者名 *</label>
+      <input type="text" id="f-name" class="form-input" placeholder="山田 太郎">
+    </div>
+    <div class="form-group">
+      <label class="form-label">会社名 *</label>
+      <input type="text" id="f-company" class="form-input" placeholder="株式会社〇〇">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">業種</label>
+        <input type="text" id="f-industry" class="form-input" placeholder="IT・製造業 など">
+      </div>
+      <div class="form-group">
+        <label class="form-label">契約状況</label>
+        <select id="f-status" class="form-input">
+          <option value="active">契約中</option>
+          <option value="paused">一時停止</option>
+          <option value="ended">終了</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">メールアドレス</label>
+        <input type="email" id="f-email" class="form-input" placeholder="example@mail.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">電話番号</label>
+        <input type="tel" id="f-phone" class="form-input" placeholder="090-0000-0000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">顧問開始日</label>
+      <input type="date" id="f-start-date" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">月額顧問料</label>
+      <input type="text" id="f-fee" class="form-input" placeholder="50,000円">
+    </div>
+    <div class="form-group">
+      <label class="form-label">メモ・特記事項</label>
+      <textarea id="f-memo" class="form-input" rows="3" placeholder="課題・背景・注意事項など..."></textarea>
+    </div>
+    <div class="animal-form-divider">🐾 動物占い</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">本質（コアアニマル）</label>
+        <select id="f-animal-core" class="form-input"><option value="">未設定</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">表面（外向きアニマル）</label>
+        <select id="f-animal-surface" class="form-input"><option value="">未設定</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">意思決定アニマル</label>
+        <select id="f-animal-decision" class="form-input"><option value="">未設定</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">希望アニマル</label>
+        <select id="f-animal-hope" class="form-input"><option value="">未設定</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">隠れアニマル（ピンチ時）</label>
+      <select id="f-animal-hidden" class="form-input"><option value="">未設定</option></select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveClient()">保存</button>
+      <button class="btn btn-ghost" onclick="closeModal()">キャンセル</button>
+    </div>
+    <button id="delete-client-btn" class="btn btn-danger" style="width:100%;margin-top:8px;display:none;" onclick="deleteClient()">この顧問先を削除</button>
+  </div>
+</div>
+
+<!-- 共有ページ（読み取り専用・リンクアクセス時） -->
+<div id="page-share" style="display:none;"></div>
+
+<!-- API設定モーダル -->
+<div class="modal-overlay" id="modal-api-settings">
+  <div class="modal">
+    <div class="modal-title">
+      <span>⚙️ API設定</span>
+      <button class="modal-close" onclick="closeApiSettings()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">API URL</label>
+      <input type="text" id="api-url-input" class="form-input" placeholder="例: http://localhost:3000 または https://my-company-lr4e.onrender.com">
+      <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">
+        📝 MTG記録の自動処理に使用します。空白の場合はローカル（localhost:3000）を使用します。
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:16px;gap:8px;">
+      <button class="btn btn-primary" onclick="saveApiUrl()" style="flex:1;">✅ 保存</button>
+      <button class="btn btn-ghost" onclick="closeApiSettings()" style="flex:1;">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 共有URLモーダル -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal">
+    <div class="modal-title">
+      <span>📱 共有URL生成</span>
+      <button class="modal-close" onclick="closeShareModal()">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">このURLをスマホで開くと、現在のデータが読み込まれます。</p>
+    <div id="share-url-box" class="share-url-box"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+      <button class="btn btn-primary btn-sm" onclick="copyShareURL()">📋 URLをコピー</button>
+      <button class="btn btn-ghost btn-sm" onclick="refreshShareURL()">🔄 最新データで更新</button>
+    </div>
+    <div class="qr-wrap">
+      <img id="share-qr" src="" width="180" height="180" alt="QR Code">
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">スマホのカメラで読み取り</div>
+    </div>
+    <div id="share-local-warning" style="display:none;background:#fee2e2;border-radius:8px;padding:10px 12px;font-size:12px;color:#991b1b;margin-bottom:8px;">
+      ⚠️ ローカルファイルのため、このURLはこのPCでしか開けません。<br>
+      スマホからも使うには <strong>Netlify Drop</strong> でHTMLファイルを公開してください。<br>
+      → <a href="https://app.netlify.com/drop" target="_blank" style="color:#991b1b;">app.netlify.com/drop</a>（無料・ドラッグ&ドロップのみ）
+    </div>
+    <div class="sync-note">
+      💡 <strong>同期の仕組み：</strong><br>
+      データは各デバイスのブラウザに自動保存されます。<br>
+      変更したら「共有URL生成」→QRコードを読み取るだけでスマホに反映されます。
+    </div>
+  </div>
+</div>
+
+<!-- 個別共有モーダル -->
+<div class="modal-overlay" id="modal-share-link">
+  <div class="modal">
+    <div class="modal-title">
+      <span>📤 議事録＋アクションを共有</span>
+      <button class="modal-close" onclick="closeShareLinkModal()">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;" id="share-link-desc"></p>
+    <button id="share-action-btn" class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px;" onclick="doShare()">
+      📤 LINEやメールで送る
+    </button>
+    <p id="share-action-note" style="font-size:12px;color:var(--text-muted);text-align:center;line-height:1.6;margin-bottom:14px;"></p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;">
+      👁 <strong>閲覧専用</strong>：受け取った人はブラウザで開くだけで確認できます。編集はできません。
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== Supabase設定 ==========
+const SB_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+let currentShareId = null;
+let sbShareData    = null;
+
+async function createSupabaseShare(clientId) {
+  const c = db.clients.find(x => x.id === clientId);
+  if (!c) return null;
+  const sortedMtgs = [...(c.mtgs || [])].sort((a, b) => a.date.localeCompare(b.date));
+  try {
+    const { data, error } = await sb
+      .from('komon_shares')
+      .insert({ client_id: clientId, client_name: c.name, company: c.company,
+                mtgs: sortedMtgs, actions: c.actions || [] })
+      .select('id')
+      .single();
+    if (error) throw error;
+    c.lastShareId = data.id;
+    saveData();
+    return data.id;
+  } catch(e) {
+    console.error('createSupabaseShare:', e);
+    return null;
+  }
+}
+
+async function syncFromSupabase() {
+  const c = db.clients.find(x => x.id === currentClientId);
+  if (!c) return;
+  if (!c.lastShareId) { showToast('まず「📤 共有」でURLを送ってください'); return; }
+  showToast('同期中...');
+  try {
+    const { data, error } = await sb
+      .from('komon_shares')
+      .select('actions')
+      .eq('id', c.lastShareId)
+      .single();
+    if (error || !data) { showToast('共有データが見つかりません'); return; }
+    let updated = 0;
+    (data.actions || []).forEach(sbA => {
+      const local = c.actions.find(a => a.id === sbA.id);
+      if (local && local.done !== sbA.done) { local.done = sbA.done; updated++; }
+    });
+    if (updated > 0) { saveData(); renderActionList(c); showToast(`${updated}件のチェックを同期しました ✅`); }
+    else showToast('変更はありませんでした');
+  } catch(e) { showToast('同期に失敗しました'); }
+}
+
+async function loadFromSupabaseShare(shareId) {
+  try {
+    const { data, error } = await sb.from('komon_shares').select('*').eq('id', shareId).single();
+    if (error || !data) {
+      document.body.innerHTML = '<div style="padding:60px 20px;text-align:center;font-family:-apple-system,sans-serif;color:#475569;"><div style="font-size:48px;margin-bottom:16px;">🔗</div><h2 style="font-size:18px;margin-bottom:8px;">リンクが無効です</h2><p style="font-size:14px;">この共有リンクは期限切れか、無効なリンクです。</p></div>';
+      return true;
+    }
+    currentShareId = shareId;
+    sbShareData    = { ...data, actions: JSON.parse(JSON.stringify(data.actions || [])) };
+    document.querySelector('header').style.display = 'none';
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    renderSupabaseSharePage(data);
+    history.replaceState(null, '', window.location.pathname);
+    return true;
+  } catch(e) { return false; }
+}
+
+function renderSupabaseSharePage(data) {
+  const page    = document.getElementById('page-share');
+  const mtgs    = data.mtgs || [];
+  const actions = data.actions || [];
+  const pending = actions.filter(a => !a.done);
+  const done    = actions.filter(a =>  a.done);
+  const today   = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+
+  page.innerHTML = `
+    <div style="background:#2563eb;color:white;padding:20px;text-align:center;">
+      <div style="display:inline-block;background:rgba(255,255,255,.2);font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px;">MTG議事録 ＋ ネクストアクション</div>
+      <h1 style="font-size:18px;font-weight:700;margin-bottom:4px;">${esc(data.client_name)}（${esc(data.company)}）</h1>
+      <p style="font-size:12px;opacity:.85;">${today}</p>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#475569;margin:16px 16px 8px;padding-bottom:8px;border-bottom:2px solid #2563eb;">📝 MTG議事録（${mtgs.length}回）</div>
+    ${mtgs.length === 0
+      ? '<div style="background:white;border-radius:12px;padding:20px;margin:0 16px 16px;font-size:14px;color:#94a3b8;">MTG記録がまだありません</div>'
+      : mtgs.map((m, i) => `<div style="background:white;border-radius:12px;padding:16px;margin:0 16px 12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+          <div style="font-size:12px;font-weight:700;color:#2563eb;margin-bottom:8px;">📅 ${esc(m.date)}　第${i+1}回</div>
+          <div style="font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word;">${esc(m.content)}</div>
+        </div>`).join('')}
+    <div style="font-size:13px;font-weight:700;color:#475569;margin:16px 16px 8px;padding-bottom:8px;border-bottom:2px solid #2563eb;">
+      ✅ ネクストアクション（未完了 <span id="sb-pending-count">${pending.length}</span>件 ／ 完了 <span id="sb-done-count">${done.length}</span>件）
+    </div>
+    <div style="background:white;border-radius:12px;padding:16px;margin:0 16px 24px;box-shadow:0 2px 8px rgba(0,0,0,.06);" id="sb-actions-box">
+      ${renderSbActions(actions)}
+    </div>
+    <div style="text-align:center;padding:24px;font-size:11px;color:#94a3b8;">📋 顧問先管理アプリ</div>
+  `;
+  page.style.display = 'block';
+}
+
+function renderSbActions(actions) {
+  if (actions.length === 0) return '<p style="font-size:14px;color:#94a3b8;">ネクストアクションはありません</p>';
+  const pending = actions.filter(a => !a.done);
+  const done    = actions.filter(a =>  a.done);
+  const row = (a) => `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9;">
+      <input type="checkbox" id="sba-${esc(a.id)}" ${a.done ? 'checked' : ''}
+        style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:#2563eb;cursor:pointer;"
+        onchange="toggleSbAction('${esc(a.id)}',this.checked)">
+      <div style="flex:1;">
+        <div id="sbt-${esc(a.id)}" style="font-size:14px;line-height:1.5;${a.done ? 'text-decoration:line-through;color:#94a3b8;' : ''}">
+          ${esc(a.text)}
+        </div>
+        ${a.date ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">📅 ${esc(a.date)}</div>` : ''}
+      </div>
+    </div>`;
+  let html = pending.map(row).join('');
+  if (done.length > 0) {
+    html += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:4px;">完了済み</div>`;
+    html += done.map(row).join('');
+  }
+  return html;
+}
+
+async function toggleSbAction(actionId, checked) {
+  if (!currentShareId || !sbShareData) return;
+  const action = sbShareData.actions.find(a => a.id === actionId);
+  if (!action) return;
+  action.done = checked;
+  try {
+    await sb.from('komon_shares').update({ actions: sbShareData.actions }).eq('id', currentShareId);
+    const textEl = document.getElementById(`sbt-${actionId}`);
+    if (textEl) { textEl.style.textDecoration = checked ? 'line-through' : 'none'; textEl.style.color = checked ? '#94a3b8' : ''; }
+    showToast(checked ? '✅ チェックしました' : 'チェックを外しました');
+  } catch(e) {
+    showToast('保存に失敗しました');
+    action.done = !checked;
+    const cb = document.getElementById(`sba-${actionId}`);
+    if (cb) cb.checked = !checked;
+  }
+}
+
+// ========== 動物占いデータ ==========
+const ANIMALS = {
+  'ライオン':  { emoji: '🦁', brain: '右脳', time: '過去回想', style: '目的思考' },
+  'チーター':  { emoji: '🐆', brain: '左脳', time: '未来展望', style: '目的思考' },
+  '虎':        { emoji: '🐯', brain: '左脳', time: '過去回想', style: '目的思考' },
+  '黒ひょう':  { emoji: '🐈‍⬛', brain: '右脳', time: '過去回想', style: '目的思考' },
+  '狼':        { emoji: '🐺', brain: '右脳', time: '未来展望', style: '目的思考' },
+  'たぬき':    { emoji: '🦝', brain: '左脳', time: '未来展望', style: '目的思考' },
+  '猿':        { emoji: '🐒', brain: '右脳', time: '未来展望', style: '状況対応型' },
+  'ひつじ':    { emoji: '🐑', brain: '左脳', time: '未来展望', style: '状況対応型' },
+  'こじか':    { emoji: '🦌', brain: '左脳', time: '過去回想', style: '状況対応型' },
+  'ペガサス':  { emoji: '🦄', brain: '右脳', time: '未来展望', style: '状況対応型' },
+  'こあら':    { emoji: '🐨', brain: '右脳', time: '過去回想', style: '状況対応型' },
+  'ゾウ':      { emoji: '🐘', brain: '左脳', time: '過去回想', style: '状況対応型' },
+};
+const ANIMAL_NAMES = Object.keys(ANIMALS);
+
+// ========== データ管理 ==========
+let db = { clients: [] };
+let currentClientId = null;
+let recognition = null;
+let isRecording = false;
+let currentFilter = 'all';
+
+async function loadData() {
+  try {
+    // Supabaseから読み込む
+    const { data, error } = await sb.from('komon_clients').select('*').order('updated_at');
+    if (!error && data && data.length > 0) {
+      db.clients = data.map(row => row.client_data);
+      return;
+    }
+    // Supabaseにデータなし → localStorageからマイグレーション
+    const saved = localStorage.getItem('komonApp_v2');
+    if (saved) {
+      db = JSON.parse(saved);
+      if (db.clients && db.clients.length > 0) {
+        showToast('データをクラウドに移行中…');
+        await saveData();
+        localStorage.removeItem('komonApp_v2');
+        showToast('✅ クラウド移行完了！');
+      }
+    }
+  } catch(e) {
+    console.warn('Supabase読み込み失敗、localStorageを使用:', e);
+    const saved = localStorage.getItem('komonApp_v2');
+    if (saved) db = JSON.parse(saved);
+  }
+}
+
+async function saveData() {
+  // localStorageにもバックアップ
+  localStorage.setItem('komonApp_v2_backup', JSON.stringify(db));
+  if (!db.clients || db.clients.length === 0) return;
+  try {
+    const upserts = db.clients.map(c => ({
+      id: c.id,
+      client_data: c,
+      updated_at: new Date().toISOString()
+    }));
+    await sb.from('komon_clients').upsert(upserts, { onConflict: 'id' });
+  } catch(e) {
+    console.warn('Supabase保存失敗:', e);
+  }
+}
+
+// ================================================================
+// データマイグレーション（localStorage更新用）
+// ================================================================
+function migrateData() {
+  const MKEY = 'komonApp_migrate_20260528';
+  if (localStorage.getItem(MKEY)) return; // 適用済みならスキップ
+
+  const mizuki = db.clients.find(c => c.name === 'みづき');
+  if (!mizuki) return;
+
+  // ── 第3回MTG を追加（同日付がなければ）
+  if (!mizuki.mtgs.some(m => m.date === '2026-05-28')) {
+    mizuki.mtgs.push({
+      id: genId(),
+      date: '2026-05-28',
+      content: '【第3回MTG】5月末ローンチ結果振り返りと次フェーズ戦略\n参加者：かねちん、みづき\n\n■ 今月の成果（5月末時点）\n・エヴァ（勉強会）で9人入会\n・個別面談：母集団16件・制約率50%（目標20%を大幅超過）\n・5月20日再販オファー：LINEリスト7,000件に配信→個別面談40件獲得\n・10件実施→3件成約・売上100万円超\n・4月以降の初動が明確に変化（従来は1〜2人/月）\n・過去713件の面談・申込データをダッシュボード化（担当者別制約率・年齢分析：40代以上多い・60〜70代売れにくい・20代来るが買わない）\n・2月は個別40件で制約率25% → 今月は個別50%に改善\n\n■ データ基盤の強化（最優先）\n・ダッシュボードに「入金有無（はい/いいえ）」列追加が未実装\n・「希望フォーム回答済み＝入会」の誤カウント問題 → 状態遷移の定義を是正\n・黄色=入会、赤=入会後未入金の色分けはほぼ完了\n・GitHubとパスワード制御でURLを配布・修正権限の一元管理運用へ\n・来週中に完全稼働目標（初期設定約2時間）\n・担当者別KPI（面談数・成約率・年齢/性別/動物タイプ）の常時可視化を整備\n・5月個別40件の一部は6月売上計上 → 締め日/計上日の統一が急務\n\n■ 勉強会スライドの抜本改善\n・スライド69〜72・55〜56は不要として削除\n・事例は「1人1ページ×2人」（ビフォー→アフター→行動の因果を明示）に再配置\n・写真拡大・「宝の地図」画像を差替\n・インスタグラム発信の「5つの壁」補講スライドを1枚追加（写真例・順番・無反応時修正・新規アカ移行）\n・発話改善：喋りすぎ抑制・間を作る・チャット質問は例えを絞る・3日連続開催で熱量維持\n・「今日中にします→明日も未対応」が続く場合は「できません」と明言するルール化\n\n■ 直前ボイス配信と重複予約整理\n・LINEリスト7,000件への音声メッセージ運用を標準化（今日1通→夜に音声）\n・「重要なことを言いました」の1文＋本音声で熱量可視化・未来展望で背中を押す台本化\n・重複予約（ロードマップ撮影会×勉強会）は「勉強会優先→翌朝の個別面談へ接続」で案内\n・「本来は審査制ですが、今回は特別に」特別感クロージングを個別接続に活用\n・分割訴求「1日何百円」の既存文言を個別導線にも明示\n\n■ 広告クリエイティブ強化\n・着物案件：ROAS 300〜400継続。「先生出演」「アフレコは同一で動画差替」3系統が当たり\n・バズ素材（ライジン選手父子動画「55万再生」）の広告展開準備\n・「29万7,000円で9件・ROAS約270」「今月も370投入」などの実績継続\n・同一アフレコ＋素材差替5パターンのABテストへ拡大\n・広告素材1本紛失（関さんに再依頼中）・命名規則と保管場所（ドライブ）の標準化が必要\n\n■ 9月オフラインイベント（広島）\n・昼：添削会、夜：ドレスパーティー（対談取得・案件獲得に接続）\n・正座できる低テーブル会場が条件（東京は駅から遠かった反省）\n・ロケハン・候補地の洗い出し、動線/照明/収容数/費用を数値で比較検討が必要\n\n■ 次回MTG：未定',
+      actions: [
+        { text: 'かねちん：ダッシュボードに「入金有無（はい/いいえ）」列追加・状態遷移（黄=入会/赤=未入金）を明文化', done: false },
+        { text: 'かねちん：GitHubとパスワード制御でダッシュボードURL展開（来週中完全稼働目標）', done: false },
+        { text: 'みづき：勉強会スライド改善（69〜72・55〜56削除・事例再配置・宝の地図差替・写真拡大）', done: false },
+        { text: 'みづき：インスタグラム「5つの壁」補講スライドを1枚追加', done: false },
+        { text: 'みづき：直前ボイス配信の標準化（今日1通→夜に音声、当日の熱量可視化）', done: false },
+        { text: 'みづき：関さんに広告素材を再依頼（紛失素材）・命名規則とドライブ保管場所を標準化', done: false },
+        { text: 'みづき/ふうさん：同一アフレコ＋素材差替5パターンのABテスト実施', done: false },
+        { text: 'みづき：9月広島イベントのロケハン・会場候補（低テーブル・動線・照明・収容数・費用）を調査', done: false }
+      ]
+    });
+  }
+
+  // ── 全体ネクストアクションを追加（同テキストがなければ）
+  const newActions = [
+    { text: '【最高・かねちん】ダッシュボードに「入金有無（はい/いいえ）」列追加・状態遷移（黄=入会/赤=未入金）を明文化', date: '' },
+    { text: '【最高・かねちん】GitHubとパスワード制御でダッシュボードURL展開（来週中完全稼働目標）', date: '' },
+    { text: '【高・みづき】勉強会スライド改善（69〜72・55〜56削除・事例再配置・宝の地図差替・写真拡大）', date: '' },
+    { text: '【高・みづき】インスタグラム「5つの壁」補講スライドを1枚追加（写真例・順番・無反応時修正・新規アカ移行）', date: '' },
+    { text: '【高・みづき】直前ボイス配信の標準化（今日1通→夜に音声・未来展望で背中を押す台本化）', date: '' },
+    { text: '【高・みづき】関さんに広告素材を再依頼（紛失素材）・命名規則とドライブ保管場所を標準化', date: '' },
+    { text: '【高・みづき/ふうさん】同一アフレコ＋素材差替5パターンのABテスト実施', date: '' },
+    { text: '【中・みづき】9月広島イベントのロケハン・会場候補（低テーブル・動線・照明・収容数・費用）を調査', date: '' }
+  ];
+  newActions.forEach(a => {
+    if (!mizuki.actions.some(x => x.text === a.text)) {
+      mizuki.actions.push({ id: genId(), text: a.text, date: a.date, done: false });
+    }
+  });
+
+  saveData();
+  localStorage.setItem(MKEY, '1');
+}
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function populateAnimalSelects() {
+  ['f-animal-core','f-animal-surface','f-animal-decision','f-animal-hope','f-animal-hidden'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel || sel.options.length > 1) return;
+    ANIMAL_NAMES.forEach(name => {
+      const a = ANIMALS[name];
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = `${a.emoji} ${name}`;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+// ========== 一覧画面 ==========
+function renderList(query = '', filter = currentFilter) {
+  currentFilter = filter;
+  let list = db.clients;
+  if (filter !== 'all') list = list.filter(c => c.status === filter);
+  if (query) {
+    const q = query.toLowerCase();
+    list = list.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.company.toLowerCase().includes(q) ||
+      (c.industry || '').toLowerCase().includes(q)
+    );
+  }
+  const container = document.getElementById('cards-container');
+  const count = document.getElementById('client-count');
+  count.textContent = `（${list.length}件）`;
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>顧問先がまだいません</p><p style="font-size:12px;margin-top:6px;">＋ボタンから追加してください</p></div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(c => {
+    const mtgCount = (c.mtgs || []).length;
+    const actions = (c.actions || []).filter(a => !a.done);
+    const lastMtg = c.mtgs && c.mtgs.length > 0 ? c.mtgs[c.mtgs.length - 1] : null;
+    const nextAction = actions[0];
+    const statusLabel = { active: '契約中', paused: '一時停止', ended: '終了' }[c.status || 'active'];
+    const statusClass = { active: 'status-active', paused: 'status-paused', ended: 'status-ended' }[c.status || 'active'];
+
+    return `
+    <div class="client-card" onclick="openKarte('${c.id}')">
+      <div class="card-header">
+        <div class="card-name">${esc(c.name)}</div>
+        ${c.industry ? `<span class="card-industry">${esc(c.industry)}</span>` : ''}
+      </div>
+      <div class="card-company">🏢 ${esc(c.company)}</div>
+      ${c.email ? `<div class="card-contact">✉ ${esc(c.email)}</div>` : ''}
+      <div class="card-meta">
+        <span class="card-badge badge-status ${statusClass}">${statusLabel}</span>
+        <span class="card-badge badge-mtg">📝 MTG ${mtgCount}回</span>
+        <span class="card-badge badge-action">✅ 未完了 ${actions.length}件</span>
+      </div>
+      ${nextAction ? `
+      <div class="card-next-action">
+        <div class="card-next-action-label">▶ 直近のネクストアクション</div>
+        ${esc(nextAction.text)}${nextAction.date ? ` （${nextAction.date}）` : ''}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function filterByStatus(status) {
+  currentFilter = status;
+  renderList(document.querySelector('.search-box').value, status);
+}
+
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ========== カルテ画面 ==========
+function openKarte(id) {
+  currentClientId = id;
+  const c = db.clients.find(x => x.id === id);
+  if (!c) return;
+
+  document.getElementById('karte-name').textContent = c.name;
+  document.getElementById('karte-company').textContent = c.company;
+  renderInfo(c);
+  renderMtgList(c);
+  renderActionList(c);
+
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('mtg-date').value = today;
+
+  showPage('karte');
+  switchTab('info');
+}
+
+function renderAnimalCard(role, roleLabel, roleClass, animalName) {
+  if (!animalName) return '';
+  const a = ANIMALS[animalName];
+  if (!a) return '';
+  const brainClass  = a.brain === '右脳' ? 'tag-right' : 'tag-left';
+  const timeClass   = a.time  === '未来展望' ? 'tag-future' : 'tag-past';
+  const styleClass  = a.style === '目的思考' ? 'tag-goal' : 'tag-sit';
+  return `
+  <div class="animal-card">
+    <span class="animal-emoji">${a.emoji}</span>
+    <div><span class="animal-role ${roleClass}">${roleLabel}</span></div>
+    <div class="animal-name">${animalName}</div>
+    <div class="animal-tags">
+      <span class="animal-tag ${brainClass}">${a.brain}</span>
+      <span class="animal-tag ${timeClass}">${a.time}</span>
+      <span class="animal-tag ${styleClass}">${a.style}</span>
+    </div>
+  </div>`;
+}
+
+function renderInfo(c) {
+  const statusLabel = { active: '契約中', paused: '一時停止', ended: '終了' }[c.status || 'active'];
+  document.getElementById('info-content').innerHTML = `
+    <table style="width:100%;font-size:14px;border-collapse:collapse;">
+      ${row('担当者名', c.name)}
+      ${row('会社名', c.company)}
+      ${row('業種', c.industry)}
+      ${row('連絡先メール', c.email)}
+      ${row('電話番号', c.phone)}
+      ${row('顧問開始日', c.startDate)}
+      ${row('月額顧問料', c.fee)}
+      ${row('契約状況', statusLabel)}
+    </table>
+    ${(c.animalCore || c.animalSurface || c.animalDecision || c.animalHope || c.animalHidden) ? `
+    <div class="animal-section-title">🐾 動物占い</div>
+    <div class="animal-cards">
+      ${renderAnimalCard('core',     '本質',     'role-core',     c.animalCore)}
+      ${renderAnimalCard('surface',  '表面',     'role-surface',  c.animalSurface)}
+      ${renderAnimalCard('decision', '意思決定', 'role-decision',  c.animalDecision)}
+      ${renderAnimalCard('hope',     '希望',     'role-hope',     c.animalHope)}
+      ${renderAnimalCard('hidden',   '隠れ',     'role-hidden',   c.animalHidden)}
+    </div>` : ''}
+  `;
+  document.getElementById('info-memo').textContent = c.memo || '（メモなし）';
+}
+
+function row(label, val) {
+  if (!val) return '';
+  return `<tr><td style="padding:6px 0;color:var(--text-muted);width:40%;font-size:12px;">${label}</td><td style="padding:6px 0;font-weight:600;">${esc(val)}</td></tr>`;
+}
+
+function renderMtgList(c) {
+  const list = c.mtgs || [];
+  const container = document.getElementById('mtg-list');
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:14px;">MTG記録がまだありません</div>`;
+    return;
+  }
+  container.innerHTML = [...list].reverse().map((m, i) => {
+    const ri = list.length - 1 - i;
+    const actions = m.actions || [];
+    return `
+    <div class="mtg-item">
+      <div class="mtg-item-header">
+        <span class="mtg-date">📅 ${esc(m.date)}</span>
+        <button class="btn btn-ghost btn-sm" onclick="deleteMtg(${ri})">削除</button>
+      </div>
+      <div class="mtg-content">${esc(m.content)}</div>
+      ${actions.length > 0 ? `
+      <div class="mtg-actions-section">
+        <div class="mtg-actions-label">▶ 抽出されたネクストアクション</div>
+        ${actions.map((a, ai) => `
+        <div class="mtg-action-item">
+          <input type="checkbox" ${a.done?'checked':''} onchange="toggleMtgAction(${ri},${ai},this.checked)">
+          <span class="${a.done?'mtg-action-done':''}">${esc(a.text)}</span>
+        </div>`).join('')}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderActionList(c) {
+  const list = c.actions || [];
+  const container = document.getElementById('action-list');
+  if (list.length === 0) {
+    container.innerHTML = `<li style="text-align:center;padding:20px;color:var(--text-muted);font-size:14px;">ネクストアクションがありません</li>`;
+    return;
+  }
+  const sorted = [...list].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.date && b.date) return a.date.localeCompare(b.date);
+    return 0;
+  });
+  container.innerHTML = sorted.map((a, i) => {
+    const origIdx = list.indexOf(a);
+    return `
+    <li class="action-item">
+      <input type="checkbox" ${a.done?'checked':''} onchange="toggleAction(${origIdx},this.checked)">
+      <div style="flex:1;">
+        <div class="action-text ${a.done?'done':''}">${esc(a.text)}</div>
+        ${a.date ? `<div class="action-date">📅 ${esc(a.date)}</div>` : ''}
+      </div>
+      <button class="action-delete" onclick="deleteAction(${origIdx})">✕</button>
+    </li>`;
+  }).join('');
+}
+
+// ========== 音声録音 ==========
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    showToast('このブラウザは音声認識に対応していません（Chrome推奨）');
+    return null;
+  }
+  const r = new SR();
+  r.lang = 'ja-JP';
+  r.continuous = true;
+  r.interimResults = true;
+  let finalText = '';
+
+  r.onstart = () => {
+    finalText = document.getElementById('transcript').value;
+    document.getElementById('record-status').textContent = '🔴 録音中...';
+    document.getElementById('record-status').classList.add('active');
+    document.getElementById('recordBtn').classList.add('recording');
+  };
+  r.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalText += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('transcript').value = finalText + interim;
+  };
+  r.onend = () => {
+    if (isRecording) r.start();
+  };
+  r.onerror = (e) => {
+    if (e.error !== 'aborted') showToast('音声認識エラー: ' + e.error);
+    stopRecording();
+  };
+  return r;
+}
+
+function toggleRecording() {
+  if (!isRecording) startRecording();
+  else stopRecording();
+}
+
+function startRecording() {
+  recognition = initRecognition();
+  if (!recognition) return;
+  isRecording = true;
+  recognition.start();
+}
+
+function stopRecording() {
+  isRecording = false;
+  if (recognition) { try { recognition.stop(); } catch(e){} }
+  document.getElementById('record-status').textContent = 'タップで録音開始';
+  document.getElementById('record-status').classList.remove('active');
+  document.getElementById('recordBtn').classList.remove('recording');
+  showToast('録音を停止しました');
+}
+
+function clearTranscript() {
+  document.getElementById('transcript').value = '';
+  document.getElementById('extract-preview').style.display = 'none';
+}
+
+// ========== ネクストアクション自動抽出 ==========
+const ACTION_KEYWORDS = [
+  '確認する','連絡する','送る','提出する','作成する','依頼する','手配する','準備する',
+  '検討する','調査する','報告する','共有する','設定する','更新する','変更する',
+  '対応する','実施する','進める','見直す','整理する','説明する','提案する',
+  '確認します','連絡します','送ります','確認お願い','ご連絡ください','検討します',
+  'までに','期日','締め切り','〆切','デッドライン',
+  'すること','する予定','してください','していただく','お願いします','お願いいたします',
+  'アクション','タスク','TODO','To Do','宿題',
+];
+
+async function extractActions() {
+  const text = document.getElementById('transcript').value.trim();
+  if (!text) { showToast('テキストを入力してください'); return; }
+
+  const preview = document.getElementById('extract-preview');
+  preview.style.display = 'block';
+  preview.innerHTML = `<div style="background:#f0fdf4;padding:12px;border-radius:8px;text-align:center;">⏳ GPT で分析中...</div>`;
+
+  try {
+    // API URL を localStorage から取得（デフォルトはローカル）
+    const apiUrl = localStorage.getItem('API_URL') || 'http://localhost:3000';
+
+    const response = await fetch(`${apiUrl}/api/extract-text`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transcript: text,
+        clientId: currentClientId
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || '処理に失敗しました');
+    }
+
+    // 要約をテキストエリアに反映
+    document.getElementById('transcript').value = `【議事録】\n${data.summary}\n\n【元テキスト】\n${text}`;
+
+    const extracted = data.nextActions || [];
+    if (extracted.length === 0) {
+      preview.innerHTML = `<div style="background:#fef9c3;padding:12px;border-radius:8px;font-size:13px;color:#92400e;">アクションが検出できませんでした。手動でネクストアクションを追加してください。</div>`;
+      return;
+    }
+
+    preview.innerHTML = `
+      <div style="background:#f0fdf4;padding:12px;border-radius:8px;">
+        <div style="font-size:12px;font-weight:700;color:var(--success);margin-bottom:8px;">✨ 抽出されたアクション（${extracted.length}件）</div>
+        ${extracted.map((a, i) => `
+        <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:13px;">
+          <input type="checkbox" checked id="ea-${i}" style="margin-top:2px;">
+          <span>${esc(a.text)}</span>
+        </label>`).join('')}
+        <button class="btn btn-success btn-sm" style="margin-top:8px;" onclick="addExtractedActions(${JSON.stringify(extracted.map(a => a.text)).replace(/"/g,'&quot;')})">チェックしたものを追加</button>
+      </div>`;
+  } catch (error) {
+    console.error('エラー:', error);
+    preview.innerHTML = `<div style="background:#fee2e2;padding:12px;border-radius:8px;font-size:13px;color:#991b1b;">❌ エラー: ${esc(error.message)}</div>`;
+  }
+}
+
+function addExtractedActions(actions) {
+  const c = db.clients.find(x => x.id === currentClientId);
+  if (!c) return;
+  if (!c.actions) c.actions = [];
+
+  let added = 0;
+  actions.forEach((text, i) => {
+    const cb = document.getElementById(`ea-${i}`);
+    if (cb && cb.checked) {
+      c.actions.push({ id: genId(), text, date: '', done: false, source: 'auto' });
+      added++;
+    }
+  });
+
+  // MTGに紐づけ
+  const mtgDate = document.getElementById('mtg-date').value;
+  const content = document.getElementById('transcript').value.trim();
+  if (content) {
+    if (!c.mtgs) c.mtgs = [];
+    const lastMtg = c.mtgs[c.mtgs.length - 1];
+    if (lastMtg && lastMtg.date === mtgDate && lastMtg.content === content) {
+      lastMtg.actions = actions.filter((_, i) => {
+        const cb = document.getElementById(`ea-${i}`);
+        return cb && cb.checked;
+      }).map(t => ({ text: t, done: false }));
+    }
+  }
+
+  saveData();
+  renderActionList(c);
+  showToast(`${added}件のアクションを追加しました`);
+  document.getElementById('extract-preview').style.display = 'none';
+}
+
+function saveMtg() {
+  const c = db.clients.find(x => x.id === currentClientId);
+  if (!c) return;
+  const date = document.getElementById('mtg-date').value;
+  const content = document.getElementById('transcript').value.trim();
+  if (!date || !content) { showToast('日付と議事内容を入力してください'); return; }
+  if (!c.mtgs) c.mtgs = [];
+  c.mtgs.push({ id: genId(), date, content, actions: [] });
+  saveData();
+  renderMtgList(c);
+  clearTranscript();
+  showToast('MTGを保存しました');
+}
+
+function deleteMtg(idx) {
+  if (!confirm('このMTG記録を削除しますか？')) return;
+  const c = db.clients.find(x => x.id === currentClientId);
+  c.mtgs.splice(idx, 1);
+  saveData();
+  renderMtgList(c);
+  showToast('削除しました');
+}
+
+function toggleMtgAction(mtgIdx, actionIdx, checked) {
+  const c = db.clients.find(x => x.id === currentClientId);
+  c.mtgs[mtgIdx].actions[actionIdx].done = checked;
+  saveData();
+}
+
+function addManualAction() {
+  const text = document.getElementById('new-action-text').value.trim();
+  const date = document.getElementById('new-action-date').value;
+  if (!text) { showToast('アクション内容を入力してください'); return; }
+  const c = db.clients.find(x => x.id === currentClientId);
+  if (!c.actions) c.actions = [];
+  c.actions.push({ id: genId(), text, date, done: false });
+  saveData();
+  renderActionList(c);
+  document.getElementById('new-action-text').value = '';
+  document.getElementById('new-action-date').value = '';
+  showToast('追加しました');
+}
+
+function toggleAction(idx, checked) {
+  const c = db.clients.find(x => x.id === currentClientId);
+  c.actions[idx].done = checked;
+  saveData();
+  renderActionList(c);
+}
+
+function deleteAction(idx) {
+  const c = db.clients.find(x => x.id === currentClientId);
+  c.actions.splice(idx, 1);
+  saveData();
+  renderActionList(c);
+  showToast('削除しました');
+}
+
+// ========== 顧問先 追加・編集・削除 ==========
+function openAddClient() {
+  document.getElementById('modal-client-title').textContent = '顧問先を追加';
+  document.getElementById('delete-client-btn').style.display = 'none';
+  populateAnimalSelects();
+  clearClientForm();
+  document.getElementById('modal-client').classList.add('open');
+}
+
+function openEditClient() {
+  const c = db.clients.find(x => x.id === currentClientId);
+  if (!c) return;
+  populateAnimalSelects();
+  document.getElementById('modal-client-title').textContent = '顧問先を編集';
+  document.getElementById('delete-client-btn').style.display = 'block';
+  document.getElementById('f-name').value = c.name || '';
+  document.getElementById('f-company').value = c.company || '';
+  document.getElementById('f-industry').value = c.industry || '';
+  document.getElementById('f-status').value = c.status || 'active';
+  document.getElementById('f-email').value = c.email || '';
+  document.getElementById('f-phone').value = c.phone || '';
+  document.getElementById('f-start-date').value = c.startDate || '';
+  document.getElementById('f-fee').value = c.fee || '';
+  document.getElementById('f-memo').value = c.memo || '';
+  document.getElementById('f-animal-core').value     = c.animalCore     || '';
+  document.getElementById('f-animal-surface').value  = c.animalSurface  || '';
+  document.getElementById('f-animal-decision').value = c.animalDecision || '';
+  document.getElementById('f-animal-hope').value     = c.animalHope     || '';
+  document.getElementById('f-animal-hidden').value   = c.animalHidden   || '';
+  document.getElementById('modal-client').classList.add('open');
+}
+
+function clearClientForm() {
+  ['f-name','f-company','f-industry','f-email','f-phone','f-start-date','f-fee','f-memo'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-status').value = 'active';
+  ['f-animal-core','f-animal-surface','f-animal-decision','f-animal-hope','f-animal-hidden'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function saveClient() {
+  const name = document.getElementById('f-name').value.trim();
+  const company = document.getElementById('f-company').value.trim();
+  if (!name || !company) { showToast('担当者名と会社名は必須です'); return; }
+
+  const data = {
+    name, company,
+    industry:       document.getElementById('f-industry').value.trim(),
+    status:         document.getElementById('f-status').value,
+    email:          document.getElementById('f-email').value.trim(),
+    phone:          document.getElementById('f-phone').value.trim(),
+    startDate:      document.getElementById('f-start-date').value,
+    fee:            document.getElementById('f-fee').value.trim(),
+    memo:           document.getElementById('f-memo').value.trim(),
+    animalCore:     document.getElementById('f-animal-core').value,
+    animalSurface:  document.getElementById('f-animal-surface').value,
+    animalDecision: document.getElementById('f-animal-decision').value,
+    animalHope:     document.getElementById('f-animal-hope').value,
+    animalHidden:   document.getElementById('f-animal-hidden').value,
+  };
+
+  const isEdit = document.getElementById('delete-client-btn').style.display !== 'none';
+  if (isEdit && currentClientId) {
+    const c = db.clients.find(x => x.id === currentClientId);
+    Object.assign(c, data);
+    saveData();
+    renderInfo(c);
+    document.getElementById('karte-name').textContent = c.name;
+    document.getElementById('karte-company').textContent = c.company;
+    showToast('更新しました');
+  } else {
+    const newClient = { id: genId(), ...data, mtgs: [], actions: [] };
+    db.clients.push(newClient);
+    saveData();
+    showToast('顧問先を追加しました');
+  }
+  closeModal();
+  renderList();
+}
+
+async function deleteClient() {
+  if (!confirm(`この顧問先を削除しますか？\nMTG記録・ネクストアクションも全て削除されます。`)) return;
+  try {
+    await sb.from('komon_clients').delete().eq('id', currentClientId);
+  } catch(e) { console.warn('Supabase削除失敗:', e); }
+  db.clients = db.clients.filter(x => x.id !== currentClientId);
+  saveData();
+  closeModal();
+  goBack();
+  renderList();
+  showToast('削除しました');
+}
+
+function closeModal() {
+  document.getElementById('modal-client').classList.remove('open');
+}
+
+// ========== ナビ ==========
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+function goBack() {
+  if (isRecording) stopRecording();
+  showPage('list');
+  renderList();
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.getAttribute('onclick') === `switchTab('${name}')`) t.classList.add('active');
+  });
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ========== 共有URL ==========
+function encodeData() {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(db))));
+}
+
+function generateShareURL() {
+  const base = window.location.href.split('#')[0];
+  return base + '#d=' + encodeData();
+}
+
+function openShareModal() {
+  refreshShareURL();
+  const isLocal = window.location.protocol === 'file:';
+  document.getElementById('share-local-warning').style.display = isLocal ? 'block' : 'none';
+  document.getElementById('modal-share').classList.add('open');
+}
+
+function refreshShareURL() {
+  const url = generateShareURL();
+  document.getElementById('share-url-box').textContent = url;
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
+  document.getElementById('share-qr').src = qrUrl;
+}
+
+function copyShareURL() {
+  const url = generateShareURL();
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('URLをコピーしました');
+  }).catch(() => {
+    const el = document.getElementById('share-url-box');
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    showToast('URLをコピーしました');
+  });
+}
+
+function closeShareModal() {
+  document.getElementById('modal-share').classList.remove('open');
+}
+
+function loadFromURL() {
+  const hash = window.location.hash;
+  if (!hash.startsWith('#d=')) return;
+  try {
+    const encoded = hash.slice(3);
+    const json = decodeURIComponent(escape(atob(encoded)));
+    const imported = JSON.parse(json);
+    if (!imported.clients) return;
+    const msg = db.clients && db.clients.length > 0
+      ? `URLに${imported.clients.length}件のデータがあります。現在のデータをURLのデータで上書きしますか？`
+      : `URLから${imported.clients.length}件の顧問先データを読み込みます。`;
+    if (confirm(msg)) {
+      db = imported;
+      saveData();
+      showToast('URLからデータを読み込みました');
+    }
+    // ハッシュを消してURLをきれいにする
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  } catch(e) {
+    console.warn('URL data decode error', e);
+  }
+}
+
+// ========== エクスポート・インポート ==========
+function exportData() {
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `顧問先データ_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('データを保存しました');
+}
+
+function importData() {
+  document.getElementById('importFile').click();
+}
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.clients) throw new Error('無効なデータ形式');
+      if (!confirm(`${imported.clients.length}件の顧問先データを読み込みます。現在のデータは上書きされます。`)) return;
+      db = imported;
+      saveData();
+      renderList();
+      showToast('データを読み込みました');
+    } catch(err) {
+      showToast('ファイルの読み込みに失敗しました');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ========== 個別共有（HTMLファイルダウンロード） ==========
+let currentSharePayload = null;
+
+function openClientShareModal() {
+  const c = db.clients.find(x => x.id === currentClientId);
+  if (!c) return;
+  const sortedMtgs = [...(c.mtgs || [])].sort((a, b) => a.date.localeCompare(b.date));
+  currentSharePayload = {
+    clientName: c.name,
+    company: c.company,
+    mtgs: sortedMtgs,
+    actions: c.actions || []
+  };
+  const pendingCount = (c.actions || []).filter(a => !a.done).length;
+  document.getElementById('share-link-desc').textContent =
+    `${c.name}（${c.company}）のMTG議事録${sortedMtgs.length}件とネクストアクション（未完了 ${pendingCount}件）を共有します。相手がチェックすると🔄同期ボタンで管理画面に反映されます。`;
+
+  // スマホ判定でボタンとノートを切り替え
+  const canWebShare = !!(navigator.share);
+  const btn = document.getElementById('share-action-btn');
+  const note = document.getElementById('share-action-note');
+  if (canWebShare) {
+    btn.textContent = '📤 LINEやメールで送る';
+    note.textContent = '↑ タップするとLINE・メールなどの送信画面が開きます';
+  } else {
+    btn.textContent = '📥 HTMLファイルをダウンロード';
+    note.textContent = '↑ ダウンロードされたファイルをLINEまたはメールで添付して送ってください';
+  }
+
+  document.getElementById('modal-share-link').classList.add('open');
+}
+
+async function doShare() {
+  if (!currentSharePayload) return;
+  const data = currentSharePayload;
+
+  // Supabaseに保存→チェックボックス付きURLを共有
+  showToast('共有URLを作成中...');
+  const shareId = await createSupabaseShare(currentClientId);
+  if (shareId) {
+    const base = window.location.href.split('?')[0].split('#')[0];
+    const shareUrl = base + '?share=' + shareId;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `顧問履歴 - ${data.clientName}（${data.company}）`,
+          text: '✅ ネクストアクションを確認してチェックしてください。',
+          url: shareUrl
+        });
+        showToast('共有しました');
+        closeShareLinkModal();
+        return;
+      } catch(e) {
+        if (e.name === 'AbortError') return;
+      }
+    }
+    try { await navigator.clipboard.writeText(shareUrl); } catch(e) {}
+    showToast('共有URLをコピーしました！LINEに貼り付けてください');
+    closeShareLinkModal();
+    return;
+  }
+
+  // Supabase失敗→テキスト共有フォールバック
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `顧問履歴 - ${data.clientName}`, text: generateShareText(data) });
+      showToast('共有しました');
+      closeShareLinkModal();
+    } catch(e) {
+      if (e.name !== 'AbortError') showToast('共有に失敗しました');
+    }
+    return;
+  }
+
+  // 最終フォールバック：HTMLファイルダウンロード（PC）
+  const html = generateShareHTML(data);
+  const fileName = `顧問履歴_${data.clientName}.html`;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('ファイルをダウンロードしました');
+  closeShareLinkModal();
+}
+
+function generateShareText(data) {
+  const today = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+  const mtgs = [...(data.mtgs || [])].sort((a, b) => a.date.localeCompare(b.date));
+  const pending = (data.actions || []).filter(a => !a.done);
+  const done    = (data.actions || []).filter(a =>  a.done);
+
+  let t = `📋 顧問履歴レポート\n`;
+  t += `${data.clientName}（${data.company}）\n`;
+  t += `${today} 時点\n`;
+  t += `━━━━━━━━━━━━━\n\n`;
+
+  t += `📝 MTG議事録（${mtgs.length}回）\n`;
+  t += `━━━━━━━━━━━━━\n`;
+  if (mtgs.length === 0) {
+    t += `（MTG記録なし）\n`;
+  } else {
+    mtgs.forEach((m, i) => {
+      t += `\n【第${i + 1}回　${m.date}】\n${m.content}\n`;
+    });
+  }
+
+  t += `\n✅ ネクストアクション\n`;
+  t += `━━━━━━━━━━━━━\n`;
+  t += `未完了 ${pending.length}件 ／ 完了 ${done.length}件\n`;
+  if (pending.length > 0) {
+    t += `\n【未完了】\n`;
+    pending.forEach(a => {
+      t += `⬜ ${a.text}${a.date ? `（${a.date}まで）` : ''}\n`;
+    });
+  }
+  if (done.length > 0) {
+    t += `\n【完了済み】\n`;
+    done.forEach(a => { t += `✅ ${a.text}\n`; });
+  }
+
+  t += `\n━━━━━━━━━━━━━\n📋 顧問先管理アプリ`;
+  return t;
+}
+
+function generateShareHTML(data) {
+  const e = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const mtgs = data.mtgs || [];
+  const pending = (data.actions || []).filter(a => !a.done);
+  const done = (data.actions || []).filter(a => a.done);
+  const today = new Date().toISOString().slice(0,10);
+
+  const mtgsHTML = mtgs.length === 0
+    ? '<p style="font-size:14px;color:#94a3b8;padding:8px 0;">MTG記録がまだありません</p>'
+    : mtgs.map((m, i) => `
+      <div style="margin-bottom:${i < mtgs.length-1 ? '20px' : '0'};padding-bottom:${i < mtgs.length-1 ? '20px' : '0'};border-bottom:${i < mtgs.length-1 ? '2px solid #e2e8f0' : 'none'}">
+        <div style="font-size:12px;font-weight:700;color:#2563eb;margin-bottom:8px;">📅 ${e(m.date)}　第${i+1}回</div>
+        <div class="ct">${e(m.content)}</div>
+      </div>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>顧問履歴 - ${e(data.clientName)}（${e(data.company)}）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+.hd{background:#2563eb;color:white;padding:20px;text-align:center}
+.badge{display:inline-block;background:rgba(255,255,255,.2);font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px;letter-spacing:.5px}
+.hd h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.hd p{font-size:12px;opacity:.85}
+.lbl{font-size:13px;font-weight:700;color:#475569;margin:20px 16px 8px;padding-bottom:8px;border-bottom:2px solid #2563eb;display:flex;align-items:center;gap:8px}
+.box{background:white;border-radius:12px;padding:20px;margin:0 16px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.ct{font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}
+.ar{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f1f5f9}
+.ar:last-child{border-bottom:none}
+.ar label{display:flex;align-items:flex-start;gap:10px;width:100%;cursor:pointer}
+.ar input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#2563eb;cursor:pointer}
+.at{font-size:14px;flex:1;line-height:1.5;transition:all .15s}
+.ad{font-size:11px;color:#64748b;margin-top:2px}
+.ar input:checked~div .at,.done-at{text-decoration:line-through;color:#94a3b8}
+.ds{margin-top:12px;padding-top:12px;border-top:1px solid #e2e8f0}
+.dl{font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:6px}
+.ft{text-align:center;padding:24px;font-size:11px;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="hd">
+  <div class="badge">顧問履歴レポート</div>
+  <h1>${e(data.clientName)}（${e(data.company)}）</h1>
+  <p>MTG ${mtgs.length}回　${today} 時点</p>
+</div>
+
+<div class="lbl">📝 MTG議事録（時系列）</div>
+<div class="box">${mtgsHTML}</div>
+
+<div class="lbl">✅ ネクストアクション（未完了 ${pending.length}件 ／ 完了 ${done.length}件）</div>
+<div class="box">
+${pending.length===0&&done.length===0?'<p style="font-size:14px;color:#94a3b8;">ネクストアクションはありません</p>':''}
+${pending.map(a=>`<div class="ar"><label><input type="checkbox" onchange="toggleItem(this)"><div><div class="at">${e(a.text)}</div>${a.date?`<div class="ad">📅 ${e(a.date)}</div>`:''}</div></label></div>`).join('')}
+${done.length>0?`<div class="ds"><div class="dl">完了済み</div>${done.map(a=>`<div class="ar"><label><input type="checkbox" checked onchange="toggleItem(this)"><div><div class="at done-at">${e(a.text)}</div>${a.date?`<div class="ad">📅 ${e(a.date)}</div>`:''}</div></label></div>`).join('')}</div>`:''}
+</div>
+<script>
+function toggleItem(cb){
+  var at=cb.closest('label').querySelector('.at');
+  at.classList.toggle('done-at',cb.checked);
+}
+<\/script>
+
+<div class="ft">📋 顧問先管理アプリ｜${today} 出力</div>
+</body>
+</html>`;
+}
+
+function closeShareLinkModal() {
+  document.getElementById('modal-share-link').classList.remove('open');
+}
+
+// ========== 共有ページ表示（読み取り専用） ==========
+function loadSharedView() {
+  const hash = window.location.hash;
+  const isMtg = hash.startsWith('#mtg=');
+  const isAct = hash.startsWith('#act=');
+  if (!isMtg && !isAct) return false;
+  try {
+    const encoded = hash.slice(5);
+    const json = decodeURIComponent(escape(atob(encoded)));
+    const data = JSON.parse(json);
+    document.querySelector('header').style.display = 'none';
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    renderSharedPage(data);
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+    return true;
+  } catch(e) {
+    console.warn('Share link decode error', e);
+    return false;
+  }
+}
+
+function renderSharedPage(data) {
+  const page = document.getElementById('page-share');
+  const allActions = data.actions || [];
+  const pending = allActions.filter(a => !a.done);
+  const done = allActions.filter(a => a.done);
+
+  page.innerHTML = `
+    <div class="share-page-header">
+      <div class="share-badge">MTG議事録 ＋ ネクストアクション</div>
+      <h1>${esc(data.clientName)}（${esc(data.company)}）</h1>
+      <p>📅 ${esc(data.date)}</p>
+    </div>
+
+    <div class="share-section-label">📝 MTG議事録</div>
+    <div class="share-content-box">
+      <div class="share-content-text">${esc(data.content)}</div>
+    </div>
+
+    <div class="share-section-label">✅ ネクストアクション（未完了 ${pending.length}件 ／ 完了 ${done.length}件）</div>
+    <div class="share-content-box">
+      ${allActions.length === 0 ? `<div style="font-size:14px;color:var(--text-muted);padding:8px 0;">ネクストアクションはありません</div>` : ''}
+      ${pending.map(a => `
+      <div class="share-action-row">
+        <span style="font-size:16px;flex-shrink:0;margin-top:1px;">⬜</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;line-height:1.5;">${esc(a.text)}</div>
+          ${a.date ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📅 ${esc(a.date)}</div>` : ''}
+        </div>
+      </div>`).join('')}
+      ${done.length > 0 ? `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">完了済み</div>
+      ${done.map(a => `
+      <div class="share-action-row">
+        <span style="font-size:16px;flex-shrink:0;margin-top:1px;">✅</span>
+        <div style="flex:1;">
+          <div style="font-size:14px;line-height:1.5;text-decoration:line-through;color:var(--text-muted);">${esc(a.text)}</div>
+          ${a.date ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📅 ${esc(a.date)}</div>` : ''}
+        </div>
+      </div>`).join('')}` : ''}
+    </div>
+
+    <div class="share-footer">📋 顧問先管理アプリ</div>
+  `;
+
+  page.style.display = 'block';
+}
+
+// ========== トースト ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// モーダル外クリックで閉じる
+document.getElementById('modal-client').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('modal-share').addEventListener('click', function(e) {
+  if (e.target === this) closeShareModal();
+});
+document.getElementById('modal-share-link').addEventListener('click', function(e) {
+  if (e.target === this) closeShareLinkModal();
+});
+
+// ========== 初期化 ==========
+(async function() {
+  const _p = new URLSearchParams(window.location.search);
+  const _sid = _p.get('share');
+  if (_sid && await loadFromSupabaseShare(_sid)) return;
+  if (loadSharedView()) return;
+  {
+
+await loadData();
+migrateData();
+loadFromURL();
+populateAnimalSelects();
+
+// 議事録・顧問料の税表記を税込に修正（マイグレーション）
+let migrated = false;
+db.clients.forEach(c => {
+  (c.mtgs || []).forEach(m => {
+    if (m.content && m.content.includes('165,000円税別')) {
+      m.content = m.content.replace(/165,000円税別/g, '165,000円（税込）');
+      migrated = true;
+    }
+  });
+  if (c.fee && c.fee.includes('税別')) {
+    c.fee = c.fee.replace('165,000円（税別）／181,500円（税込）', '165,000円（税込）').replace('税別', '（税込）');
+    migrated = true;
+  }
+  if (c.memo && c.memo.includes('165,000円税別')) {
+    c.memo = c.memo.replace('165,000円税別', '165,000円（税込）');
+    migrated = true;
+  }
+});
+
+// 動物占いフィールドがないクライアントに自動補完（マイグレーション）
+db.clients.forEach(c => {
+  if (c.animalCore === undefined) {
+    // kaimon事業のみ既知データを入れる。それ以外は空で初期化
+    if (c.company === 'kaimon事業') {
+      c.animalCore     = 'こあら';
+      c.animalSurface  = 'たぬき';
+      c.animalDecision = '猿';
+      c.animalHope     = 'ひつじ';
+      c.animalHidden   = 'こあら';
+    } else {
+      c.animalCore = c.animalSurface = c.animalDecision = c.animalHope = c.animalHidden = '';
+    }
+    migrated = true;
+  }
+});
+if (migrated) saveData();
+
+renderList();
+
+// 初期データ（初回のみ）
+if (db.clients.length === 0) {
+  db.clients = [
+    {
+      id: genId(),
+      name: 'みづき',
+      company: 'kaimon事業',
+      industry: 'オンラインスクール（写真）',
+      status: 'active',
+      email: '',
+      phone: '',
+      startDate: '2026-05-01',
+      fee: '165,000円（税込）＋成果報酬10%',
+      memo: '月額165,000円（税込）＋成果報酬（kaimon事業売上の10%・翌月末払い）\n5月ローンチスポット支援からスタート。成果・変化を確認後に継続判断。\nLINE：みづき（メイン連絡先）\nエルメ：opendoorkaimon\n固定費：月70〜80万円\n単価上限：約30万円（カード限度額）\n現行LINEリスト：約3,000人\nスタッフ：ふうさん・大橋さん・ナダリーさん・さやかさん・長谷さんなど',
+      animalCore:     'こあら',
+      animalSurface:  'たぬき',
+      animalDecision: '猿',
+      animalHope:     'ひつじ',
+      animalHidden:   'こあら',
+      mtgs: [
+        {
+          id: genId(),
+          date: '2026-04-23',
+          content: '【第1回MTG】顧問契約についてのヒアリング・提案\n・kaimon事業の現状・課題ヒアリング\n・共有ツール（エルメ・スプレッドシート・Discord・UTAGE）の案内\n・組織図の共有・今後の体制確認\n・スタンダードコース5月ローンチの確認\n・プロコース10〜11月延期の確認（昨年実績20名達成）\n・料金設定の合意（月額165,000円（税込）＋成果報酬10%）\n・顧問提案書（kaimon_proposal.pptx）作成・提出→合意・契約へ',
+          actions: [
+            { text: '契約書の締結確認', done: false },
+            { text: '5月ローンチの詳細スケジュール共有をみづきさんに依頼', done: false }
+          ]
+        },
+        {
+          id: genId(),
+          date: '2026-04-28',
+          content: '【第2回MTG】5月末プロダクトローンチ戦略について\n参加者：かねちん、みづき、ふう @fuu_photograph\n\n■ ローンチ方式の変更\n・チャレンジローンチ（3日間：マインド・集客・ロードマップ作成）→ プロダクトローンチ型（1日90分セミナー）に変更\n・セミナータイトル：「好きな写真をお仕事にするプレミアム勉強会」\n・目的：参加者を個別面談に誘導し成約を獲得\n・開催予定：2026年5月末（3回開催）\n・予約設計：先行予約20枠→一般予約30枠\n\n■ 個別面談設計\n・目標制約率：20%\n・必要参加者数：約40人（20%制約で8名成約想定）\n・面談担当：みづき・ふうさん・長谷さんの3人で分担\n・面談期間：セミナー後1週間以内に完了\n・フォームに生年月日項目を追加。面談前に動物タイプを収集・共有\n\n■ 広告・導線変更\n・オプチャン誘導廃止 → 公式ライン直接誘導に一本化\n・大橋さんが広告ボタン設定を変更、クリエイティブ別流入追跡\n\n■ 広告クリエイティブ方針\n・先生訴求（みづきの実績：ソニーストア個展・ラジオ出演・大学講義等）\n・プレゼント訴求（4ステップテンプレート等）\n・日程訴求（勉強会の日程・期限を前面に）\n・既存素材でテスト → 効果が高ければ拡大\n\n■ コンテンツ・オーガニック施策\n・週1回コラム配信（既存・新規両リストへ）\n・3,000人リストへ週1メッセージ、300人（約10%）の新規登録目標\n・5月から開始、30,000通上限設定\n・Threads（スレッツ）を本日から開始。冒頭フック投稿→10時間後にコメントで続きを投稿\n・コラボライブ：GW避け5/11・5/18週に週1〜2回計3回\n・動画視聴専用ページを新規作成\n\n■ 次回MTG：2026年5月7日（火）夜',
+          actions: [
+            { text: '大橋さん：広告ボタンをオプチャン→公式ラインシナリオに変更・流入経路追跡設定', done: false },
+            { text: 'みづき：フーさん・関係者に5月動線変更（チャレンジ→プロダクトローンチ）を早急に共有', done: false },
+            { text: 'かねちん：セミナーの参考資料・構成をみづきに共有', done: false },
+            { text: 'かねちん：動画視聴ページのサンプル・参考LPをみづきに共有', done: false },
+            { text: 'みづき：Threadsを今日から開始', done: false },
+            { text: 'かねちん：ステップテンプレート案・イラスト版テスト案をスタッフラインに送付', done: false }
+          ]
+        },
+        {
+          id: genId(),
+          date: '2026-05-28',
+          content: '【第3回MTG】5月末ローンチ結果振り返りと次フェーズ戦略\n参加者：かねちん、みづき\n\n■ 今月の成果（5月末時点）\n・エヴァ（勉強会）で9人入会\n・個別面談：母集団16件・制約率50%（目標20%を大幅超過）\n・5月20日再販オファー：LINEリスト7,000件に配信→個別面談40件獲得\n・10件実施→3件成約・売上100万円超\n・4月以降の初動が明確に変化（従来は1〜2人/月）\n・過去713件の面談・申込データをダッシュボード化（担当者別制約率・年齢分析：40代以上多い・60〜70代売れにくい・20代来るが買わない）\n・2月は個別40件で制約率25% → 今月は個別50%に改善\n\n■ データ基盤の強化（最優先）\n・ダッシュボードに「入金有無（はい/いいえ）」列追加が未実装\n・「希望フォーム回答済み＝入会」の誤カウント問題 → 状態遷移の定義を是正\n・黄色=入会、赤=入会後未入金の色分けはほぼ完了\n・GitHubとパスワード制御でURLを配布・修正権限の一元管理運用へ\n・来週中に完全稼働目標（初期設定約2時間）\n・担当者別KPI（面談数・成約率・年齢/性別/動物タイプ）の常時可視化を整備\n・5月個別40件の一部は6月売上計上 → 締め日/計上日の統一が急務\n\n■ 勉強会スライドの抜本改善\n・スライド69〜72・55〜56は不要として削除\n・事例は「1人1ページ×2人」（ビフォー→アフター→行動の因果を明示）に再配置\n・写真拡大・「宝の地図」画像を差替\n・インスタグラム発信の「5つの壁」補講スライドを1枚追加（写真例・順番・無反応時修正・新規アカ移行）\n・発話改善：喋りすぎ抑制・間を作る・チャット質問は例えを絞る・3日連続開催で熱量維持\n・「今日中にします→明日も未対応」が続く場合は「できません」と明言するルール化\n\n■ 直前ボイス配信と重複予約整理\n・LINEリスト7,000件への音声メッセージ運用を標準化（今日1通→夜に音声）\n・「重要なことを言いました」の1文＋本音声で熱量可視化・未来展望で背中を押す台本化\n・重複予約（ロードマップ撮影会×勉強会）は「勉強会優先→翌朝の個別面談へ接続」で案内\n・「本来は審査制ですが、今回は特別に」特別感クロージングを個別接続に活用\n・分割訴求「1日何百円」の既存文言を個別導線にも明示\n\n■ 広告クリエイティブ強化\n・着物案件：ROAS 300〜400継続。「先生出演」「アフレコは同一で動画差替」3系統が当たり\n・バズ素材（ライジン選手父子動画「55万再生」）の広告展開準備\n・「29万7,000円で9件・ROAS約270」「今月も370投入」などの実績継続\n・同一アフレコ＋素材差替5パターンのABテストへ拡大\n・広告素材1本紛失（関さんに再依頼中）・命名規則と保管場所（ドライブ）の標準化が必要\n\n■ 9月オフラインイベント（広島）\n・昼：添削会、夜：ドレスパーティー（対談取得・案件獲得に接続）\n・正座できる低テーブル会場が条件（東京は駅から遠かった反省）\n・ロケハン・候補地の洗い出し、動線/照明/収容数/費用を数値で比較検討が必要\n\n■ 次回MTG：未定',
+          actions: [
+            { text: 'かねちん：ダッシュボードに「入金有無（はい/いいえ）」列追加・状態遷移（黄=入会/赤=未入金）を明文化', done: false },
+            { text: 'かねちん：GitHubとパスワード制御でダッシュボードURL展開（来週中完全稼働目標）', done: false },
+            { text: 'みづき：勉強会スライド改善（69〜72・55〜56削除・事例再配置・宝の地図差替・写真拡大）', done: false },
+            { text: 'みづき：インスタグラム「5つの壁」補講スライドを1枚追加', done: false },
+            { text: 'みづき：直前ボイス配信の標準化（今日1通→夜に音声、当日の熱量可視化）', done: false },
+            { text: 'みづき：関さんに広告素材を再依頼（紛失素材）・命名規則とドライブ保管場所を標準化', done: false },
+            { text: 'みづき/ふうさん：同一アフレコ＋素材差替5パターンのABテスト実施', done: false },
+            { text: 'みづき：9月広島イベントのロケハン・会場候補（低テーブル・動線・照明・収容数・費用）を調査', done: false }
+          ]
+        }
+      ],
+      actions: [
+        { id: genId(), text: '【最高・大橋さん】広告ボタンをオプチャン誘導→公式ラインシナリオに変更・流入経路追跡設定', date: '', done: false },
+        { id: genId(), text: '【最高・みづき】フーさん・関係者に5月動線変更（チャレンジ→プロダクトローンチ）を早急に共有', date: '', done: false },
+        { id: genId(), text: '【最高・かねちん】セミナーの参考資料・構成をみづきに共有', date: '', done: false },
+        { id: genId(), text: '【最高・かねちん】動画視聴ページのサンプル・参考LPをみづきに共有', date: '', done: false },
+        { id: genId(), text: '【最高・みづき】Threads（スレッツ）を開始', date: '2026-04-28', done: false },
+        { id: genId(), text: '【高・みづき】90分ワンデーセミナー資料・構成を一新（かねちん資料参考）', date: '', done: false },
+        { id: genId(), text: '【高・みづき】個別面談の役割分担（みづき・ふうさん・長谷さん）を決定・動物情報収集フロー整備', date: '', done: false },
+        { id: genId(), text: '【高・みづき】セミナー申込フォームに生年月日項目を追加', date: '', done: false },
+        { id: genId(), text: '【高・みづき/ふうさん】広告クリエイティブ複数パターン作成（先生・プレゼント・日程訴求）', date: '', done: false },
+        { id: genId(), text: '【高・みづき】動画視聴専用ページを新規作成', date: '', done: false },
+        { id: genId(), text: '【高・みづき】コラボライブ日程調整（GW避け、5/11・5/18週）', date: '', done: false },
+        { id: genId(), text: '【高・かねちん】ステップテンプレート案・イラスト版テスト案をスタッフラインに送付', date: '', done: false },
+        { id: genId(), text: '【高・かねちん/みづき】次回MTG実施', date: '2026-05-07', done: false },
+        { id: genId(), text: '【高・かねちん】契約書の締結確認', date: '2026-05-01', done: false },
+        { id: genId(), text: '【高・かねちん/ふうさん】Asana復活・ローンチタスク洗い出し', date: '2026-05-01', done: false },
+        { id: genId(), text: '【中・かねちん】広告数値スプレッドシートの確認・ROAS把握', date: '', done: false },
+        { id: genId(), text: '【最高・かねちん】ダッシュボードに「入金有無（はい/いいえ）」列追加・状態遷移（黄=入会/赤=未入金）を明文化', date: '', done: false },
+        { id: genId(), text: '【最高・かねちん】GitHubとパスワード制御でダッシュボードURL展開（来週中完全稼働目標）', date: '', done: false },
+        { id: genId(), text: '【高・みづき】勉強会スライド改善（69〜72・55〜56削除・事例再配置・宝の地図差替・写真拡大）', date: '', done: false },
+        { id: genId(), text: '【高・みづき】インスタグラム「5つの壁」補講スライドを1枚追加（写真例・順番・無反応時修正・新規アカ移行）', date: '', done: false },
+        { id: genId(), text: '【高・みづき】直前ボイス配信の標準化（今日1通→夜に音声・未来展望で背中を押す台本化）', date: '', done: false },
+        { id: genId(), text: '【高・みづき】関さんに広告素材を再依頼（紛失素材）・命名規則とドライブ保管場所を標準化', date: '', done: false },
+        { id: genId(), text: '【高・みづき/ふうさん】同一アフレコ＋素材差替5パターンのABテスト実施', date: '', done: false },
+        { id: genId(), text: '【中・みづき】9月広島イベントのロケハン・会場候補（低テーブル・動線・照明・収容数・費用）を調査', date: '', done: false }
+      ]
+    }
+  ];
+  saveData();
+  renderList();
+}
+
+  }
+
+  // ========== API設定 ==========
+  window.openApiSettings = function() {
+    const modal = document.getElementById('modal-api-settings');
+    const savedUrl = localStorage.getItem('API_URL');
+    document.getElementById('api-url-input').value = savedUrl || '';
+    modal.classList.add('open');
+  }
+
+  window.closeApiSettings = function() {
+    document.getElementById('modal-api-settings').classList.remove('open');
+  }
+
+  window.saveApiUrl = function() {
+    const url = document.getElementById('api-url-input').value.trim();
+    if (url) {
+      localStorage.setItem('API_URL', url);
+      showToast('API URL を保存しました');
+    } else {
+      localStorage.removeItem('API_URL');
+      showToast('API URL をリセットしました（デフォルト使用）');
+    }
+    closeApiSettings();
+  }
+})();
+</script>
+</body>
+</html>
