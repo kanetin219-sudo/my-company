@@ -223,13 +223,13 @@ app.post('/api/transcribe', upload.single('video'), async (req, res) => {
     }
 
     const videoPath = req.file.path;
-    const audioPath = `/tmp/${Date.now()}.mp3`;
+    const audioPath = `/tmp/${Date.now()}.wav`;
 
     console.log('🎬 動画から音声を抽出中...');
     await new Promise((resolve, reject) => {
       ffmpeg(videoPath)
         .output(audioPath)
-        .audioCodec('libmp3lame')
+        .audioCodec('pcm_s16le')
         .audioFrequency(16000)
         .audioChannels(1)
         .on('end', () => {
@@ -243,36 +243,40 @@ app.post('/api/transcribe', upload.single('video'), async (req, res) => {
         .run();
     });
 
-    // Python Whisper で文字起こし
+    // Whisper CLI で文字起こし
     console.log('🤖 Whisper で文字起こし中...');
 
-    const outputJsonPath = `/tmp/${Date.now()}_whisper.json`;
+    const tempDir = `/tmp/whisper_${Date.now()}`;
+    let transcript = '';
 
     try {
-      await execFileAsync('python3', [
-        '-m', 'whisper',
+      await fs.promises.mkdir(tempDir, { recursive: true });
+
+      // Whisper コマンドを実行
+      await execFileAsync('whisper', [
         audioPath,
         '--language', 'ja',
         '--model', 'large-v3',
         '--output_format', 'json',
-        '--output_dir', '/tmp'
-      ]);
+        '--output_dir', tempDir
+      ], { timeout: 600000 });
 
-      const outputPath = audioPath.replace(/\.[^.]+$/, '.json');
-      const jsonContent = await fs.promises.readFile(outputPath, 'utf-8');
+      // JSON 結果を読み込む
+      const baseName = path.basename(audioPath, path.extname(audioPath));
+      const jsonPath = path.join(tempDir, `${baseName}.json`);
+
+      const jsonContent = await fs.promises.readFile(jsonPath, 'utf-8');
       const jsonData = JSON.parse(jsonContent);
-      const transcript = jsonData.text;
+      transcript = jsonData.text;
 
       if (!transcript) {
         throw new Error('文字起こしテキストが取得できませんでした');
       }
 
-      // JSON ファイルをクリーンアップ
-      try {
-        await fs.promises.unlink(outputPath);
-      } catch (e) {}
-
       console.log('✅ 文字起こし完了');
+
+      // クリーンアップ
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
     } catch (error) {
       console.error('❌ Whisper エラー:', error.message);
       throw new Error('文字起こし処理に失敗しました: ' + error.message);
