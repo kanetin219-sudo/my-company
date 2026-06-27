@@ -252,14 +252,21 @@ app.post('/api/transcribe', upload.single('video'), async (req, res) => {
     try {
       await fs.promises.mkdir(tempDir, { recursive: true });
 
-      // Whisper コマンドを実行
+      // Whisper コマンドを実行（large-v3 で高精度）
+      // 初回はモデルダウンロードで時間がかかるため、タイムアウトを長く設定
+      console.log('⏳ Whisper large-v3 実行中（初回はモデル読み込み、15分程度）...');
+
       await execFileAsync('whisper', [
         audioPath,
         '--language', 'ja',
         '--model', 'large-v3',
         '--output_format', 'json',
-        '--output_dir', tempDir
-      ], { timeout: 600000 });
+        '--output_dir', tempDir,
+        '--verbose', 'False'
+      ], {
+        timeout: 1800000, // 30分
+        maxBuffer: 50 * 1024 * 1024 // 50MB バッファ
+      });
 
       // JSON 結果を読み込む
       const baseName = path.basename(audioPath, path.extname(audioPath));
