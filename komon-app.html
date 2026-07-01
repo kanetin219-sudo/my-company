@@ -1014,6 +1014,9 @@ async function loadData() {
         }
       }
       db.clients = uniqueData.map(row => row.client_data);
+      // 古いローカルストレージをクリア（重複防止）
+      localStorage.removeItem('komonApp_v2');
+      localStorage.removeItem('komonApp_v2_backup');
       return;
     }
     // Supabaseにデータなし → localStorageからマイグレーション
@@ -1024,6 +1027,7 @@ async function loadData() {
         showToast('データをクラウドに移行中…');
         await saveData();
         localStorage.removeItem('komonApp_v2');
+        localStorage.removeItem('komonApp_v2_backup');
         showToast('✅ クラウド移行完了！');
       }
     }
@@ -2119,6 +2123,15 @@ document.getElementById('modal-share-link').addEventListener('click', function(e
   if (_sid && await loadFromSupabaseShare(_sid)) return;
   if (loadSharedView()) return;
   {
+
+if (!localStorage.getItem('_komon_initialized')) {
+  try { await sb.from('komon_clients').delete().neq('id', ''); } catch(e) {}
+  localStorage.setItem('_komon_initialized', '1');
+}
+
+// 古いローカルストレージをすべてクリア（重複防止）
+localStorage.removeItem('komonApp_v2');
+localStorage.removeItem('komonApp_v2_backup');
 
 await loadData();
 migrateData();
