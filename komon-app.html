@@ -1003,7 +1003,17 @@ async function loadData() {
     // Supabaseから読み込む
     const { data, error } = await sb.from('komon_clients').select('*').order('updated_at');
     if (!error && data && data.length > 0) {
-      db.clients = data.map(row => row.client_data);
+      // 重複排除：idが同じ場合は最後（最新）のものだけを保持
+      const seenIds = new Set();
+      const uniqueData = [];
+      for (let i = data.length - 1; i >= 0; i--) {
+        const id = data[i].id;
+        if (!seenIds.has(id)) {
+          seenIds.add(id);
+          uniqueData.unshift(data[i]);
+        }
+      }
+      db.clients = uniqueData.map(row => row.client_data);
       return;
     }
     // Supabaseにデータなし → localStorageからマイグレーション
@@ -2228,8 +2238,7 @@ if (db.clients.length === 0) {
             { text: '壁打ち成果物を個人向け知識に継続投入し、精度の高い応答基盤を育成', done: false },
             { text: '講座／ライブ／アーカイブはテキスト化し、短尺動画／スレッド投稿等へ再利用', done: false }
           ]
-        },
-              }
+        }
       ],
       actions: [
         { id: genId(), text: '【最高・大橋さん】広告ボタンをオプチャン誘導→公式ラインシナリオに変更・流入経路追跡設定', date: '', done: false },
