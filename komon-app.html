@@ -999,6 +999,10 @@ let isRecording = false;
 let currentFilter = 'all';
 
 async function loadData() {
+  // 古いローカルストレージを確実にクリア（重要：データ消失防止）
+  localStorage.removeItem('komonApp_v2');
+  localStorage.removeItem('komonApp_v2_backup');
+
   try {
     // Supabaseから読み込む
     const { data, error } = await sb.from('komon_clients').select('*').order('updated_at');
