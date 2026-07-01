@@ -2114,6 +2114,10 @@ document.getElementById('modal-share-link').addEventListener('click', function(e
 
 // ========== 初期化 ==========
 (async function() {
+  // ローカルストレージを強制クリア（古いデータを削除）
+  localStorage.removeItem('komonApp_v2');
+  localStorage.removeItem('komonApp_v2_backup');
+
   const _p = new URLSearchParams(window.location.search);
   const _sid = _p.get('share');
   if (_sid && await loadFromSupabaseShare(_sid)) return;
