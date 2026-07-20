@@ -721,7 +721,7 @@
 
           <div class="adj-row">
             <span class="adj-label">返済</span>
-            <input type="number" class="adj-input" id="f_hensai" min="0" placeholder="0" oninput="recalc()">
+            <input type="number" class="adj-input" id="f_hensei" min="0" placeholder="0" oninput="recalc()">
             <span class="adj-unit">円</span>
             <span class="adj-result-label">最終利益：</span>
             <span class="adj-result-value cv-plus" id="calc_final">¥0</span>
@@ -859,11 +859,11 @@ const EXPENSE_GROUPS = {
   system:   ['net_phone', 'knowbee', 'smaregi', 'elearning', 'retailzino', 'keitai'],
   shiire:   ['butsuhan_shiire', 'pet_goods', 'aroma', 'camera'],
   hoken:    ['sharyo_hi', 'hoken', 'riyosha_hoken'],
-  kotei:    ['kokoku_hi', 'hensei', 'royalty', 'jiraiino', 'chiiki_koken', 'zappi', 'riyosha_shokuhi'],
+  kotei:    ['kokoku_hi', 'royalty', 'jiraiino', 'chiiki_koken', 'zappi', 'riyosha_shokuhi'],
 };
 
 const ALL_EXPENSE_FIELDS = Object.values(EXPENSE_GROUPS).flat();
-const ALL_NUM_FIELDS = [...INCOME_FIELDS, ...ALL_EXPENSE_FIELDS, ...COUNT_FIELDS, 'kojo', 'rieki_zei'];
+const ALL_NUM_FIELDS = [...INCOME_FIELDS, ...ALL_EXPENSE_FIELDS, ...COUNT_FIELDS, 'hensei', 'kojo', 'rieki_zei'];
 
 // ── 認証 ──────────────────────────────────────────
 async function checkAuth() {
@@ -954,8 +954,8 @@ function recalc() {
   }
 
   const operatingProfit = totalIncome - totalExpense;
-  const hensai    = fval('f_hensai');
-  const finalProfit = operatingProfit - hensai;
+  const hensei    = fval('f_hensei');
+  const finalProfit = operatingProfit - hensei;
 
   // 小計・計算表示
   document.getElementById('sub_income').textContent    = fmt(totalIncome);
@@ -1008,7 +1008,7 @@ async function loadMonth() {
     const FIXED_FIELDS = [
       'shakai_hoken', 'yachin', 'chushajo', 'suido',
       'net_phone', 'knowbee', 'smaregi', 'elearning', 'retailzino', 'keitai',
-      'aroma', 'gomi', 'hensei', 'royalty', 'jiraiino', 'chiiki_koken',
+      'aroma', 'gomi', 'royalty', 'jiraiino', 'chiiki_koken',
       'hoken', 'riyosha_hoken', 'sharyo_hi', 'zappi', 'sosokin_driver_kyuyo',
       'butsuhan_shiire', 'pet_goods', 'camera'
     ];
