@@ -288,7 +288,7 @@
           <div class="result-card-value rv-plus" id="rc_operating">¥0</div>
         </div>
         <div class="result-card">
-          <div class="result-card-label">純利益</div>
+          <div class="result-card-label">最終利益</div>
           <div class="result-card-value rv-plus" id="rc_profit">¥0</div>
         </div>
       </div>
@@ -720,17 +720,11 @@
           </div>
 
           <div class="adj-row">
-            <span class="adj-label">給料等控除</span>
-            <input type="number" class="adj-input" id="f_kojo" min="0" placeholder="0" oninput="recalc()">
+            <span class="adj-label">返済</span>
+            <input type="number" class="adj-input" id="f_hensai" min="0" placeholder="0" oninput="recalc()">
             <span class="adj-unit">円</span>
-            <span class="adj-result-label">純利益：</span>
-            <span class="adj-result-value cv-plus" id="calc_mae">¥0</span>
-          </div>
-
-          <div class="adj-row" style="border-top: none; padding-top: 0;">
-            <span class="adj-label">追加調整（税等）</span>
-            <input type="number" class="adj-input" id="f_rieki_zei" min="0" placeholder="未入力時は純利益を表示" oninput="recalc()">
-            <span class="adj-unit">円</span>
+            <span class="adj-result-label">最終利益：</span>
+            <span class="adj-result-value cv-plus" id="calc_final">¥0</span>
           </div>
 
           <div style="margin-top: 12px;">
@@ -960,10 +954,8 @@ function recalc() {
   }
 
   const operatingProfit = totalIncome - totalExpense;
-  const kojo      = fval('f_kojo');
-  const pureProfit = operatingProfit - kojo;
-  const riekiZei  = fval('f_rieki_zei');
-  const showProfit = riekiZei || pureProfit;
+  const hensai    = fval('f_hensai');
+  const finalProfit = operatingProfit - hensai;
 
   // 小計・計算表示
   document.getElementById('sub_income').textContent    = fmt(totalIncome);
@@ -974,9 +966,9 @@ function recalc() {
   opEl.textContent = fmt(operatingProfit);
   opEl.className = 'calc-value ' + (operatingProfit >= 0 ? 'cv-plus' : 'cv-minus');
 
-  const maeEl = document.getElementById('calc_mae');
-  maeEl.textContent = fmt(pureProfit);
-  maeEl.className = 'adj-result-value ' + (pureProfit >= 0 ? 'cv-plus' : 'cv-minus');
+  const finalEl = document.getElementById('calc_final');
+  finalEl.textContent = fmt(finalProfit);
+  finalEl.className = 'adj-result-value ' + (finalProfit >= 0 ? 'cv-plus' : 'cv-minus');
 
   // サマリーカード
   document.getElementById('rc_income').textContent  = fmt(totalIncome);
@@ -987,8 +979,8 @@ function recalc() {
   rcOp.className = 'result-card-value ' + (operatingProfit >= 0 ? 'rv-plus' : 'rv-minus');
 
   const rcProfit = document.getElementById('rc_profit');
-  rcProfit.textContent = fmt(showProfit);
-  rcProfit.className = 'result-card-value ' + (showProfit >= 0 ? 'rv-plus' : 'rv-minus');
+  rcProfit.textContent = fmt(finalProfit);
+  rcProfit.className = 'result-card-value ' + (finalProfit >= 0 ? 'rv-plus' : 'rv-minus');
 }
 
 // ── 月データ読み込み ──────────────────────────────
