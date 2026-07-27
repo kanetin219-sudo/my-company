@@ -43,12 +43,14 @@
         }
         .container {
             width: 210mm;
-            height: 297mm;
             margin: 0 auto;
             background: white;
             padding: 15mm;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            overflow: hidden;
+        }
+        .page-break {
+            page-break-after: always;
+            margin-bottom: 20px;
         }
         .header {
             text-align: center;
@@ -300,12 +302,9 @@
                 <p>• スタッフ数：正社員2名、パート8名</p>
             </div>
 
-            <div class="business-box">
-                <h3>システム・ツール</h3>
-                <p>• <span class="highlight">予約管理システム</span>：オンライン予約・スタッフスケジュール管理</p>
-                <p>• <span class="highlight">在庫管理表</span>：ペットフード等の消費材を一元管理</p>
-            </div>
         </div>
+
+        <div class="page-break"></div>
 
         <!-- 経営方針 -->
         <div class="section">
