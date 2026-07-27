@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事業内容説明書 - 株式会社かねちん</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Yu Gothic', 'MS PGothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .controls {
+            max-width: 210mm;
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+        button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #34495e;
+        }
+        .edit-mode {
+            background: #27ae60;
+        }
+        .edit-mode:hover {
+            background: #229954;
+        }
+        .container {
+            width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 15mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .page-break {
+            page-break-after: always;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            page-break-inside: avoid;
+        }
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+        .header p {
+            font-size: 10px;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            background: #2c3e50;
+            padding: 5px 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid #e74c3c;
+        }
+        .content-row {
+            display: flex;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            font-size: 11px;
+        }
+        .label {
+            font-weight: bold;
+            width: 35%;
+            color: #2c3e50;
+        }
+        .value {
+            width: 65%;
+            color: #333;
+        }
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #bbb;
+            border-radius: 3px;
+            font-size: 11px;
+            font-family: inherit;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            font-size: 10px;
+        }
+        th, td {
+            border: 1px solid #bbb;
+            padding: 5px;
+            text-align: left;
+        }
+        th {
+            background: #ecf0f1;
+            font-weight: bold;
+            width: 30%;
+        }
+        td {
+            width: 70%;
+        }
+        .business-box {
+            background: #f8f9fa;
+            border-left: 3px solid #3498db;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            page-break-inside: avoid;
+            font-size: 11px;
+        }
+        .business-box h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        .business-box p {
+            color: #555;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        .highlight {
+            background: #fffacd;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+            page-break-inside: avoid;
+        }
+        .view-mode input, .view-mode textarea {
+            display: none;
+        }
+        .edit-mode-active input[type="text"],
+        .edit-mode-active input[type="date"] {
+            display: inline-block;
+        }
+        .edit-mode-active .display-value {
+            display: none;
+        }
+        .display-value {
+            display: inline;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+                background: white;
+            }
+            .controls {
+                display: none;
+            }
+            .container {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 15mm;
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+            input[type="text"], input[type="date"] {
+                border: none;
+                background: transparent;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button id="editBtn" class="edit-mode">編集モード</button>
+        <button id="printBtn">印刷する（A4）</button>
+        <button id="saveBtn" style="display:none;">保存する</button>
+    </div>
+
+    <div class="container" id="container">
+        <div class="header">
+            <h1>事業内容説明書</h1>
+            <p>法人口座開設申込用</p>
+        </div>
+
+        <!-- 企業基本情報 -->
+        <div class="section">
+            <div class="section-title">1. 企業基本情報</div>
+            <div class="content-row">
+                <div class="label">会社名</div>
+                <div class="value">
+                    <span class="display-value" id="company">株式会社かねちん</span>
+                    <input type="text" id="companyInput" value="株式会社かねちん">
+                </div>
+            </div>
+            <div class="content-row">
+                <div class="label">代表者名</div>
+                <div class="value">
+                    <span class="display-value" id="representative">【代表者名を入力】</span>
+                    <input type="text" id="representativeInput" value="">
+                </div>
+            </div>
+            <div class="content-row">
+                <div class="label">住所</div>
+                <div class="value">
+                    <span class="display-value" id="address">大分県大分市毛井553-1</span>
+                    <input type="text" id="addressInput" value="大分県大分市毛井553-1">
+                </div>
+            </div>
+            <div class="content-row">
+                <div class="label">設立年月日</div>
+                <div class="value">
+                    <span class="display-value" id="established">【設立日を入力】</span>
+                    <input type="date" id="establishedInput" value="">
+                </div>
+            </div>
+            <div class="content-row">
+                <div class="label">従業員数</div>
+                <div class="value">
+                    <span class="display-value" id="employees">正社員2名、パート8名</span>
+                    <input type="text" id="employeesInput" value="正社員2名、パート8名">
+                </div>
+            </div>
+            <div class="content-row">
+                <div class="label">資本金</div>
+                <div class="value">
+                    <span class="display-value" id="capital">75万円</span>
+                    <input type="text" id="capitalInput" value="75万円">
+                </div>
+            </div>
+        </div>
+
+        <!-- 事業概要 -->
+        <div class="section">
+            <div class="section-title">2. 事業概要</div>
+            <p style="font-size: 11px; margin-bottom: 8px; line-height: 1.4;">
+                当社は、デジタルマーケティングとサービス業を中核事業とする企業です。SNSを活用した情報発信・マーケティング支援事業と、
+                <span class="highlight">ふれあいカフェ</span>（ペットトリミングおよび福祉就労）の2つの事業を展開しており、
+                それぞれで実績を積み上げています。
+            </p>
+        </div>
+
+        <!-- 主要事業1: SNS事業 -->
+        <div class="section">
+            <div class="section-title">3. 主要事業（1）SNS運用・マーケティング事業</div>
+
+            <div class="business-box">
+                <h3>事業内容</h3>
+                <p>• Instagram等SNSプラットフォームの運用代行・コンテンツ企画</p>
+                <p>• 企業・個人事業主向けのSNS戦略策定・ブランド構築支援</p>
+                <p>• AI技術（Claude、GPT等）を活用したコンテンツ生成・最適化</p>
+                <p>• フォロワー増加・マネタイズ等の成果支援</p>
+            </div>
+        </div>
+
+        <!-- 主要事業2: ふれあいカフェ -->
+        <div class="section">
+            <div class="section-title">4. 主要事業（2）ふれあいカフェ（ペットトリミング・福祉就労）</div>
+
+            <div class="business-box">
+                <h3>事業内容</h3>
+                <p>• ふれあいカフェ、ペットトリミングサービス提供（フルサービス・リメイク等）</p>
+                <p>• 福祉就労支援B型施設の運営・管理</p>
+                <p>• 利用者向けの経営管理ツール・ダッシュボード構築</p>
+            </div>
+
+            <div class="business-box">
+                <h3>展開地域・拠点</h3>
+                <p>• メイン拠点：大分県</p>
+                <p>• サテライト拠点：宮崎県（今期出店予定）</p>
+                <p>• スタッフ数：正社員2名、パート8名</p>
+            </div>
+
+        </div>
+
+        <div class="page-break"></div>
+
+        <!-- 経営方針 -->
+        <div class="section">
+            <div class="section-title">5. 経営方針・強み</div>
+
+            <table>
+                <tr>
+                    <th>項目</th>
+                    <th>内容</th>
+                </tr>
+                <tr>
+                    <td>デジタル化推進</td>
+                    <td>最新のIT・AI技術を積極的に導入し、業務効率化を実現</td>
+                </tr>
+                <tr>
+                    <td>多角化戦略</td>
+                    <td>SNS事業と福祉・サービス業の2本柱で、リスク分散を実現</td>
+                </tr>
+                <tr>
+                    <td>顧客重視</td>
+                    <td>両事業で顧客満足度を最優先</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>このドキュメントは法人口座開設申込の際に参考資料として提出されます。</p>
+        </div>
+    </div>
+
+    <script>
+        let isEditMode = false;
+
+        const editBtn = document.getElementById('editBtn');
+        const printBtn = document.getElementById('printBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const container = document.getElementById('container');
+
+        // 編集モード切り替え
+        editBtn.addEventListener('click', () => {
+            isEditMode = !isEditMode;
+            container.classList.toggle('edit-mode-active');
+
+            if (isEditMode) {
+                editBtn.textContent = '表示モードに戻す';
+                editBtn.style.background = '#e74c3c';
+                saveBtn.style.display = 'inline-block';
+
+                // 入力フィールドにフォーカス
+                document.getElementById('representativeInput').focus();
+            } else {
+                editBtn.textContent = '編集モード';
+                editBtn.style.background = '#27ae60';
+                saveBtn.style.display = 'none';
+                updateDisplay();
+            }
+        });
+
+        // 表示更新
+        function updateDisplay() {
+            document.getElementById('company').textContent = document.getElementById('companyInput').value || '株式会社かねちん';
+            document.getElementById('representative').textContent = document.getElementById('representativeInput').value || '【代表者名を入力】';
+            document.getElementById('address').textContent = document.getElementById('addressInput').value || '【住所を入力】';
+
+            const estDate = document.getElementById('establishedInput').value;
+            document.getElementById('established').textContent = estDate ? new Date(estDate).toLocaleDateString('ja-JP') : '【設立日を入力】';
+
+            document.getElementById('employees').textContent = document.getElementById('employeesInput').value || '【従業員数を入力】';
+            document.getElementById('capital').textContent = document.getElementById('capitalInput').value || '【資本金を入力】';
+        }
+
+        // 保存ボタン
+        saveBtn.addEventListener('click', () => {
+            updateDisplay();
+            localStorage.setItem('businessInfo', JSON.stringify({
+                company: document.getElementById('companyInput').value,
+                representative: document.getElementById('representativeInput').value,
+                address: document.getElementById('addressInput').value,
+                established: document.getElementById('establishedInput').value,
+                employees: document.getElementById('employeesInput').value,
+                capital: document.getElementById('capitalInput').value
+            }));
+            alert('保存しました！');
+        });
+
+        // 印刷
+        printBtn.addEventListener('click', () => {
+            updateDisplay();
+            window.print();
+        });
+
+        // ローカルストレージから読み込み
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('businessInfo');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('companyInput').value = data.company || '';
+                document.getElementById('representativeInput').value = data.representative || '';
+                document.getElementById('addressInput').value = data.address || '';
+                document.getElementById('establishedInput').value = data.established || '';
+                document.getElementById('employeesInput').value = data.employees || '';
+                document.getElementById('capitalInput').value = data.capital || '';
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
