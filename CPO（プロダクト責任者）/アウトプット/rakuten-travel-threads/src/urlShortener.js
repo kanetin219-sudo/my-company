@@ -49,14 +49,30 @@ const shortenUrl = async (longUrl) => {
     const page = await browserInstance.newPage();
 
     await page.goto('https://affiliate.rakuten.co.jp/', {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
       timeout: 30000,
     });
 
-    const inputSelector = 'input[type="url"], input[placeholder*="URL"]';
-    await page.fill(inputSelector, longUrl);
+    await page.waitForTimeout(2000);
 
-    await page.click('button:has-text("リンクを作成")');
+    const urlInputs = await page.$$('input');
+    for (const input of urlInputs) {
+      const type = await input.evaluate(el => el.type);
+      if (type === 'text' || type === 'url') {
+        await input.fill(longUrl);
+        break;
+      }
+    }
+
+    const buttons = await page.$$('button');
+    for (const button of buttons) {
+      const text = await button.evaluate(el => el.textContent);
+      if (text.includes('リンクを作成') || text.includes('作成')) {
+        await button.click();
+        break;
+      }
+    }
+
     await page.waitForTimeout(3000);
 
     const shortenedUrl = await page.evaluate(() => {
