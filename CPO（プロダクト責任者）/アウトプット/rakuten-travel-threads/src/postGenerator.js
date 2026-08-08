@@ -41,7 +41,7 @@ const generateThreadsPostPart1 = (hotel) => {
   post += `${hotel.area}にある ${hotel.hotelName} が\n`;
   post += `この値段？？？\n\n`;
   post += `${catchphrase}\n\n`;
-  post += `もっとやばいのが…  1/2`;
+  post += `もっとやばいのが…`;
 
   logger.info(`Generated thread part 1 (${post.length}/500 chars)`, { hotelName: hotel.hotelName });
 
@@ -73,7 +73,6 @@ const generateThreadsPostPart2 = (hotel) => {
   post += `${closingline}\n\n`;
   const separator = hotel.affiliateUrl.includes('?') ? '&' : '?';
   post += `${hotel.affiliateUrl}${separator}pr`;
-  post += `\n\n2/2`;
 
   logger.info(`Generated thread part 2 (${post.length}/500 chars)`, { hotelName: hotel.hotelName });
 

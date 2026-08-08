@@ -9,7 +9,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getRetryDelay = (retryCount) => RETRY_DELAYS[retryCount] || 10000;
 
-const createThreadsContainer = async (text, threadsUserId, accessToken) => {
+const createThreadsContainer = async (text, threadsUserId, accessToken, parentId = null) => {
   if (!threadsUserId || !accessToken) {
     logger.error('Missing Threads API credentials');
     throw new Error('THREADS_USER_ID or THREADS_ACCESS_TOKEN not set');
@@ -32,9 +32,16 @@ const createThreadsContainer = async (text, threadsUserId, accessToken) => {
       logger.info(`Creating Threads container (Retry: ${retryCount}/${MAX_RETRIES})`);
 
       const url = `${GRAPH_API_BASE}/${threadsUserId}/threads`;
+      const payload = { text, media_type: 'TEXT' };
+
+      if (parentId) {
+        payload.reply_settings = 'everyone';
+        payload.parent_id = parentId;
+      }
+
       const response = await axios.post(
         url,
-        { text, media_type: 'TEXT' },
+        payload,
         {
           params: { access_token: accessToken },
           timeout: 10000,
@@ -246,7 +253,8 @@ const postToThreads = async (textOrArray, threadsUserId, accessToken) => {
       const partText = parts[i];
       logger.info(`Posting thread part ${i + 1}/${parts.length} (${partText.length} chars)`);
 
-      const containerId = await createThreadsContainer(partText, threadsUserId, accessToken);
+      const parentId = i === 0 ? null : rootPostId;
+      const containerId = await createThreadsContainer(partText, threadsUserId, accessToken, parentId);
       const postId = await publishThreadsPost(containerId, threadsUserId, accessToken);
 
       if (i === 0) {
