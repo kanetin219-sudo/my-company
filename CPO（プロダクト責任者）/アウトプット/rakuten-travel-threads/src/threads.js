@@ -31,14 +31,12 @@ const createThreadsContainer = async (text, threadsUserId, accessToken, parentId
     try {
       logger.info(`Creating Threads container (Retry: ${retryCount}/${MAX_RETRIES})`);
 
+      const url = `${GRAPH_API_BASE}/${threadsUserId}/threads`;
       const payload = { text, media_type: 'TEXT' };
-      let url;
 
       if (parentId) {
-        url = `${GRAPH_API_BASE}/${parentId}/replies`;
+        payload.reply_to_id = parentId;
         logger.info(`Creating reply to parent thread: ${parentId}`);
-      } else {
-        url = `${GRAPH_API_BASE}/${threadsUserId}/threads`;
       }
 
       const response = await axios.post(
