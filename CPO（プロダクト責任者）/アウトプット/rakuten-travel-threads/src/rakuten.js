@@ -1,5 +1,6 @@
 const axios = require('axios');
 const logger = require('./logger');
+const { shortenUrl } = require('./urlShortener');
 
 const RAKUTEN_API_ENDPOINT = 'https://openapi.rakuten.co.jp/engine/api/Travel/SimpleHotelSearch/20260731';
 const MAX_RETRIES = 3;
@@ -112,8 +113,19 @@ const searchHotels = async (keyword, options = {}) => {
 
       logger.info(`Found ${response.data.hotels.length} hotels for: ${keyword}`);
 
-      return response.data.hotels.map((hotel) => {
+      return Promise.all(response.data.hotels.map(async (hotel) => {
         const basicInfo = hotel.hotel[0].hotelBasicInfo;
+        const longUrl = basicInfo.planListUrl || '';
+
+        let shortenedUrl = longUrl;
+        if (longUrl) {
+          try {
+            shortenedUrl = await shortenUrl(longUrl);
+          } catch (error) {
+            logger.warn(`Failed to shorten URL for ${basicInfo.hotelName}, using long URL`, { error: error.message });
+            shortenedUrl = longUrl;
+          }
+        }
 
         return {
           hotelNo: basicInfo.hotelNo,
@@ -131,10 +143,10 @@ const searchHotels = async (keyword, options = {}) => {
           ].filter(Boolean),
           minPrice: parseInt(basicInfo.hotelMinCharge) || 0,
           maxPrice: parseInt(basicInfo.hotelMinCharge) || 0,
-          reservationUrl: basicInfo.planListUrl || '',
-          affiliateUrl: basicInfo.planListUrl || '',
+          reservationUrl: longUrl,
+          affiliateUrl: shortenedUrl,
         };
-      });
+      }));
     } catch (error) {
       lastError = error;
 

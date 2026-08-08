@@ -60,24 +60,16 @@ const generateThreadsPostPart2 = (hotel) => {
       ? `${hotel.minPrice.toLocaleString('ja-JP')}円〜`
       : '要確認';
 
-  const features = hotel.featureKeywords
-    ? hotel.featureKeywords.split(',').slice(0, 1).map((f) => f.trim()).filter(Boolean)
-    : [];
-
   const closingline = getRandomElement(CLOSINGLINES);
 
   let post = '';
   post += `${hotel.hotelName}\n\n`;
-  post += `チェックイン：要確認\n`;
-  post += `チェックアウト：要確認\n`;
-  post += `人数：@travel_miyazaki\n\n`;
-  post += `料金合計：${priceRange}\n\n`;
+  post += `📍 ${hotel.area}\n`;
+  post += `🏘️ ${hotel.catchCopy.substring(0, 30)}...\n\n`;
+  post += `料金帯：${priceRange}\n\n`;
   post += `---\n\n`;
 
-  if (features.length > 0) {
-    post += `${features[0]}\n\n`;
-  }
-
+  post += `${hotel.catchCopy}\n\n`;
   post += `${closingline}\n\n`;
   const separator = hotel.affiliateUrl.includes('?') ? '&' : '?';
   post += `${hotel.affiliateUrl}${separator}pr`;

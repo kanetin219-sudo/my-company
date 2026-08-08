@@ -5,6 +5,7 @@ const threads = require('./src/threads');
 const postGenerator = require('./src/postGenerator');
 const storage = require('./src/storage');
 const scheduler = require('./src/scheduler');
+const { closeBrowser } = require('./src/urlShortener');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
@@ -377,15 +378,17 @@ const main = async () => {
 
   scheduler.startScheduler(runDailyPost, env.TIMEZONE, env.POST_HOUR);
 
-  process.on('SIGINT', () => {
+  process.on('SIGINT', async () => {
     logger.info('Received SIGINT, shutting down...');
     scheduler.stopScheduler();
+    await closeBrowser();
     process.exit(0);
   });
 
-  process.on('SIGTERM', () => {
+  process.on('SIGTERM', async () => {
     logger.info('Received SIGTERM, shutting down...');
     scheduler.stopScheduler();
+    await closeBrowser();
     process.exit(0);
   });
 };
