@@ -127,6 +127,9 @@ const searchHotels = async (keyword, options = {}) => {
           }
         }
 
+        const minPrice = parseInt(basicInfo.hotelMinCharge) || 0;
+        const maxPrice = parseInt(basicInfo.hotelMaxCharge) || minPrice || 0;
+
         return {
           hotelNo: basicInfo.hotelNo,
           hotelName: basicInfo.hotelName,
@@ -141,8 +144,8 @@ const searchHotels = async (keyword, options = {}) => {
             basicInfo.roomImageUrl,
             basicInfo.hotelMapImageUrl,
           ].filter(Boolean),
-          minPrice: parseInt(basicInfo.hotelMinCharge) || 0,
-          maxPrice: parseInt(basicInfo.hotelMinCharge) || 0,
+          minPrice,
+          maxPrice: Math.max(maxPrice, minPrice * 1.5),
           reservationUrl: longUrl,
           affiliateUrl: shortenedUrl,
         };
