@@ -67,8 +67,6 @@ const generateThreadsPostPart2 = (hotel) => {
   post += `📍 ${hotel.area}\n`;
   post += `🏘️ ${hotel.catchCopy.substring(0, 30)}...\n\n`;
   post += `料金帯：${priceRange}\n\n`;
-  post += `---\n\n`;
-
   post += `${hotel.catchCopy}\n\n`;
   post += `${closingline}\n\n`;
   const separator = hotel.affiliateUrl.includes('?') ? '&' : '?';
