@@ -34,25 +34,34 @@ const shortenUrl = async (longUrl) => {
   }
 
   try {
-    logger.info('Shortening URL via TinyURL', { url: longUrl });
+    const affiliateId = process.env.RAKUTEN_AFFILIATE_ID;
+    if (!affiliateId) {
+      logger.warn('RAKUTEN_AFFILIATE_ID not configured');
+      return longUrl;
+    }
 
-    const response = await axios.post('https://tinyurl.com/api/create',
-      { url: longUrl },
-      {
-        timeout: 10000,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    logger.info('Shortening URL via Rakuten Link Share API');
 
-    const shortenedUrl = response.data.data?.short_url || response.data;
+    // Rakuten Link Share API でリンク作成
+    const response = await axios.get('https://api.linkshare.rakuten.co.jp/api/createurl', {
+      params: {
+        affiliateId: affiliateId,
+        url: longUrl,
+      },
+      timeout: 10000,
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
 
-    if (shortenedUrl && typeof shortenedUrl === 'string' && shortenedUrl.startsWith('https://')) {
+    // レスポンスから短縮URL を抽出
+    const shortenedUrl = response.data?.urlId || response.data?.url || response.data;
+
+    if (shortenedUrl && typeof shortenedUrl === 'string' && (shortenedUrl.includes('a.r10.to') || shortenedUrl.startsWith('https://'))) {
       logger.info(`Shortened URL generated: ${shortenedUrl}`);
       cache[longUrl] = shortenedUrl;
       saveCache(cache);
       return shortenedUrl;
     } else {
-      logger.warn('Invalid shortened URL received, using long URL', { response: response.data });
+      logger.warn('Invalid shortened URL received from Rakuten API', { response: response.data, shortenedUrl });
       return longUrl;
     }
   } catch (error) {
@@ -66,7 +75,7 @@ const shortenUrl = async (longUrl) => {
 };
 
 const closeBrowser = async () => {
-  // No browser cleanup needed for TinyURL API
+  // No browser cleanup needed for Rakuten API
 };
 
 module.exports = {
