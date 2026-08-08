@@ -49,40 +49,56 @@ const shortenUrl = async (longUrl) => {
     const page = await browserInstance.newPage();
 
     await page.goto('https://affiliate.rakuten.co.jp/', {
-      waitUntil: 'domcontentloaded',
-      timeout: 30000,
+      waitUntil: 'networkidle',
+      timeout: 60000,
     });
-
-    await page.waitForTimeout(2000);
-
-    const urlInputs = await page.$$('input');
-    for (const input of urlInputs) {
-      const type = await input.evaluate(el => el.type);
-      if (type === 'text' || type === 'url') {
-        await input.fill(longUrl);
-        break;
-      }
-    }
-
-    const buttons = await page.$$('button');
-    for (const button of buttons) {
-      const text = await button.evaluate(el => el.textContent);
-      if (text.includes('リンクを作成') || text.includes('作成')) {
-        await button.click();
-        break;
-      }
-    }
 
     await page.waitForTimeout(3000);
 
+    // URL入力フィールドを探して入力
+    const urlInput = await page.$('input[type="url"], input[type="text"][placeholder*="URL"], input[placeholder*="url"]');
+    if (urlInput) {
+      await urlInput.fill(longUrl);
+      logger.info('URL filled in input field');
+      await page.waitForTimeout(1000);
+    } else {
+      logger.warn('Could not find URL input field');
+    }
+
+    // 「リンクを作成」ボタンをクリック
+    await page.click('button:has-text("リンクを作成"), button:has-text("作成"), button[type="submit"]');
+    logger.info('Create link button clicked');
+
+    // 短縮URL が表示されるまで待機
+    await page.waitForTimeout(5000);
+
+    // 複数の方法で短縮URL を抽出
     const shortenedUrl = await page.evaluate(() => {
-      const elements = document.querySelectorAll('input, textarea, a');
-      for (const el of elements) {
-        const text = el.value || el.textContent || el.href || '';
+      // 方法1: a.r10.to/ を含むテキストを検索
+      const allText = document.body.innerText;
+      const match = allText.match(/https?:\/\/a\.r10\.to\/[^\s\n"')]+/);
+      if (match) return match[0];
+
+      // 方法2: input/textarea から探す
+      const inputs = document.querySelectorAll('input, textarea');
+      for (const el of inputs) {
+        const text = el.value || '';
         if (text.includes('a.r10.to/')) {
           return text.match(/https?:\/\/a\.r10\.to\/[^\s"')]+/)?.[0];
         }
       }
+
+      // 方法3: リンク要素から探す
+      const links = document.querySelectorAll('a');
+      for (const link of links) {
+        const href = link.href || '';
+        const text = link.textContent || '';
+        if (href.includes('a.r10.to/')) return href;
+        if (text.includes('a.r10.to/')) {
+          return text.match(/https?:\/\/a\.r10\.to\/[^\s"')]+/)?.[0];
+        }
+      }
+
       return null;
     });
 
