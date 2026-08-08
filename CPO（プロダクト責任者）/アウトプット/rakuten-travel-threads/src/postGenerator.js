@@ -2,24 +2,53 @@ const logger = require('./logger');
 
 const EXCLAMATIONS = [
   'えっぐい',
+  'ぎゃあああああ',
   'ヤッバイ',
   '事件です',
   'ちょっとえぐいんだけど',
-  'ヤバい😳',
 ];
 
-const CLIFFHANGERS = [
-  'このホテルもっとやばいのが…',
-  'しかもここアレじゃん…',
-  'これでこの値段じゃん…',
-  'もう他の宿選べんぞ…',
+const CATCHPHRASES = [
+  'しかもお酒もお菓子も食べ放飲み放題？？？',
+  'しかも朝タビュッフェ付き？？？',
+  'しかも温泉も付き？？？',
+  'しかも家族向け設備充実？？？',
+  'しかも眺望最高？？？',
+];
+
+const CLOSINGLINES = [
+  'この価格は破格！',
+  '夏季はプールもやってるしゃん！',
+  'ここは安すぎるよ、、、',
+  '絶対お得！',
+  'これはお手頃価格！',
 ];
 
 const getRandomElement = (array) => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
-const generateThreadsPost = (hotel) => {
+const generateThreadsPostPart1 = (hotel) => {
+  if (!hotel) {
+    logger.error('Hotel data missing', { hotel });
+    throw new Error('Invalid hotel data');
+  }
+
+  const exclamation = getRandomElement(EXCLAMATIONS);
+  const catchphrase = getRandomElement(CATCHPHRASES);
+
+  let post = `${exclamation}！！！！！\n\n`;
+  post += `${hotel.area}にある ${hotel.hotelName} が\n`;
+  post += `この値段？？？\n\n`;
+  post += `${catchphrase}\n\n`;
+  post += `もっとやばいのが…  1/2`;
+
+  logger.info(`Generated thread part 1 (${post.length}/500 chars)`, { hotelName: hotel.hotelName });
+
+  return post;
+};
+
+const generateThreadsPostPart2 = (hotel) => {
   if (!hotel || !hotel.affiliateUrl) {
     logger.error('Hotel data missing or no affiliate URL', { hotel });
     throw new Error('Invalid hotel data or missing affiliate URL');
@@ -32,68 +61,34 @@ const generateThreadsPost = (hotel) => {
       : '要確認';
 
   const features = hotel.featureKeywords
-    ? hotel.featureKeywords.split(',').slice(0, 2).map((f) => f.trim()).filter(Boolean)
+    ? hotel.featureKeywords.split(',').slice(0, 1).map((f) => f.trim()).filter(Boolean)
     : [];
 
-  const exclamation = getRandomElement(EXCLAMATIONS);
-  const cliffhanger = getRandomElement(CLIFFHANGERS);
+  const closingline = getRandomElement(CLOSINGLINES);
 
   let post = '';
-
-  post += `${exclamation}\n\n`;
-  post += `${hotel.area}にある ${hotel.hotelName} が\n`;
-  post += `${hotel.reviewAverage}⭐(${hotel.reviewCount}件)で ${priceRange}！？！？\n\n`;
-  post += `${cliffhanger}\n\n`;
+  post += `${hotel.hotelName}\n\n`;
+  post += `チェックイン：要確認\n`;
+  post += `チェックアウト：要確認\n`;
+  post += `人数：@travel_miyazaki\n\n`;
+  post += `料金合計：${priceRange}\n\n`;
   post += `---\n\n`;
 
-  if (hotel.catchCopy) {
-    post += `📍 ${hotel.catchCopy}\n`;
-  }
-
   if (features.length > 0) {
-    post += `✨ ${features.join(' / ')}\n`;
+    post += `${features[0]}\n\n`;
   }
 
-  post += `💰 ${priceRange}\n\n`;
-  post += `${hotel.affiliateUrl}?pr`;
+  post += `${closingline}\n\n`;
+  const separator = hotel.affiliateUrl.includes('?') ? '&' : '?';
+  post += `${hotel.affiliateUrl}${separator}pr`;
+  post += `\n\n2/2`;
 
-  logger.info(`Generated post (${post.length}/500 chars)`, { hotelName: hotel.hotelName });
+  logger.info(`Generated thread part 2 (${post.length}/500 chars)`, { hotelName: hotel.hotelName });
 
   return post;
 };
 
-const truncatePost = (post) => {
-  if (post.length <= 300) return post;
-
-  const lines = post.split('\n');
-  let truncated = '';
-  let charCount = 0;
-
-  for (const line of lines) {
-    const testString = truncated + (truncated ? '\n' : '') + line;
-
-    if (testString.length > 300) {
-      if (truncated.includes('affiliateUrl') || truncated.includes('http')) {
-        return truncated + '\n...';
-      }
-      break;
-    }
-
-    truncated += (truncated ? '\n' : '') + line;
-    charCount = testString.length;
-  }
-
-  if (!truncated.includes('affiliateUrl') && !truncated.includes('http')) {
-    truncated += '\n\n' + '(URL省略)';
-  }
-
-  if (!truncated.includes('※PR')) {
-    truncated += '\n\n※PR';
-  }
-
-  return truncated.slice(0, 300).trim();
-};
-
 module.exports = {
-  generateThreadsPost,
+  generateThreadsPostPart1,
+  generateThreadsPostPart2,
 };

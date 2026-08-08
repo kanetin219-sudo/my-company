@@ -181,12 +181,13 @@ const runDailyPost = async (options = {}) => {
       return { success: false, error: 'No affiliate URL available' };
     }
 
-    const postText = postGenerator.generateThreadsPost(selectedHotel);
+    const postText1 = postGenerator.generateThreadsPostPart1(selectedHotel);
+    const postText2 = postGenerator.generateThreadsPostPart2(selectedHotel);
 
-    logger.info('Generated post text', {
+    logger.info('Generated post texts', {
       hotelName: selectedHotel.hotelName,
-      charCount: postText.length,
-      text: postText.slice(0, 100) + '...'
+      part1Chars: postText1.length,
+      part2Chars: postText2.length,
     });
 
     if (dryRun) {
@@ -194,18 +195,19 @@ const runDailyPost = async (options = {}) => {
         hotelName: selectedHotel.hotelName,
         area: selectedHotel.area,
         affiliateUrl: selectedHotel.affiliateUrl,
-        postLength: postText.length,
       });
 
       console.log('\n' + '='.repeat(60));
-      console.log('📋 DRY RUN: Generated Post');
+      console.log('📋 DRY RUN: Generated Thread (1/2)');
       console.log('='.repeat(60));
-      console.log(postText);
+      console.log(postText1);
+      console.log('='.repeat(60));
+      console.log('\n📋 DRY RUN: Generated Thread (2/2)');
+      console.log('='.repeat(60));
+      console.log(postText2);
       console.log('='.repeat(60));
       console.log(`Hotel: ${selectedHotel.hotelName}`);
       console.log(`Area: ${selectedHotel.area}`);
-      console.log(`Affiliate URL: ${selectedHotel.affiliateUrl}`);
-      console.log(`Post Length: ${postText.length}/300 characters`);
       console.log('='.repeat(60) + '\n');
 
       return { success: true, dryRun: true, hotelName: selectedHotel.hotelName };
@@ -221,7 +223,7 @@ const runDailyPost = async (options = {}) => {
     }
 
     const postId = await threads.postToThreads(
-      postText,
+      [postText1, postText2],
       env.THREADS_USER_ID,
       env.THREADS_ACCESS_TOKEN
     );

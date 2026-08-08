@@ -34,7 +34,7 @@ const createThreadsContainer = async (text, threadsUserId, accessToken) => {
       const url = `${GRAPH_API_BASE}/${threadsUserId}/threads`;
       const response = await axios.post(
         url,
-        { text },
+        { text, media_type: 'TEXT' },
         {
           params: { access_token: accessToken },
           timeout: 10000,
@@ -206,11 +206,58 @@ const publishThreadsPost = async (containerId, threadsUserId, accessToken) => {
   throw lastError;
 };
 
-const postToThreads = async (text, threadsUserId, accessToken) => {
+const splitTextForThreads = (text, maxChars = 500) => {
+  const parts = [];
+  let current = '';
+
+  const lines = text.split('\n');
+
+  for (const line of lines) {
+    if ((current + (current ? '\n' : '') + line).length > maxChars) {
+      if (current) parts.push(current.trim());
+      current = line;
+    } else {
+      current += (current ? '\n' : '') + line;
+    }
+  }
+
+  if (current) parts.push(current.trim());
+
+  return parts;
+};
+
+const postToThreads = async (textOrArray, threadsUserId, accessToken) => {
   try {
-    const containerId = await createThreadsContainer(text, threadsUserId, accessToken);
-    const postId = await publishThreadsPost(containerId, threadsUserId, accessToken);
-    return postId;
+    let parts;
+
+    if (Array.isArray(textOrArray)) {
+      parts = textOrArray;
+    } else {
+      parts = splitTextForThreads(textOrArray, 500);
+    }
+
+    if (parts.length === 0) {
+      throw new Error('No text to post');
+    }
+
+    let rootPostId = null;
+
+    for (let i = 0; i < parts.length; i++) {
+      const partText = parts[i];
+      logger.info(`Posting thread part ${i + 1}/${parts.length} (${partText.length} chars)`);
+
+      const containerId = await createThreadsContainer(partText, threadsUserId, accessToken);
+      const postId = await publishThreadsPost(containerId, threadsUserId, accessToken);
+
+      if (i === 0) {
+        rootPostId = postId;
+        logger.info(`Root post created: ${rootPostId}`);
+      } else {
+        logger.info(`Reply posted: ${postId} (part ${i + 1})`);
+      }
+    }
+
+    return rootPostId;
   } catch (error) {
     logger.error('Failed to post to Threads', { error: error.message });
     throw error;
@@ -221,4 +268,5 @@ module.exports = {
   createThreadsContainer,
   publishThreadsPost,
   postToThreads,
+  splitTextForThreads,
 };
