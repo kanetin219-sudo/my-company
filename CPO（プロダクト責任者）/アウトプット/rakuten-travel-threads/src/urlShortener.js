@@ -34,25 +34,33 @@ const shortenUrl = async (longUrl) => {
   }
 
   try {
-    logger.info('Shortening URL via TinyURL');
-    const response = await axios.get('https://tinyurl.com/api-create.php', {
-      params: { url: longUrl },
-      timeout: 10000,
-    });
+    logger.info('Shortening URL via TinyURL', { url: longUrl });
 
-    const shortenedUrl = response.data.trim();
+    const response = await axios.post('https://tinyurl.com/api/create',
+      { url: longUrl },
+      {
+        timeout: 10000,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
 
-    if (shortenedUrl && shortenedUrl.startsWith('https://')) {
+    const shortenedUrl = response.data.data?.short_url || response.data;
+
+    if (shortenedUrl && typeof shortenedUrl === 'string' && shortenedUrl.startsWith('https://')) {
       logger.info(`Shortened URL generated: ${shortenedUrl}`);
       cache[longUrl] = shortenedUrl;
       saveCache(cache);
       return shortenedUrl;
     } else {
-      logger.warn('Invalid shortened URL received, using long URL');
+      logger.warn('Invalid shortened URL received, using long URL', { response: response.data });
       return longUrl;
     }
   } catch (error) {
-    logger.error('URL shortener error', { error: error.message });
+    logger.error('URL shortener error', {
+      error: error.message,
+      status: error.response?.status,
+      data: error.response?.data
+    });
     return longUrl;
   }
 };
