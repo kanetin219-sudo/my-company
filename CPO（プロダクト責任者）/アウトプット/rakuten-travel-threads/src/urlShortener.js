@@ -38,7 +38,9 @@ const shortenUrl = async (longUrl) => {
     // URL_REDIRECT_BASE が設定されている場合、リダイレクトURL を組み立てる
     if (redirectBase) {
       // hotelNo を URL から抽出（クエリ文字列内の f_no パラメータから）
-      const hotelNoMatch = longUrl.match(/[?&]f_no=(\d+)/);
+      // URL をデコードしてから正規表現でマッチさせる
+      const decoded = decodeURIComponent(longUrl);
+      const hotelNoMatch = decoded.match(/[?&]f_no=(\d+)/);
       if (hotelNoMatch && hotelNoMatch[1]) {
         const hotelNo = hotelNoMatch[1];
         const redirectUrl = `${redirectBase}/${hotelNo}`;
