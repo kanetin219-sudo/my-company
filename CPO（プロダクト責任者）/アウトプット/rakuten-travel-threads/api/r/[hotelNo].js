@@ -24,7 +24,7 @@ function loadRedirects() {
 }
 
 export default function handler(req, res) {
-  const { hotelNo } = req.query;
+  const { hotelNo, ...otherParams } = req.query;
 
   // バリデーション: hotelNo は数字のみ
   if (!hotelNo || !/^\d+$/.test(hotelNo)) {
@@ -45,9 +45,21 @@ export default function handler(req, res) {
     });
   }
 
+  // 他のクエリパラメータ（pr など）をリダイレクト先URLに追加
+  let finalUrl = targetUrl;
+  const hasQuery = targetUrl.includes('?');
+  Object.entries(otherParams).forEach(([key, value]) => {
+    const separator = finalUrl.includes('?') ? '&' : '?';
+    if (value === '' || value === true) {
+      finalUrl += `${separator}${key}`;
+    } else {
+      finalUrl += `${separator}${key}=${value}`;
+    }
+  });
+
   // キャッシュを設定
   res.setHeader('Cache-Control', 'public, max-age=3600');
 
   // 301 リダイレクト
-  res.redirect(301, targetUrl);
+  res.redirect(301, finalUrl);
 }
