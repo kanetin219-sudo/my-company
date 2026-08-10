@@ -215,9 +215,10 @@ const calculateHotelScore = (hotel, alreadyPosted = false) => {
 
   let score = 0;
 
-  // 割引幅が大きいほど高スコア（メイン）
-  const priceDiscountWidth = (hotel.maxPrice || 0) - (hotel.minPrice || 0);
-  score += (priceDiscountWidth / 1000) * 50;
+  // 割引率で評価（絶対額ではなく割引率）
+  const maxPrice = hotel.maxPrice || hotel.minPrice || 1;
+  const discountRate = ((maxPrice - (hotel.minPrice || 0)) / maxPrice) * 100;
+  score += discountRate;
 
   // ファミリー向けキーワードをチェック
   const familyKeywords = ['子連れ', 'ファミリー', 'キッズ', '家族', '子ども', 'お子様', 'プール', '温泉', '大浴場', '家族風呂'];
@@ -239,9 +240,9 @@ const calculateHotelScore = (hotel, alreadyPosted = false) => {
   // アフィリエイトURL
   score += hotel.affiliateUrl ? 20 : 0;
 
-  // 最低価格が手頃（ファミリー向け）
+  // 最低価格ボーナス（ファミリー向け）
   if (hotel.minPrice && hotel.minPrice < 15000) {
-    score += 20;
+    score += 30;
   }
 
   // 画像

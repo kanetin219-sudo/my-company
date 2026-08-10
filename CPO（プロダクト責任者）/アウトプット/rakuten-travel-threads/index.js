@@ -83,7 +83,18 @@ const selectBestHotel = (hotels, isPosted = false) => {
     return null;
   }
 
-  const scored = hotels.map((hotel) => ({
+  const env = getEnvironmentVariables();
+  const maxHotelPrice = parseInt(env.MAX_HOTEL_PRICE) || 25000;
+
+  // 価格上限でフィルタ（1人あたり）
+  const filteredHotels = hotels.filter(hotel => hotel.minPrice && hotel.minPrice <= maxHotelPrice);
+
+  if (filteredHotels.length === 0) {
+    logger.warn(`No hotels found within price limit (${maxHotelPrice}yen)`, { hotelCount: hotels.length });
+    return null;
+  }
+
+  const scored = filteredHotels.map((hotel) => ({
     hotel,
     score: rakuten.calculateHotelScore(hotel, isPosted),
   }));
