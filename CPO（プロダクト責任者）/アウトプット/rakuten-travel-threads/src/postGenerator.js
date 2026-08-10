@@ -66,7 +66,7 @@ const generateThreadsPostPart2 = (hotel) => {
   post += `${hotel.hotelName}\n\n`;
   post += `📍 ${hotel.area}\n`;
   post += `🏘️ ${hotel.catchCopy.substring(0, 30)}...\n\n`;
-  post += `料金帯：${priceRange}\n\n`;
+  post += `料金帯：1人あたり ${priceRange}\n\n`;
   post += `${hotel.catchCopy}\n\n`;
   post += `${closingline}\n\n`;
   post += `#PR\n\n`;
