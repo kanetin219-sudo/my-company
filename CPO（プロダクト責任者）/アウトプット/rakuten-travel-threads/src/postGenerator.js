@@ -69,8 +69,8 @@ const generateThreadsPostPart2 = (hotel) => {
   post += `料金帯：${priceRange}\n\n`;
   post += `${hotel.catchCopy}\n\n`;
   post += `${closingline}\n\n`;
-  const separator = hotel.affiliateUrl.includes('?') ? '&' : '?';
-  post += `${hotel.affiliateUrl}${separator}pr`;
+  post += `#PR\n\n`;
+  post += `${hotel.affiliateUrl}`;
 
   logger.info(`Generated thread part 2 (${post.length}/500 chars)`, { hotelName: hotel.hotelName });
 
