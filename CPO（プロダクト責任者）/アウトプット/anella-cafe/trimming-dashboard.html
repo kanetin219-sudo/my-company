@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>トリミング来店ダッシュボード | ANELLA CAFE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+  <style>
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --accent-light: #6FA898;
+      --text: #2C1F14;
+      --text-mid: #6B4F3A;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --shadow: rgba(150, 80, 30, 0.12);
+      --gray: #9E9E9E;
+      --gray-bg: #F5F5F5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Noto Sans JP', sans-serif; font-size: 15px; line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ===== ヘッダー ===== */
+    .app-header {
+      background: var(--text); color: #fff; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+    .header-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--primary-light); }
+    .header-logo span { font-size: 11px; color: #aaa; font-family: 'Noto Sans JP', sans-serif; display: block; line-height: 1; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .header-user { font-size: 11px; color: #aaa; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .logout-btn {
+      padding: 6px 12px; background: transparent; border: 1px solid #555; border-radius: 8px;
+      color: #ccc; font-family: 'Noto Sans JP', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: #aaa; color: #fff; }
+
+    /* ===== コンテンツ ===== */
+    .page-content {
+      flex: 1; overflow-y: auto; padding: 20px;
+      max-width: 1400px; margin: 0 auto; width: 100%;
+    }
+
+    .page-title {
+      font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--primary);
+      margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+    }
+
+    /* ===== フィルター ===== */
+    .filter-bar {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px; box-shadow: 0 2px 8px var(--shadow);
+    }
+    .filter-group {
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .filter-label {
+      font-size: 13px; font-weight: 700; color: var(--text-mid);
+    }
+    .filter-select, .filter-input {
+      padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text);
+      background: var(--bg); cursor: pointer;
+    }
+    .filter-select:focus, .filter-input:focus {
+      outline: none; border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(201,106,59,0.12);
+    }
+    .filter-actions {
+      display: flex; gap: 8px; align-items: flex-end;
+    }
+    .btn-primary {
+      padding: 10px 16px; background: var(--primary); color: #fff; border: none;
+      border-radius: 8px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary {
+      padding: 10px 16px; background: var(--accent); color: #fff; border: none;
+      border-radius: 8px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
+    }
+    .btn-secondary:hover { opacity: 0.9; }
+
+    /* ===== サマリ ===== */
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px;
+    }
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px; box-shadow: 0 2px 8px var(--shadow);
+    }
+    .summary-label {
+      font-size: 12px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+    }
+    .summary-value {
+      font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 6px;
+    }
+    .summary-detail {
+      font-size: 13px; color: var(--text-mid); border-top: 1px solid var(--border); padding-top: 10px;
+    }
+    .summary-detail-item {
+      display: flex; justify-content: space-between; margin-bottom: 6px;
+    }
+    .summary-detail-item:last-child { margin-bottom: 0; }
+
+    /* ===== グラフセクション ===== */
+    .chart-section {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px var(--shadow);
+    }
+    .chart-title {
+      font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .chart-container {
+      position: relative; height: 300px; margin-bottom: 10px;
+    }
+    .chart-info {
+      font-size: 12px; color: var(--text-soft); text-align: right;
+    }
+
+    /* ===== テーブル ===== */
+    .table-section {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px var(--shadow);
+      overflow: hidden;
+    }
+    .table-title {
+      font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+    }
+    thead {
+      background: var(--gray-bg);
+    }
+    th {
+      text-align: left; padding: 12px; font-size: 13px; font-weight: 700;
+      color: var(--text-mid); border-bottom: 2px solid var(--border);
+    }
+    td {
+      padding: 12px; font-size: 14px; color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr:hover {
+      background: var(--gray-bg);
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    }
+    .badge-repeater {
+      background: rgba(74, 124, 111, 0.2); color: var(--accent);
+    }
+    .badge-new {
+      background: rgba(201, 106, 59, 0.2); color: var(--primary);
+    }
+
+    /* ===== ローディング ===== */
+    .loading {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 20px; color: var(--text-soft);
+    }
+    .spinner {
+      border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%;
+      width: 20px; height: 20px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== エラー ===== */
+    .error {
+      background: #FEF5F0; border: 1px solid #FFD7CC; border-radius: 8px;
+      padding: 12px; color: #C96A3B; font-size: 14px; margin-bottom: 16px;
+    }
+
+    /* ===== レスポンシブ ===== */
+    @media (max-width: 768px) {
+      .filter-bar { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+      .summary-value { font-size: 24px; }
+      .chart-container { height: 250px; }
+      .table-wrapper { font-size: 12px; }
+      th, td { padding: 8px; }
+    }
+
+    /* ===== ダークモード ===== */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1A1410;
+        --surface: #2B2218;
+        --text: #F5EDEA;
+        --text-mid: #C8B5A5;
+        --text-soft: #8B7760;
+        --border: #4A3F33;
+        --shadow: rgba(0, 0, 0, 0.3);
+        --gray-bg: #3B3028;
+      }
+    }
+
+    .pagination {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+    }
+    .pagination button {
+      padding: 6px 12px; background: var(--gray-bg); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); cursor: pointer; font-size: 12px;
+      transition: all 0.2s;
+    }
+    .pagination button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .pagination .info { font-size: 12px; color: var(--text-soft); }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="app-header">
+  <div class="header-logo">ANELLA CAFE<span>トリミング来店分析</span></div>
+  <div class="header-right">
+    <span class="header-user" id="headerUser">ゲスト</span>
+    <button class="logout-btn" onclick="location.reload()">再読み込み</button>
+  </div>
+</div>
+
+<!-- メインコンテンツ -->
+<div class="page-content">
+  <div class="page-title">📊 トリミング来店ダッシュボード</div>
+
+  <!-- フィルター -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label class="filter-label">期間</label>
+      <select id="periodFilter" class="filter-select">
+        <option value="all">全期間</option>
+        <option value="3m">過去3ヶ月</option>
+        <option value="1m">過去1ヶ月</option>
+        <option value="custom">カスタム</option>
+      </select>
+    </div>
+    <div class="filter-group" id="customDateGroup" style="display: none;">
+      <label class="filter-label">開始日</label>
+      <input type="date" id="startDate" class="filter-input">
+    </div>
+    <div class="filter-group" id="customDateGroup2" style="display: none;">
+      <label class="filter-label">終了日</label>
+      <input type="date" id="endDate" class="filter-input">
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">スタッフ</label>
+      <select id="staffFilter" class="filter-select">
+        <option value="">全スタッフ</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">顧客名で検索</label>
+      <input type="text" id="searchInput" class="filter-input" placeholder="顧客名を入力">
+    </div>
+    <div class="filter-actions">
+      <button class="btn-primary" onclick="applyFilters()">フィルター適用</button>
+      <button class="btn-secondary" onclick="exportCSV()">CSV出力</button>
+    </div>
+  </div>
+
+  <!-- サマリ -->
+  <div class="summary-grid" id="summaryGrid">
+    <div class="summary-card">
+      <div class="summary-label">総来店数</div>
+      <div class="summary-value" id="totalVisits">0</div>
+      <div class="summary-detail">
+        <div class="summary-detail-item">
+          <span>新規客:</span>
+          <strong id="newCustomerCount">0</strong>
+        </div>
+        <div class="summary-detail-item">
+          <span>リピーター:</span>
+          <strong id="repeaterCount">0</strong>
+        </div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">総顧客数</div>
+      <div class="summary-value" id="totalCustomers">0</div>
+      <div class="summary-detail">
+        <div class="summary-detail-item">
+          <span>新規顧客:</span>
+          <strong id="newCustomers">0</strong>
+        </div>
+        <div class="summary-detail-item">
+          <span>リピーター:</span>
+          <strong id="repeaterCustomers">0</strong>
+        </div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">リピーター率</div>
+      <div class="summary-value" id="repeaterRate">0%</div>
+      <div class="summary-detail">
+        <div class="summary-detail-item">
+          <span>2回以上来店</span>
+        </div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">平均来店回数</div>
+      <div class="summary-value" id="avgVisits">0回</div>
+      <div class="summary-detail">
+        <div class="summary-detail-item">
+          <span>最多来店回数:</span>
+          <strong id="maxVisits">0回</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 月別来店数グラフ -->
+  <div class="chart-section">
+    <div class="chart-title">📈 月別来店数</div>
+    <div class="chart-container">
+      <canvas id="monthlyChart"></canvas>
+    </div>
+    <div class="chart-info" id="monthlyInfo"></div>
+  </div>
+
+  <!-- 来店回数別分布 -->
+  <div class="chart-section">
+    <div class="chart-title">🔄 顧客来店回数分布</div>
+    <div class="chart-container">
+      <canvas id="distributionChart"></canvas>
+    </div>
+  </div>
+
+  <!-- スタッフ別分析 -->
+  <div class="chart-section">
+    <div class="chart-title">👥 スタッフ別来店数・リピーター率</div>
+    <div class="chart-container">
+      <canvas id="staffChart"></canvas>
+    </div>
+  </div>
+
+  <!-- リピーターTOP 15 -->
+  <div class="table-section">
+    <div class="table-title">🏆 リピーターTOP 15（来店回数ランキング）</div>
+    <div class="table-wrapper">
+      <table id="repeaterTable">
+        <thead>
+          <tr>
+            <th style="width: 10%;">#</th>
+            <th style="width: 25%;">顧客名</th>
+            <th style="width: 15%;">来店回数</th>
+            <th style="width: 20%;">担当スタッフ</th>
+            <th style="width: 20%;">最終来店日</th>
+            <th style="width: 10%;" class="text-center">ステータス</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- JavaScript で生成 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 新規客リスト -->
+  <div class="table-section">
+    <div class="table-title">🆕 新規客リスト（1回のみの来店）</div>
+    <div class="table-wrapper">
+      <table id="newCustomerTable">
+        <thead>
+          <tr>
+            <th style="width: 30%;">顧客名</th>
+            <th style="width: 20%;">来店日</th>
+            <th style="width: 20%;">担当スタッフ</th>
+            <th style="width: 20%;">ペット情報</th>
+            <th style="width: 10%;" class="text-center">ステータス</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- JavaScript で生成 -->
+        </tbody>
+      </table>
+      <div class="pagination" id="newCustomerPagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- スクリプト -->
+<script>
+// グローバル変数
+let allData = [];
+let filteredData = [];
+let charts = {};
+
+// Supabase設定（JSONP直読み）
+const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwMDI5NjcsImV4cCI6MTgwMzExNjk2N30.8OUC6PvZxh6oQX80RCBmJH5wqcbREYr-C_7jn_YkJts';
+
+// Supabase REST APIからデータ取得
+async function fetchData() {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/trimming_reservations?select=*&order=visit_date.desc`,
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+        }
+      }
+    );
+    const data = await response.json();
+    allData = data.filter(d => d.owner_name && d.visit_date && d.status === '完了');
+    initializeFilters();
+    applyFilters();
+  } catch (error) {
+    console.error('データ取得エラー:', error);
+    document.body.innerHTML += `<div class="error">データ読み込みエラー: ${error.message}</div>`;
+  }
+}
+
+// フィルター初期化
+function initializeFilters() {
+  const staffs = [...new Set(allData.map(d => d.staff).filter(Boolean))].sort();
+  const staffSelect = document.getElementById('staffFilter');
+  staffs.forEach(staff => {
+    const option = document.createElement('option');
+    option.value = staff;
+    option.textContent = staff;
+    staffSelect.appendChild(option);
+  });
+
+  document.getElementById('periodFilter').addEventListener('change', (e) => {
+    const customGroups = document.querySelectorAll('#customDateGroup, #customDateGroup2');
+    customGroups.forEach(g => g.style.display = e.target.value === 'custom' ? 'flex' : 'none');
+  });
+}
+
+// フィルター適用
+function applyFilters() {
+  const period = document.getElementById('periodFilter').value;
+  const staff = document.getElementById('staffFilter').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+
+  let startDate = null;
+  if (period === '3m') {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 3);
+    startDate = date.toISOString().split('T')[0];
+  } else if (period === '1m') {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 1);
+    startDate = date.toISOString().split('T')[0];
+  } else if (period === 'custom') {
+    startDate = document.getElementById('startDate').value;
+  }
+
+  filteredData = allData.filter(d => {
+    if (startDate && d.visit_date < startDate) return false;
+    if (staff && d.staff !== staff) return false;
+    if (search && !d.owner_name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  updateDashboard();
+}
+
+// ダッシュボード更新
+function updateDashboard() {
+  // サマリ計算
+  const customerVisits = {};
+  filteredData.forEach(d => {
+    if (!customerVisits[d.owner_name]) {
+      customerVisits[d.owner_name] = {
+        visits: 0,
+        staff: d.staff,
+        lastDate: d.visit_date,
+        phone: d.phone,
+        petName: d.pet_name
+      };
+    }
+    customerVisits[d.owner_name].visits++;
+    if (d.visit_date > customerVisits[d.owner_name].lastDate) {
+      customerVisits[d.owner_name].lastDate = d.visit_date;
+    }
+  });
+
+  const repeaterCustomers = Object.values(customerVisits).filter(c => c.visits >= 2);
+  const newCustomers = Object.values(customerVisits).filter(c => c.visits === 1);
+
+  document.getElementById('totalVisits').textContent = filteredData.length;
+  document.getElementById('totalCustomers').textContent = Object.keys(customerVisits).length;
+  document.getElementById('newCustomerCount').textContent = filteredData.filter(d => {
+    const visits = customerVisits[d.owner_name].visits;
+    return visits === 1;
+  }).length;
+  document.getElementById('repeaterCount').textContent = filteredData.filter(d => {
+    const visits = customerVisits[d.owner_name].visits;
+    return visits >= 2;
+  }).length;
+  document.getElementById('newCustomers').textContent = newCustomers.length;
+  document.getElementById('repeaterCustomers').textContent = repeaterCustomers.length;
+
+  const rate = Object.keys(customerVisits).length > 0
+    ? Math.round((repeaterCustomers.length / Object.keys(customerVisits).length) * 100)
+    : 0;
+  document.getElementById('repeaterRate').textContent = rate + '%';
+
+  const avgVisits = Object.keys(customerVisits).length > 0
+    ? (filteredData.length / Object.keys(customerVisits).length).toFixed(1)
+    : '0';
+  document.getElementById('avgVisits').textContent = avgVisits + '回';
+
+  const maxVisits = Object.keys(customerVisits).length > 0
+    ? Math.max(...Object.values(customerVisits).map(c => c.visits))
+    : 0;
+  document.getElementById('maxVisits').textContent = maxVisits + '回';
+
+  // グラフ更新
+  updateCharts(customerVisits);
+
+  // テーブル更新
+  updateTables(customerVisits);
+}
+
+// グラフ更新
+function updateCharts(customerVisits) {
+  // 月別グラフ
+  const monthlyData = {};
+  filteredData.forEach(d => {
+    const month = d.visit_date.substring(0, 7);
+    monthlyData[month] = (monthlyData[month] || 0) + 1;
+  });
+
+  const months = Object.keys(monthlyData).sort();
+  const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+  if (charts.monthly) charts.monthly.destroy();
+  charts.monthly = new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+      labels: months.map(m => m.replace('-', '/')),
+      datasets: [{
+        label: '来店数',
+        data: months.map(m => monthlyData[m]),
+        borderColor: '#C96A3B',
+        backgroundColor: 'rgba(201, 106, 59, 0.1)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#C96A3B',
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+
+  // 分布グラフ
+  const distribution = { '1回': 0, '2～5回': 0, '6～10回': 0, '11回以上': 0 };
+  Object.values(customerVisits).forEach(c => {
+    if (c.visits === 1) distribution['1回']++;
+    else if (c.visits <= 5) distribution['2～5回']++;
+    else if (c.visits <= 10) distribution['6～10回']++;
+    else distribution['11回以上']++;
+  });
+
+  const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+  if (charts.distribution) charts.distribution.destroy();
+  charts.distribution = new Chart(distributionCtx, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(distribution),
+      datasets: [{
+        data: Object.values(distribution),
+        backgroundColor: ['#FFD7A8', '#FFB380', '#FF9358', '#C96A3B'],
+        borderColor: '#FFFAF4',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+
+  // スタッフ別グラフ
+  const staffData = {};
+  filteredData.forEach(d => {
+    if (!staffData[d.staff]) {
+      staffData[d.staff] = { visits: 0, customers: new Set(), repeaters: 0 };
+    }
+    staffData[d.staff].visits++;
+    staffData[d.staff].customers.add(d.owner_name);
+    if (customerVisits[d.owner_name].visits >= 2) {
+      staffData[d.staff].repeaters++;
+    }
+  });
+
+  const staffNames = Object.keys(staffData).sort();
+  const staffVisits = staffNames.map(s => staffData[s].visits);
+  const staffRates = staffNames.map(s => {
+    const customers = staffData[s].customers.size;
+    return customers > 0 ? Math.round((staffData[s].repeaters / customers) * 100) : 0;
+  });
+
+  const staffCtx = document.getElementById('staffChart').getContext('2d');
+  if (charts.staff) charts.staff.destroy();
+  charts.staff = new Chart(staffCtx, {
+    type: 'bar',
+    data: {
+      labels: staffNames,
+      datasets: [
+        {
+          label: '来店数',
+          data: staffVisits,
+          backgroundColor: '#C96A3B',
+          yAxisID: 'y'
+        },
+        {
+          label: 'リピーター率（%）',
+          data: staffRates,
+          backgroundColor: '#4A7C6F',
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom' }
+      },
+      scales: {
+        y: { type: 'linear', position: 'left', title: { display: true, text: '来店数' } },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'リピーター率（%）' }, max: 100 }
+      }
+    }
+  });
+}
+
+// テーブル更新
+function updateTables(customerVisits) {
+  // リピーターTOP 15
+  const repeaters = Object.entries(customerVisits)
+    .filter(([_, c]) => c.visits >= 2)
+    .sort((a, b) => b[1].visits - a[1].visits)
+    .slice(0, 15);
+
+  const repeaterTable = document.getElementById('repeaterTable').querySelector('tbody');
+  repeaterTable.innerHTML = repeaters.map(([name, data], idx) => `
+    <tr>
+      <td class="text-center">${idx + 1}</td>
+      <td>${name}</td>
+      <td class="text-center"><strong>${data.visits}回</strong></td>
+      <td>${data.staff || '-'}</td>
+      <td class="text-center">${data.lastDate}</td>
+      <td class="text-center"><span class="badge badge-repeater">リピーター</span></td>
+    </tr>
+  `).join('');
+
+  // 新規客リスト（ページング）
+  const newCustomers = Object.entries(customerVisits)
+    .filter(([_, c]) => c.visits === 1)
+    .map(([name, data]) => ({
+      name,
+      visitDate: data.lastDate,
+      staff: data.staff,
+      petName: data.petName || '-'
+    }))
+    .sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(newCustomers.length / itemsPerPage);
+
+  function renderNewCustomers(page = 1) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = newCustomers.slice(start, end);
+
+    const table = document.getElementById('newCustomerTable').querySelector('tbody');
+    table.innerHTML = pageItems.map(item => `
+      <tr>
+        <td>${item.name}</td>
+        <td class="text-center">${item.visitDate}</td>
+        <td>${item.staff || '-'}</td>
+        <td>${item.petName}</td>
+        <td class="text-center"><span class="badge badge-new">新規</span></td>
+      </tr>
+    `).join('');
+
+    // ページング
+    const pagination = document.getElementById('newCustomerPagination');
+    let html = `<span class="info">全 ${newCustomers.length} 件 / ページ ${page}/${totalPages}</span>`;
+    if (page > 1) html += `<button onclick="renderNewCustomers(1)">最初</button><button onclick="renderNewCustomers(${page - 1})">前へ</button>`;
+    for (let i = Math.max(1, page - 2); i <= Math.min(totalPages, page + 2); i++) {
+      html += `<button class="${i === page ? 'active' : ''}" onclick="renderNewCustomers(${i})">${i}</button>`;
+    }
+    if (page < totalPages) html += `<button onclick="renderNewCustomers(${page + 1})">次へ</button><button onclick="renderNewCustomers(${totalPages})">最後</button>`;
+    pagination.innerHTML = html;
+  }
+
+  renderNewCustomers(1);
+  window.renderNewCustomers = renderNewCustomers;
+}
+
+// CSV出力
+function exportCSV() {
+  const rows = [];
+  rows.push(['顧客名', '来店回数', '担当スタッフ', '最終来店日', 'ステータス']);
+
+  const customerVisits = {};
+  filteredData.forEach(d => {
+    if (!customerVisits[d.owner_name]) {
+      customerVisits[d.owner_name] = {
+        visits: 0,
+        staff: d.staff,
+        lastDate: d.visit_date
+      };
+    }
+    customerVisits[d.owner_name].visits++;
+    if (d.visit_date > customerVisits[d.owner_name].lastDate) {
+      customerVisits[d.owner_name].lastDate = d.visit_date;
+    }
+  });
+
+  Object.entries(customerVisits).forEach(([name, data]) => {
+    const status = data.visits >= 2 ? 'リピーター' : '新規';
+    rows.push([name, data.visits, data.staff || '', data.lastDate, status]);
+  });
+
+  const csv = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `trimming-dashboard-${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+}
+
+// 初期化
+fetchData();
+</script>
+
+</body>
+</html>
