@@ -965,25 +965,33 @@ function showMain(email) {
 
 // ── リアルタイム ──────────────────────────────────
 function setupRealtime() {
-  realtimeChannel = supabase
-    .channel('admin-reservations')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'trimming_reservations' }, () => {
-      loadReservations();
-    })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_times' }, () => {
-      loadBlocks();
-    })
-    .subscribe((status) => {
-      const dot = document.getElementById('realtimeDot');
-      const label = document.getElementById('realtimeLabel');
-      if (status === 'SUBSCRIBED') {
-        dot.classList.add('connected');
-        label.textContent = 'リアルタイム';
-      } else {
-        dot.classList.remove('connected');
-        label.textContent = '再接続中...';
-      }
-    });
+  try {
+    realtimeChannel = supabase
+      .channel('admin-reservations')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trimming_reservations' }, () => {
+        loadReservations();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_times' }, () => {
+        loadBlocks();
+      })
+      .subscribe((status) => {
+        const dot = document.getElementById('realtimeDot');
+        const label = document.getElementById('realtimeLabel');
+        if (status === 'SUBSCRIBED') {
+          dot.classList.add('connected');
+          label.textContent = 'リアルタイム';
+          console.log('[DEBUG] Realtime connection established');
+        } else {
+          dot.classList.remove('connected');
+          label.textContent = '再接続中...';
+          console.log('[DEBUG] Realtime status:', status);
+        }
+      });
+  } catch (err) {
+    console.error('[ERROR] Realtime setup failed:', err);
+    // フォールバック：手動リロード定期実行
+    setInterval(() => { loadReservations(); }, 60000);
+  }
 }
 
 // ── タブ切替 ─────────────────────────────────────
@@ -1069,32 +1077,47 @@ async function loadReservations() {
   const staff = document.getElementById('filterStaff').value;
   updatePeriodLabel();
 
-  console.log('[DEBUG] loadReservations called:', { from, to, staff });
+  console.log('[DEBUG] loadReservations called:', { from, to, staff, timestamp: new Date().toISOString() });
 
-  let query = supabase
-    .from('trimming_reservations')
-    .select('*')
-    .gte('visit_date', from)
-    .lte('visit_date', to)
-    .order('visit_date', { ascending: true })
-    .order('visit_time', { ascending: true });
+  try {
+    let query = supabase
+      .from('trimming_reservations')
+      .select('*')
+      .gte('visit_date', from)
+      .lte('visit_date', to)
+      .order('visit_date', { ascending: true })
+      .order('visit_time', { ascending: true });
 
-  if (staff) query = query.eq('staff', staff);
+    if (staff) query = query.eq('staff', staff);
 
-  const { data, error } = await query;
-  console.log('[DEBUG] Supabase query result:', {
-    error: error ? { message: error.message, code: error.code } : null,
-    dataCount: data ? data.length : 0
-  });
+    // キャッシュバスター：タイムスタンプを追加
+    const { data, error } = await query;
+    console.log('[DEBUG] Supabase query result:', {
+      error: error ? { message: error.message, code: error.code, status: error.status } : null,
+      dataCount: data ? data.length : 0,
+      timestamp: new Date().toISOString()
+    });
 
-  if (error) {
-    console.error('[ERROR] Failed to load reservations:', error);
-    document.getElementById('reservationList').innerHTML = `<div class="no-reservations" style="color:red;">エラーが発生しました: ${error.message}</div>`;
-    return;
+    if (error) {
+      console.error('[ERROR] Failed to load reservations:', error);
+
+      // セッション切れチェック
+      if (error.status === 401 || error.message?.includes('JWT')) {
+        console.log('[DEBUG] Session expired, forcing logout');
+        doLogout();
+        return;
+      }
+
+      document.getElementById('reservationList').innerHTML = `<div class="no-reservations" style="color:red;">エラーが発生しました: ${error.message}</div>`;
+      return;
+    }
+
+    renderStats(data || []);
+    renderReservations(data || []);
+  } catch (err) {
+    console.error('[ERROR] loadReservations exception:', err);
+    document.getElementById('reservationList').innerHTML = `<div class="no-reservations" style="color:red;">通信エラー: ${err.message}</div>`;
   }
-
-  renderStats(data || []);
-  renderReservations(data || []);
 }
 
 function renderStats(list) {
@@ -1356,31 +1379,43 @@ async function loadBlocks() {
   if (!date) return;
   label.textContent = `${date} のブロック一覧`;
 
-  const { data, error } = await supabase
-    .from('blocked_times')
-    .select('*')
-    .eq('block_date', date)
-    .order('block_time', { ascending: true });
+  try {
+    const { data, error } = await supabase
+      .from('blocked_times')
+      .select('*')
+      .eq('block_date', date)
+      .order('block_time', { ascending: true });
 
-  const list = document.getElementById('blockList');
-  if (!data || data.length === 0) {
-    list.innerHTML = '<div class="no-blocks">この日のブロックはありません</div>';
-    return;
+    const list = document.getElementById('blockList');
+
+    if (error) {
+      console.error('[ERROR] Failed to load blocks:', error);
+      list.innerHTML = '<div class="no-blocks" style="color:red;">データ読み込みエラー</div>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div class="no-blocks">この日のブロックはありません</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    data.forEach(b => {
+      const item = document.createElement('div');
+      item.className = 'block-item';
+      item.innerHTML = `
+        <div>
+          <div class="block-item-info">${b.block_time.slice(0,5)} — ${b.staff}</div>
+          <div class="block-item-sub">${b.reason || '理由なし'}</div>
+        </div>
+        <button class="del-block-btn" onclick="deleteBlock('${b.id}')">削除</button>
+      `;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    console.error('[ERROR] loadBlocks exception:', err);
+    document.getElementById('blockList').innerHTML = '<div class="no-blocks" style="color:red;">エラーが発生しました</div>';
   }
-
-  list.innerHTML = '';
-  data.forEach(b => {
-    const item = document.createElement('div');
-    item.className = 'block-item';
-    item.innerHTML = `
-      <div>
-        <div class="block-item-info">${b.block_time.slice(0,5)} — ${b.staff}</div>
-        <div class="block-item-sub">${b.reason || '理由なし'}</div>
-      </div>
-      <button class="del-block-btn" onclick="deleteBlock('${b.id}')">削除</button>
-    `;
-    list.appendChild(item);
-  });
 }
 
 function toggleBlockTime() {
@@ -1615,40 +1650,52 @@ async function loadKartes(search) {
   const container = document.getElementById('karteList');
   container.innerHTML = '<div class="no-kartes">読み込み中...</div>';
 
-  let query = supabase.from('pet_kartes').select('*').order('updated_at', { ascending: false });
-  if (search && search.trim()) {
-    const s = search.trim();
-    query = query.or(`owner_name.ilike.%${s}%,phone.ilike.%${s}%,pet_name.ilike.%${s}%`);
-  }
+  try {
+    let query = supabase.from('pet_kartes').select('*').order('updated_at', { ascending: false });
+    if (search && search.trim()) {
+      const s = search.trim();
+      query = query.or(`owner_name.ilike.%${s}%,phone.ilike.%${s}%,pet_name.ilike.%${s}%`);
+    }
 
-  const { data, error } = await query;
-  if (error || !data || data.length === 0) {
-    container.innerHTML = '<div class="no-kartes">カルテがありません。予約フォームから予約されると自動作成されます。</div>';
-    return;
-  }
+    const { data, error } = await query;
 
-  container.innerHTML = '';
-  data.forEach(k => {
-    const card = document.createElement('div');
-    card.className = 'karte-card';
-    const memoTags = [];
-    if (k.cut_style_memo)   memoTags.push(`<span class="karte-memo-tag">✂️ カットメモあり</span>`);
-    if (k.personality_memo) memoTags.push(`<span class="karte-memo-tag">😺 性格メモあり</span>`);
-    if (k.allergy_memo)     memoTags.push(`<span class="karte-memo-tag warn">⚠️ アレルギーあり</span>`);
+    if (error) {
+      console.error('[ERROR] Failed to load kartes:', error);
+      container.innerHTML = '<div class="no-kartes" style="color:red;">データ読み込みエラー</div>';
+      return;
+    }
 
-    card.innerHTML = `
-      <div class="karte-card-header">
-        <div class="karte-icon">🐾</div>
-        <div style="flex:1;">
-          <div class="karte-pet-name">${k.pet_name} <span class="karte-breed">${k.breed || ''} ${k.gender || ''}</span></div>
-          <div class="karte-owner">👤 ${k.owner_name}　📞 ${k.phone}</div>
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="no-kartes">カルテがありません。予約フォームから予約されると自動作成されます。</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    data.forEach(k => {
+      const card = document.createElement('div');
+      card.className = 'karte-card';
+      const memoTags = [];
+      if (k.cut_style_memo)   memoTags.push(`<span class="karte-memo-tag">✂️ カットメモあり</span>`);
+      if (k.personality_memo) memoTags.push(`<span class="karte-memo-tag">😺 性格メモあり</span>`);
+      if (k.allergy_memo)     memoTags.push(`<span class="karte-memo-tag warn">⚠️ アレルギーあり</span>`);
+
+      card.innerHTML = `
+        <div class="karte-card-header">
+          <div class="karte-icon">🐾</div>
+          <div style="flex:1;">
+            <div class="karte-pet-name">${k.pet_name} <span class="karte-breed">${k.breed || ''} ${k.gender || ''}</span></div>
+            <div class="karte-owner">👤 ${k.owner_name}　📞 ${k.phone}</div>
+          </div>
         </div>
-      </div>
-      ${memoTags.length > 0 ? `<div class="karte-memos">${memoTags.join('')}</div>` : ''}
-    `;
-    card.onclick = () => openKarteModal(k);
-    container.appendChild(card);
-  });
+        ${memoTags.length > 0 ? `<div class="karte-memos">${memoTags.join('')}</div>` : ''}
+      `;
+      card.onclick = () => openKarteModal(k);
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('[ERROR] loadKartes exception:', err);
+    container.innerHTML = '<div class="no-kartes" style="color:red;">エラーが発生しました</div>';
+  }
 }
 
 function openKarteModal(karte) {
