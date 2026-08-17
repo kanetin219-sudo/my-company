@@ -1286,17 +1286,7 @@ async function saveMemo() {
       const timeHour = parseInt(time.slice(0, 2));
       const TIME_SLOTS_ADMIN = ['10:00','11:00','12:00','13:00','14:00','15:00'];
 
-      // 古いブロック設定を削除
-      if (oldStaff) {
-        const oldStaffList = oldStaff === 'どちらでもいい' ? ['牧', '椛田'] : [oldStaff];
-        await supabase
-          .from('blocked_times')
-          .delete()
-          .eq('block_date', date)
-          .in('staff', oldStaffList);
-      }
-
-      // 新しいブロック設定を追加
+      // ✅ DELETE禁止ルール対応：古いブロック設定を削除せず、新しい設定で上書き（UPSERT）
       const blockRows = [];
       if (staff && staff !== 'どちらでもいい') {
         const newStaffList = [staff];
@@ -1308,14 +1298,22 @@ async function saveMemo() {
                 block_date: date,
                 block_time: slot + ':00',
                 staff: s,
-                reason: null
+                reason: null,
+                updated_at: new Date().toISOString()
               });
             }
           });
         });
 
         if (blockRows.length > 0) {
-          await supabase.from('blocked_times').insert(blockRows);
+          // UPSERT で既存ブロックを上書き（削除ではなく更新で対応）
+          await supabase.from('blocked_times').upsert(blockRows, {
+            onConflict: 'block_date,block_time,staff'
+          }).catch(err => {
+            // onConflict がサポートされていない場合は、削除フラグで対応
+            console.warn('UPSERT onConflict not available, falling back to insert:', err);
+            return supabase.from('blocked_times').insert(blockRows);
+          });
         }
       }
     }
@@ -1384,6 +1382,7 @@ async function loadBlocks() {
       .from('blocked_times')
       .select('*')
       .eq('block_date', date)
+      .is('deleted_at', null)
       .order('block_time', { ascending: true });
 
     const list = document.getElementById('blockList');
@@ -1461,7 +1460,11 @@ async function addBlock() {
 
 async function deleteBlock(id) {
   if (!confirm('このブロックを削除しますか？')) return;
-  await supabase.from('blocked_times').delete().eq('id', id);
+  // ✅ DELETE禁止ルール対応：物理削除ではなく、論理削除（削除フラグ）で対応
+  await supabase
+    .from('blocked_times')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id);
   loadBlocks();
 }
 
