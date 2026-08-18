@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 | ANELLA CAFE トリミング</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Supabase設定（インライン化＆キャッシュバスター対応）
+    const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+  <style>
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --accent-light: #6FA898;
+      --text: #2C1F14;
+      --text-mid: #6B4F3A;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --shadow: rgba(150, 80, 30, 0.12);
+      --warn: #D4502A;
+      --warn-bg: #FFF3EE;
+      --gray: #9E9E9E;
+      --gray-bg: #F5F5F5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 15px; line-height: 1.6; min-height: 100vh; }
+
+    /* ── ログイン画面 ── */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 40px 36px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px var(--shadow);
+    }
+    .login-logo { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--primary); text-align: center; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: var(--text-soft); text-align: center; margin-bottom: 32px; }
+    .login-field { margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 6px; }
+    .login-field input {
+      width: 100%; padding: 13px 14px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Noto Sans JP', sans-serif; font-size: 16px; color: var(--text); outline: none;
+    }
+    .login-field input:focus { border-color: var(--primary-light); }
+    .login-btn {
+      width: 100%; padding: 15px; background: var(--primary); color: #fff; border: none; border-radius: 12px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;
+      margin-top: 8px; box-shadow: 0 4px 12px rgba(201,106,59,0.3); transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { background: #D0B49E; box-shadow: none; cursor: not-allowed; }
+    .login-err { color: var(--warn); font-size: 13px; margin-top: 10px; text-align: center; display: none; }
+    .login-err.active { display: block; }
+
+    /* ── メイン画面 ── */
+    #mainScreen { display: none; }
+
+    /* ── ヘッダー ── */
+    .admin-header {
+      background: var(--text); color: #fff; padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .admin-header-logo { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--primary-light); }
+    .admin-header-right { display: flex; align-items: center; gap: 12px; }
+    .admin-user { font-size: 12px; color: #bbb; }
+    .logout-btn {
+      padding: 7px 14px; background: transparent; border: 1px solid #555; border-radius: 8px;
+      color: #ccc; font-family: 'Noto Sans JP', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: #aaa; color: #fff; }
+
+    /* ── タブ ── */
+    .tab-bar { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; }
+    .tab-btn {
+      flex: 1; padding: 14px 8px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 700;
+      color: var(--text-soft); background: none; border: none; border-bottom: 3px solid transparent;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── フィルターバー ── */
+    .filter-bar {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    }
+    .filter-bar input[type="date"], .filter-bar select {
+      padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text); outline: none;
+      appearance: none; -webkit-appearance: none;
+    }
+    .filter-bar input[type="date"]:focus, .filter-bar select:focus { border-color: var(--primary-light); }
+    .select-wrap-sm { position: relative; }
+    .select-wrap-sm::after { content:'▼'; position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:10px; color:var(--text-soft); pointer-events:none; }
+    .filter-label { font-size: 13px; font-weight: 700; color: var(--text-mid); white-space: nowrap; }
+    .btn-today {
+      padding: 10px 14px; background: var(--primary); color: #fff; border: none; border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    /* ── 表示切替 ── */
+    .view-toggle { display: flex; gap: 4px; }
+    .view-btn {
+      padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-mid); cursor: pointer;
+    }
+    .view-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .nav-btn {
+      padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      font-size: 16px; cursor: pointer; color: var(--text-mid); line-height: 1;
+    }
+    .nav-btn:hover { border-color: var(--primary-light); }
+    .period-label { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .date-group-header {
+      font-size: 13px; font-weight: 700; color: var(--text-mid); padding: 8px 4px 4px;
+      border-bottom: 1px solid var(--border); margin-top: 8px;
+    }
+    .date-group-header:first-child { margin-top: 0; }
+    .realtime-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; margin-left: auto; flex-shrink: 0; }
+    .realtime-dot.connected { background: #4CAF50; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .realtime-label { font-size: 11px; color: var(--text-soft); }
+
+    /* ── 統計バー ── */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 12px; text-align: center;
+    }
+    .stat-num { font-size: 24px; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+    .stat-card.green .stat-num { color: var(--accent); }
+    .stat-card.gray .stat-num { color: var(--gray); }
+
+    /* ── 予約カード ── */
+    .reservation-list { display: flex; flex-direction: column; gap: 10px; }
+    .res-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 4px var(--shadow);
+    }
+    .res-card:hover { border-color: var(--primary-light); box-shadow: 0 3px 10px var(--shadow); }
+    .res-card.cancelled { opacity: 0.6; }
+    .res-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .res-time { font-size: 20px; font-weight: 700; color: var(--primary); min-width: 54px; }
+    .res-pet { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+    .res-course { font-size: 12px; color: var(--text-soft); }
+    .status-badge {
+      display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .status-badge.booked { background: var(--warn-bg); color: var(--primary); border: 1px solid #F0C4B0; }
+    .status-badge.visited { background: #E8F5E9; color: var(--accent); border: 1px solid #C8E0DB; }
+    .status-badge.cancelled { background: var(--gray-bg); color: var(--gray); border: 1px solid #ddd; }
+    .res-info { display: flex; gap: 16px; font-size: 12px; color: var(--text-soft); flex-wrap: wrap; }
+    .res-memo-preview { font-size: 12px; color: var(--accent); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+    .no-reservations { text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: 14px; }
+
+    /* ── モーダル ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300;
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px;
+      max-height: 90vh; overflow-y: auto; padding: 24px 20px 40px; animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @media (min-width: 700px) {
+      .modal-overlay { align-items: center; }
+      .modal { border-radius: 20px; max-height: 85vh; }
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--primary); }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg);
+      cursor: pointer; font-size: 16px; color: var(--text-soft); display: flex; align-items: center; justify-content: center;
+    }
+    .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .detail-table tr { border-bottom: 1px solid var(--border); }
+    .detail-table tr:last-child { border-bottom: none; }
+    .detail-table th { padding: 9px 10px; font-size: 12px; color: var(--text-soft); font-weight: 500; text-align: left; width: 38%; }
+    .detail-table td { padding: 9px 10px; font-size: 13px; color: var(--text); font-weight: 500; }
+
+    .section-label { font-size: 12px; font-weight: 700; color: var(--text-mid); margin-bottom: 8px; }
+
+    .status-btns { display: flex; gap: 8px; margin-bottom: 16px; }
+    .status-btn {
+      flex: 1; padding: 12px 8px; border-radius: 10px; border: 2px solid var(--border); background: var(--surface);
+      font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      color: var(--text-mid);
+    }
+    .status-btn:hover { border-color: var(--primary-light); }
+    .status-btn.active-booked { border-color: var(--primary); background: var(--warn-bg); color: var(--primary); }
+    .status-btn.active-visited { border-color: var(--accent); background: #E8F5E9; color: var(--accent); }
+    .status-btn.active-cancelled { border-color: var(--gray); background: var(--gray-bg); color: var(--gray); }
+
+    .memo-area {
+      width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text); resize: vertical;
+      min-height: 80px; outline: none;
+    }
+    .memo-area:focus { border-color: var(--primary-light); }
+    .save-btn {
+      width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 12px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
+      margin-top: 12px; transition: opacity 0.2s;
+    }
+    .save-btn:hover { opacity: 0.9; }
+    .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .save-ok { text-align: center; font-size: 13px; color: var(--accent); margin-top: 8px; display: none; }
+    .save-ok.active { display: block; }
+
+    /* ── ブロック設定 ── */
+    .block-form-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .block-form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .block-input {
+      padding: 11px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text); outline: none;
+      appearance: none; -webkit-appearance: none; width: 100%;
+    }
+    .block-input:focus { border-color: var(--primary-light); }
+    .add-block-btn {
+      padding: 11px 20px; background: var(--primary); color: #fff; border: none; border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .block-list { display: flex; flex-direction: column; gap: 8px; }
+    .block-item {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--warn-bg); border: 1px solid #F0C4B0; border-radius: 10px; padding: 12px 14px;
+    }
+    .block-item-info { font-size: 14px; font-weight: 700; color: var(--text); }
+    .block-item-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .del-block-btn {
+      padding: 6px 12px; background: none; border: 1px solid #F0C4B0; border-radius: 6px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 12px; color: var(--warn); cursor: pointer;
+    }
+    .del-block-btn:hover { background: var(--warn-bg); }
+    .no-blocks { text-align: center; color: var(--text-soft); font-size: 13px; padding: 20px; }
+
+    /* ── ローディング ── */
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(253,246,238,0.8); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── カルテ ── */
+    .karte-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+    .karte-search-input {
+      flex: 1; min-width: 180px; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text); outline: none;
+    }
+    .karte-search-input:focus { border-color: var(--primary-light); }
+    .btn-new-karte {
+      padding: 11px 18px; background: var(--accent); color: #fff; border: none; border-radius: 10px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .btn-new-karte:hover { opacity: 0.9; }
+    .karte-list { display: flex; flex-direction: column; gap: 10px; }
+    .karte-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 4px var(--shadow);
+    }
+    .karte-card:hover { border-color: var(--accent-light); box-shadow: 0 3px 10px var(--shadow); }
+    .karte-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .karte-icon { font-size: 28px; }
+    .karte-pet-name { font-size: 16px; font-weight: 700; color: var(--text); }
+    .karte-breed { font-size: 12px; color: var(--text-soft); }
+    .karte-owner { font-size: 13px; color: var(--text-mid); }
+    .karte-memos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .karte-memo-tag {
+      font-size: 11px; padding: 3px 8px; border-radius: 20px; background: #F0F8F6;
+      border: 1px solid #C8E0DB; color: var(--accent);
+    }
+    .karte-memo-tag.warn { background: var(--warn-bg); border-color: #F0C4B0; color: var(--warn); }
+    .no-kartes { text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: 14px; }
+
+    .karte-section { margin-bottom: 18px; }
+    .karte-section-title {
+      font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+      padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    }
+    .karte-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .karte-field { margin-bottom: 0; }
+    .karte-field label { display: block; font-size: 11px; color: var(--text-soft); margin-bottom: 4px; font-weight: 700; }
+    .karte-input {
+      width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text); outline: none;
+      appearance: none; -webkit-appearance: none;
+    }
+    .karte-input:focus { border-color: var(--primary-light); }
+    .karte-textarea {
+      width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text);
+      resize: vertical; min-height: 80px; outline: none;
+    }
+    .karte-textarea:focus { border-color: var(--primary-light); }
+
+    .visit-history-list { display: flex; flex-direction: column; gap: 8px; }
+    .visit-hist-item {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 12px; font-size: 13px;
+    }
+    .visit-hist-date { font-weight: 700; color: var(--primary); font-size: 13px; }
+    .visit-hist-detail { color: var(--text-soft); font-size: 12px; margin-top: 2px; }
+
+    @media (max-width: 600px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .block-form-grid { grid-template-columns: 1fr 1fr; }
+      .res-info { gap: 8px; }
+      .karte-field-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- ===== ログイン画面 ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">ANELLA CAFE</div>
+    <div class="login-sub">スタッフ管理画面</div>
+    <div class="login-field">
+      <label>メールアドレス</label>
+      <input type="email" id="loginEmail" placeholder="anellacafeoita@gmail.com" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>パスワード</label>
+      <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">ログイン</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ===== メイン画面 ===== -->
+<div id="mainScreen">
+  <div class="admin-header">
+    <div class="admin-header-logo">ANELLA Admin</div>
+    <div class="admin-header-right">
+      <span class="admin-user" id="adminUserLabel"></span>
+      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab1" onclick="switchTab(1)">📋 予約一覧</button>
+    <button class="tab-btn" id="tab2" onclick="switchTab(2)">🚫 ブロック設定</button>
+    <button class="tab-btn" id="tab3" onclick="switchTab(3)">🐾 カルテ</button>
+  </div>
+
+  <div class="container">
+
+    <!-- ===== 予約一覧タブ ===== -->
+    <div class="tab-panel active" id="panel1">
+      <div class="filter-bar">
+        <div class="view-toggle">
+          <button class="view-btn active" id="viewDay" onclick="setView('日')">日</button>
+          <button class="view-btn" id="viewWeek" onclick="setView('週')">週</button>
+          <button class="view-btn" id="viewMonth" onclick="setView('月')">月</button>
+        </div>
+        <button class="nav-btn" onclick="navigatePeriod(-1)">‹</button>
+        <span class="period-label" id="periodLabel"></span>
+        <button class="nav-btn" onclick="navigatePeriod(1)">›</button>
+        <input type="date" id="filterDate" onchange="loadReservations()" style="display:none;">
+        <button class="btn-today" onclick="setToday()">今日</button>
+        <span class="filter-label">担当</span>
+        <div class="select-wrap-sm">
+          <select id="filterStaff" onchange="loadReservations()">
+            <option value="">全員</option>
+            <option value="牧">牧</option>
+            <option value="椛田">椛田</option>
+            <option value="どちらでも可">どちらでも可</option>
+          </select>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px; margin-left:auto;">
+          <div class="realtime-dot" id="realtimeDot"></div>
+          <span class="realtime-label" id="realtimeLabel">接続中...</span>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-num" id="statTotal">0</div>
+          <div class="stat-label">合計</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statBooked">0</div>
+          <div class="stat-label">予約済み</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-num" id="statVisited">0</div>
+          <div class="stat-label">来店済み</div>
+        </div>
+        <div class="stat-card gray">
+          <div class="stat-num" id="statCancelled">0</div>
+          <div class="stat-label">キャンセル</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px; text-align:right;">
+        <button class="add-block-btn" style="margin:0;" onclick="openManualModal()">＋ 手動予約登録</button>
+      </div>
+
+      <div class="reservation-list" id="reservationList">
+        <div class="no-reservations">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- ===== ブロック設定タブ ===== -->
+    <div class="tab-panel" id="panel2">
+      <div class="block-form-card">
+        <div class="section-label" style="margin-bottom:14px;">ブロック時間を追加</div>
+        <div class="filter-bar" style="margin-bottom:12px;">
+          <span class="filter-label">日付</span>
+          <input type="date" id="blockFilterDate" onchange="loadBlocks()">
+          <button class="btn-today" onclick="setBlockToday()">今日</button>
+        </div>
+        <div class="block-form-grid">
+          <div class="select-wrap-sm">
+            <select id="blockStaff" class="block-input">
+              <option value="牧">牧</option>
+              <option value="椛田">椛田</option>
+              <option value="どちらでもいい">どちらでもいい</option>
+            </select>
+          </div>
+          <div class="select-wrap-sm">
+            <select id="blockType" class="block-input" onchange="toggleBlockTime()">
+              <option value="終日">終日</option>
+              <option value="時間指定">時間指定</option>
+            </select>
+          </div>
+          <div id="blockTimeWrap" style="display:none; grid-column:1/-1;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="select-wrap-sm" style="flex:1;">
+                <select id="blockTimeFrom" class="block-input">
+                  <option value="10:00">10:00</option>
+                  <option value="11:00">11:00</option>
+                  <option value="12:00">12:00</option>
+                  <option value="13:00">13:00</option>
+                  <option value="14:00">14:00</option>
+                  <option value="15:00">15:00</option>
+                </select>
+              </div>
+              <span style="color:var(--text-soft); font-size:14px;">〜</span>
+              <div class="select-wrap-sm" style="flex:1;">
+                <select id="blockTimeTo" class="block-input">
+                  <option value="10:00">10:00</option>
+                  <option value="11:00">11:00</option>
+                  <option value="12:00">12:00</option>
+                  <option value="13:00">13:00</option>
+                  <option value="14:00">14:00</option>
+                  <option value="15:00" selected>15:00</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <input type="text" id="blockReason" class="block-input" placeholder="理由（例：休憩）" maxlength="30">
+        </div>
+        <button class="add-block-btn" onclick="addBlock()">ブロックを追加</button>
+      </div>
+
+      <div class="block-form-card">
+        <div class="section-label" id="blockListLabel">ブロック一覧</div>
+        <div class="block-list" id="blockList">
+          <div class="no-blocks">日付を選択してください</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== カルテタブ ===== -->
+    <div class="tab-panel" id="panel3">
+      <div class="karte-toolbar">
+        <input type="text" class="karte-search-input" id="karteSearch" placeholder="名前・電話番号で検索..." oninput="loadKartes(this.value)">
+        <button class="btn-new-karte" onclick="openKarteModal(null)">＋ 新規カルテ作成</button>
+      </div>
+      <div class="karte-list" id="karteList">
+        <div class="no-kartes">読み込み中...</div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /mainScreen -->
+
+<!-- ===== 予約詳細モーダル ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">予約詳細</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+
+    <div class="section-label">ステータス変更</div>
+    <div class="status-btns">
+      <button class="status-btn" id="sbBooked"  onclick="changeStatus('予約済み')">予約済み</button>
+      <button class="status-btn" id="sbVisited" onclick="changeStatus('来店済み')">来店済み</button>
+      <button class="status-btn" id="sbCancelled" onclick="changeStatus('キャンセル')">キャンセル</button>
+    </div>
+
+    <div class="section-label">予約詳細</div>
+    <table class="detail-table" id="detailTable"></table>
+
+    <div class="section-label" style="margin-top:16px;">ペット情報編集</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+      <div>
+        <label style="font-size:12px; color:var(--text-soft); display:block; margin-bottom:4px;">ペット名</label>
+        <input type="text" id="editPetName" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-soft); display:block; margin-bottom:4px;">犬種</label>
+        <input type="text" id="editBreed" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-soft); display:block; margin-bottom:4px;">性別</label>
+        <input type="text" id="editGender" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-soft); display:block; margin-bottom:4px;">体重</label>
+        <input type="text" id="editWeight" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-soft); display:block; margin-bottom:4px;">年齢</label>
+        <input type="text" id="editPetAge" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-soft); display:block; margin-bottom:4px;">毛玉</label>
+        <input type="text" id="editMatting" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
+      </div>
+    </div>
+
+    <div class="section-label">担当スタッフ割当</div>
+    <div class="select-wrap-sm" style="margin-bottom:12px;">
+      <select id="staffAssign" style="width:100%; padding:11px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:14px; color:var(--text); appearance:none; -webkit-appearance:none; outline:none;">
+        <option value="どちらでもいい">どちらでもいい</option>
+        <option value="牧">牧</option>
+        <option value="椛田">椛田</option>
+      </select>
+    </div>
+
+    <div class="section-label">スタッフメモ</div>
+    <textarea class="memo-area" id="memoArea" placeholder="スタッフ内部メモ（お客様には非表示）" maxlength="500"></textarea>
+    <div style="display:flex; gap:10px; margin-top:12px;">
+      <button class="save-btn" id="saveBtn" onclick="saveMemo()" style="flex:1;">保存する</button>
+      <button class="save-btn" id="reviewBtn" onclick="sendReviewEmail()" style="flex:1; background:var(--accent);">📧 口コミ依頼を送信</button>
+    </div>
+    <div class="save-ok" id="saveOk">✅ 保存しました</div>
+    <div class="save-ok" id="reviewSendOk" style="display:none; background:var(--accent-light); color:#fff;">✅ 口コミ依頼を送信しました</div>
+  </div>
+</div>
+
+<!-- ===== 手動予約登録モーダル ===== -->
+<div class="modal-overlay" id="manualModalOverlay" onclick="closeManualModal(event)">
+  <div class="modal" id="manualModal" style="max-height:90vh; overflow-y:auto;">
+    <div class="modal-header">
+      <div class="modal-title">手動予約登録</div>
+      <button class="modal-close" onclick="closeManualModalDirect()">✕</button>
+    </div>
+
+    <div class="section-label">来店日時・担当 <span style="color:var(--warn); font-size:11px;">必須</span></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">来店日</div>
+        <input type="date" id="manualDate" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:14px; background:var(--bg);">
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">来店時間</div>
+        <div class="select-wrap-sm">
+          <select id="manualTime" style="width:100%;">
+            <option value="10:00">10:00</option>
+            <option value="11:00">11:00</option>
+            <option value="12:00">12:00</option>
+            <option value="13:00">13:00</option>
+            <option value="14:00">14:00</option>
+            <option value="15:00">15:00</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">コース <span style="color:var(--warn); font-size:11px;">必須</span></div>
+    <div class="select-wrap-sm" style="margin-bottom:14px;">
+      <select id="manualCourse" style="width:100%;">
+        <option value="">選択してください</option>
+        <option value="シャンプーコース">シャンプーコース</option>
+        <option value="カットコース">カットコース</option>
+      </select>
+    </div>
+
+    <div class="section-label">ペット情報 <span style="color:var(--text-soft); font-size:11px;">任意</span></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">ペット名</div>
+        <input type="text" id="manualPetName" placeholder="例：ぽち" maxlength="20" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:14px; background:var(--bg);">
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">犬種</div>
+        <input type="text" id="manualBreed" placeholder="例：トイプードル" maxlength="30" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:14px; background:var(--bg);">
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">性別</div>
+        <div class="select-wrap-sm">
+          <select id="manualGender" style="width:100%;">
+            <option value="">未記入</option>
+            <option value="男の子">男の子</option>
+            <option value="女の子">女の子</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">体重</div>
+        <div class="select-wrap-sm">
+          <select id="manualWeight" style="width:100%;">
+            <option value="">未記入</option>
+            <option value="〜3kg">〜3kg</option>
+            <option value="3〜5kg">3〜5kg</option>
+            <option value="5〜10kg">5〜10kg</option>
+            <option value="10kg〜">10kg〜</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">年齢</div>
+        <div class="select-wrap-sm">
+          <select id="manualPetAge" style="width:100%;">
+            <option value="">未記入</option>
+            <option value="1歳未満">1歳未満</option>
+            <option value="1〜3歳">1〜3歳</option>
+            <option value="4〜7歳">4〜7歳</option>
+            <option value="8〜10歳">8〜10歳</option>
+            <option value="11歳以上">11歳以上</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">毛玉</div>
+        <div class="select-wrap-sm">
+          <select id="manualMatting" style="width:100%;">
+            <option value="">未記入</option>
+            <option value="なし">なし</option>
+            <option value="少しあり">少しあり</option>
+            <option value="多めにあり">多めにあり</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">狂犬病ワクチン</div>
+        <div class="select-wrap-sm">
+          <select id="manualVaccineRabies" style="width:100%;">
+            <option value="">未記入</option>
+            <option value="接種済み">接種済み</option>
+            <option value="未接種">未接種</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">5種混合ワクチン</div>
+        <div class="select-wrap-sm">
+          <select id="manualVaccine5mix" style="width:100%;">
+            <option value="">未記入</option>
+            <option value="接種済み">接種済み</option>
+            <option value="未接種">未接種</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">お客様情報 <span style="color:var(--text-soft); font-size:11px;">任意</span></div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">お客様名</div>
+      <input type="text" id="manualOwnerName" placeholder="例：山田 太郎" maxlength="30" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:14px; background:var(--bg);">
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">電話番号</div>
+        <input type="tel" id="manualPhone" placeholder="09012345678" maxlength="15" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:14px; background:var(--bg);">
+      </div>
+      <div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:4px;">メールアドレス</div>
+        <input type="email" id="manualEmail" placeholder="example@email.com" maxlength="100" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-family:'Noto Sans JP',sans-serif; font-size:14px; background:var(--bg);">
+      </div>
+    </div>
+
+    <div class="section-label">予約受付担当者 <span style="color:var(--warn); font-size:11px;">必須</span></div>
+    <div class="select-wrap-sm" style="margin-bottom:14px;">
+      <select id="manualReceptionist" style="width:100%;">
+        <option value="">選択してください</option>
+        <option value="平迫">平迫</option>
+        <option value="名倉">名倉</option>
+        <option value="須崎">須崎</option>
+        <option value="池田">池田</option>
+        <option value="牧">牧</option>
+        <option value="三浦">三浦</option>
+        <option value="篠田">篠田</option>
+        <option value="末光">末光</option>
+        <option value="今本">今本</option>
+        <option value="後藤">後藤</option>
+        <option value="椛田">椛田</option>
+      </select>
+    </div>
+
+    <div class="section-label">スタッフメモ <span style="color:var(--text-soft); font-size:11px;">任意</span></div>
+    <textarea id="manualMemo" class="memo-area" placeholder="電話予約メモなど" maxlength="500" style="margin-bottom:14px;"></textarea>
+
+    <div class="save-ok" id="manualSaveOk" style="display:none;">✅ 予約を登録しました</div>
+    <div style="color:var(--warn); font-size:13px; margin-bottom:10px; display:none;" id="manualErr"></div>
+    <button class="save-btn" onclick="submitManualReservation()" style="width:100%;">予約を登録する</button>
+  </div>
+</div>
+
+<!-- ===== カルテ編集モーダル ===== -->
+<div class="modal-overlay" id="karteModalOverlay" onclick="closeKarteModal(event)">
+  <div class="modal" id="karteModal" style="max-height:90vh; overflow-y:auto;">
+    <div class="modal-header">
+      <div class="modal-title" id="karteModalTitle">カルテ</div>
+      <button class="modal-close" onclick="closeKarteModalDirect()">✕</button>
+    </div>
+
+    <div class="karte-section">
+      <div class="karte-section-title">👤 飼い主情報</div>
+      <div class="karte-field-grid">
+        <div class="karte-field">
+          <label>お名前 <span style="color:var(--warn);">必須</span></label>
+          <input type="text" class="karte-input" id="kOwnerName" placeholder="山田 太郎" maxlength="30">
+        </div>
+        <div class="karte-field">
+          <label>電話番号 <span style="color:var(--warn);">必須</span></label>
+          <input type="tel" class="karte-input" id="kPhone" placeholder="09012345678" maxlength="15">
+        </div>
+        <div class="karte-field">
+          <label>メールアドレス</label>
+          <input type="email" class="karte-input" id="kEmail" placeholder="example@email.com" maxlength="100">
+        </div>
+        <div class="karte-field">
+          <label>LINE表示名</label>
+          <input type="text" class="karte-input" id="kLineName" placeholder="LINE名" maxlength="30">
+        </div>
+      </div>
+    </div>
+
+    <div class="karte-section">
+      <div class="karte-section-title">🐾 ペット情報</div>
+      <div class="karte-field-grid">
+        <div class="karte-field">
+          <label>ペット名 <span style="color:var(--warn);">必須</span></label>
+          <input type="text" class="karte-input" id="kPetName" placeholder="ぽち" maxlength="20">
+        </div>
+        <div class="karte-field">
+          <label>犬種・猫種</label>
+          <input type="text" class="karte-input" id="kBreed" placeholder="トイプードル" maxlength="30">
+        </div>
+        <div class="karte-field">
+          <label>性別</label>
+          <select class="karte-input" id="kGender">
+            <option value="">未記入</option>
+            <option value="男の子">男の子</option>
+            <option value="女の子">女の子</option>
+          </select>
+        </div>
+        <div class="karte-field">
+          <label>体重</label>
+          <select class="karte-input" id="kWeight">
+            <option value="">未記入</option>
+            <option value="〜3kg">〜3kg</option>
+            <option value="3〜5kg">3〜5kg</option>
+            <option value="5〜10kg">5〜10kg</option>
+            <option value="10kg〜">10kg〜</option>
+          </select>
+        </div>
+        <div class="karte-field">
+          <label>年齢</label>
+          <select class="karte-input" id="kPetAge">
+            <option value="">未記入</option>
+            <option value="1歳未満">1歳未満</option>
+            <option value="1〜3歳">1〜3歳</option>
+            <option value="4〜7歳">4〜7歳</option>
+            <option value="8〜10歳">8〜10歳</option>
+            <option value="11歳以上">11歳以上</option>
+          </select>
+        </div>
+        <div class="karte-field">
+          <label>狂犬病ワクチン</label>
+          <select class="karte-input" id="kVaccineRabies">
+            <option value="">未記入</option>
+            <option value="接種済み">接種済み</option>
+            <option value="未接種">未接種</option>
+          </select>
+        </div>
+        <div class="karte-field" style="grid-column:1/-1;">
+          <label>5種混合ワクチン</label>
+          <select class="karte-input" id="kVaccine5mix">
+            <option value="">未記入</option>
+            <option value="接種済み">接種済み</option>
+            <option value="未接種">未接種</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="karte-section">
+      <div class="karte-section-title">✂️ カットスタイルメモ</div>
+      <textarea class="karte-textarea" id="kCutStyleMemo" placeholder="希望スタイル・写真URL・長さの指示など" maxlength="1000"></textarea>
+    </div>
+
+    <div class="karte-section">
+      <div class="karte-section-title">😺 性格・扱い注意メモ</div>
+      <textarea class="karte-textarea" id="kPersonalityMemo" placeholder="噛み癖・緊張しやすい・ドライヤー苦手など" maxlength="1000"></textarea>
+    </div>
+
+    <div class="karte-section">
+      <div class="karte-section-title">⚠️ アレルギー・健康情報</div>
+      <textarea class="karte-textarea" id="kAllergyMemo" placeholder="皮膚疾患・使えないシャンプー・持病など" maxlength="1000"></textarea>
+    </div>
+
+    <div class="karte-section" id="karteHistorySection">
+      <div class="karte-section-title">📅 来店履歴</div>
+      <div class="visit-history-list" id="karteHistoryList">
+        <div style="color:var(--text-soft); font-size:13px;">読み込み中...</div>
+      </div>
+    </div>
+
+    <div style="color:var(--warn); font-size:13px; margin-bottom:10px; display:none;" id="karteErr"></div>
+    <button class="save-btn" id="karteSaveBtn" onclick="saveKarte()">カルテを保存する</button>
+    <div class="save-ok" id="karteSaveOk">✅ 保存しました</div>
+  </div>
+</div>
+
+<script>
+// ── 状態 ──────────────────────────────────────────
+let currentResId = null;
+let currentResData = null;
+let realtimeChannel = null;
+
+// ── 認証 ──────────────────────────────────────────
+// セッション監視タイマー
+let sessionCheckInterval = null;
+
+async function checkAuth() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('[DEBUG] checkAuth session:', session ? { email: session.user.email, expires_at: session.expires_at } : 'null');
+    if (session) {
+      showMain(session.user.email);
+      // セッション監視を開始
+      startSessionWatch();
+    } else {
+      console.log('[DEBUG] No session found, showing login screen');
+    }
+  } catch (err) {
+    console.error('[ERROR] checkAuth failed:', err);
+  }
+}
+
+function startSessionWatch() {
+  // 30秒ごとにセッション確認
+  sessionCheckInterval = setInterval(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('[DEBUG] Session expired, forcing logout');
+        doLogout();
+      }
+    } catch (err) {
+      console.error('[ERROR] Session check failed:', err);
+    }
+  }, 30000);
+}
+
+function stopSessionWatch() {
+  if (sessionCheckInterval) {
+    clearInterval(sessionCheckInterval);
+    sessionCheckInterval = null;
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+
+  if (!email || !password) { showLoginErr('メールとパスワードを入力してください'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'ログイン中...';
+  err.classList.remove('active');
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    btn.disabled = false;
+    btn.textContent = 'ログイン';
+
+    if (error) {
+      console.error('Supabase auth error:', error);
+      showLoginErr(`エラー: ${error.message || 'ログインに失敗しました'}`);
+      return;
+    }
+    showMain(data.user.email);
+  } catch (ex) {
+    btn.disabled = false;
+    btn.textContent = 'ログイン';
+    console.error('Login exception:', ex);
+    showLoginErr(`エラー: ${ex.message || 'ログインに失敗しました'}`);
+  }
+}
+
+async function doLogout() {
+  stopSessionWatch();
+  try {
+    await supabase.auth.signOut();
+  } catch (err) {
+    console.error('[DEBUG] Logout error (ignored):', err);
+  }
+  if (realtimeChannel) {
+    try {
+      await supabase.removeChannel(realtimeChannel);
+    } catch (err) {
+      console.error('[DEBUG] Remove channel error (ignored):', err);
+    }
+  }
+  document.getElementById('mainScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+}
+
+function showLoginErr(msg) {
+  const el = document.getElementById('loginErr');
+  el.textContent = msg;
+  el.classList.add('active');
+}
+
+function showMain(email) {
+  console.log('[DEBUG] showMain called with email:', email);
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display = 'block';
+  document.getElementById('adminUserLabel').textContent = email;
+  console.log('[DEBUG] UI switched to main screen');
+  setToday();
+  setBlockToday();
+  loadReservations();
+  setupRealtime();
+  console.log('[DEBUG] Realtime setup completed');
+}
+
+// ── リアルタイム ──────────────────────────────────
+function setupRealtime() {
+  try {
+    realtimeChannel = supabase
+      .channel('admin-reservations')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trimming_reservations' }, () => {
+        loadReservations();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_times' }, () => {
+        loadBlocks();
+      })
+      .subscribe((status) => {
+        const dot = document.getElementById('realtimeDot');
+        const label = document.getElementById('realtimeLabel');
+        if (status === 'SUBSCRIBED') {
+          dot.classList.add('connected');
+          label.textContent = 'リアルタイム';
+          console.log('[DEBUG] Realtime connection established');
+        } else {
+          dot.classList.remove('connected');
+          label.textContent = '再接続中...';
+          console.log('[DEBUG] Realtime status:', status);
+        }
+      });
+  } catch (err) {
+    console.error('[ERROR] Realtime setup failed:', err);
+    // フォールバック：手動リロード定期実行
+    setInterval(() => { loadReservations(); }, 60000);
+  }
+}
+
+// ── タブ切替 ─────────────────────────────────────
+function switchTab(n) {
+  [1, 2, 3].forEach(i => {
+    document.getElementById('tab' + i).classList.toggle('active', i === n);
+    document.getElementById('panel' + i).classList.toggle('active', i === n);
+  });
+  if (n === 3) loadKartes('');
+}
+
+// ── 予約一覧 ──────────────────────────────────────
+let currentView = '日';
+
+function fmt(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function parseLocalDate(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function setView(v) {
+  currentView = v;
+  ['日','週','月'].forEach(label => {
+    const btn = document.getElementById('view' + (label === '日' ? 'Day' : label === '週' ? 'Week' : 'Month'));
+    if (btn) btn.classList.toggle('active', label === v);
+  });
+  loadReservations();
+}
+
+function navigatePeriod(dir) {
+  const val = document.getElementById('filterDate').value || fmt(new Date());
+  const base = parseLocalDate(val);
+  let next;
+  if (currentView === '日') {
+    next = new Date(base.getFullYear(), base.getMonth(), base.getDate() + dir);
+  } else if (currentView === '週') {
+    next = new Date(base.getFullYear(), base.getMonth(), base.getDate() + dir * 7);
+  } else {
+    next = new Date(base.getFullYear(), base.getMonth() + dir, 1);
+  }
+  document.getElementById('filterDate').value = fmt(next);
+  loadReservations();
+}
+
+function setToday() {
+  document.getElementById('filterDate').value = fmt(new Date());
+  loadReservations();
+}
+
+function getDateRange() {
+  const val = document.getElementById('filterDate').value || fmt(new Date());
+  const base = parseLocalDate(val);
+  if (currentView === '日') {
+    return { from: val, to: val };
+  } else if (currentView === '週') {
+    const day = base.getDay();
+    const mon = new Date(base.getFullYear(), base.getMonth(), base.getDate() - (day === 0 ? 6 : day - 1));
+    const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+    return { from: fmt(mon), to: fmt(sun) };
+  } else {
+    const first = new Date(base.getFullYear(), base.getMonth(), 1);
+    const last  = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+    return { from: fmt(first), to: fmt(last) };
+  }
+}
+
+function updatePeriodLabel() {
+  const { from, to } = getDateRange();
+  const f = from.replace(/-/g, '/');
+  const t = to.replace(/-/g, '/');
+  let label = '';
+  if (currentView === '日') label = f;
+  else if (currentView === '週') label = f + ' 〜 ' + t;
+  else label = from.slice(0,7).replace('-', '年') + '月';
+  document.getElementById('periodLabel').textContent = label;
+}
+
+async function loadReservations() {
+  const { from, to } = getDateRange();
+  const staff = document.getElementById('filterStaff').value;
+  updatePeriodLabel();
+
+  console.log('[DEBUG] loadReservations called:', { from, to, staff, timestamp: new Date().toISOString() });
+
+  try {
+    let query = supabase
+      .from('trimming_reservations')
+      .select('*')
+      .gte('visit_date', from)
+      .lte('visit_date', to)
+      .order('visit_date', { ascending: true })
+      .order('visit_time', { ascending: true });
+
+    if (staff) query = query.eq('staff', staff);
+
+    // キャッシュバスター：タイムスタンプを追加
+    const { data, error } = await query;
+    console.log('[DEBUG] Supabase query result:', {
+      error: error ? { message: error.message, code: error.code, status: error.status } : null,
+      dataCount: data ? data.length : 0,
+      timestamp: new Date().toISOString()
+    });
+
+    if (error) {
+      console.error('[ERROR] Failed to load reservations:', error);
+
+      // セッション切れチェック
+      if (error.status === 401 || error.message?.includes('JWT')) {
+        console.log('[DEBUG] Session expired, forcing logout');
+        doLogout();
+        return;
+      }
+
+      document.getElementById('reservationList').innerHTML = `<div class="no-reservations" style="color:red;">エラーが発生しました: ${error.message}</div>`;
+      return;
+    }
+
+    renderStats(data || []);
+    renderReservations(data || []);
+  } catch (err) {
+    console.error('[ERROR] loadReservations exception:', err);
+    document.getElementById('reservationList').innerHTML = `<div class="no-reservations" style="color:red;">通信エラー: ${err.message}</div>`;
+  }
+}
+
+function renderStats(list) {
+  document.getElementById('statTotal').textContent = list.length;
+  document.getElementById('statBooked').textContent = list.filter(r => r.status === '予約済み').length;
+  document.getElementById('statVisited').textContent = list.filter(r => r.status === '来店済み').length;
+  document.getElementById('statCancelled').textContent = list.filter(r => r.status === 'キャンセル').length;
+}
+
+function renderReservations(list) {
+  const container = document.getElementById('reservationList');
+  const noMsg = currentView === '日' ? 'この日の予約はありません' : 'この期間の予約はありません';
+  if (list.length === 0) {
+    container.innerHTML = `<div class="no-reservations">${noMsg}</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  const DAY_NAMES = ['日','月','火','水','木','金','土'];
+  let lastDate = null;
+
+  list.forEach(r => {
+    if (currentView !== '日' && r.visit_date !== lastDate) {
+      lastDate = r.visit_date;
+      const d = new Date(r.visit_date);
+      const dow = DAY_NAMES[d.getDay()];
+      const header = document.createElement('div');
+      header.className = 'date-group-header';
+      header.textContent = r.visit_date.replace(/-/g,'/') + '（' + dow + '）';
+      container.appendChild(header);
+    }
+    const card = document.createElement('div');
+    card.className = 'res-card' + (r.status === 'キャンセル' ? ' cancelled' : '');
+    card.innerHTML = `
+      <div class="res-header">
+        <span class="res-time">${r.visit_time.slice(0,5)}</span>
+        <div style="flex:1;">
+          <div class="res-pet">${r.pet_name} <span style="font-size:13px; font-weight:400; color:var(--text-soft);">${r.breed}</span></div>
+          <div class="res-course">${r.course}${r.options && r.options.length > 0 ? ' + オプション' + r.options.length + '点' : ''}</div>
+        </div>
+        <span class="status-badge ${statusClass(r.status)}">${r.status}</span>
+      </div>
+      <div class="res-info">
+        <span>👤 ${r.owner_name}</span>
+        <span>📞 ${r.phone}</span>
+        <span>💰 ${r.total_price > 0 ? '¥' + r.total_price.toLocaleString() : '要確認'}</span>
+        <span>👤 ${r.staff || '未決定'}</span>
+        <span style="font-size:11px; color:var(--text-soft);">No.${r.reservation_number}</span>
+      </div>
+      ${r.staff_memo ? `<div class="res-memo-preview">📝 ${r.staff_memo}</div>` : ''}
+    `;
+    card.onclick = () => openModal(r);
+    container.appendChild(card);
+  });
+}
+
+function statusClass(s) {
+  if (s === '予約済み') return 'booked';
+  if (s === '来店済み') return 'visited';
+  return 'cancelled';
+}
+
+// ── モーダル ──────────────────────────────────────
+function openModal(r) {
+  currentResId = r.id;
+  currentResData = r;
+  document.getElementById('modalTitle').textContent = `${r.visit_time.slice(0,5)} ${r.pet_name}`;
+
+  // ステータスボタン
+  document.getElementById('sbBooked').className = 'status-btn' + (r.status === '予約済み' ? ' active-booked' : '');
+  document.getElementById('sbVisited').className = 'status-btn' + (r.status === '来店済み' ? ' active-visited' : '');
+  document.getElementById('sbCancelled').className = 'status-btn' + (r.status === 'キャンセル' ? ' active-cancelled' : '');
+
+  // 詳細テーブル
+  const rows = [
+    ['予約番号', r.reservation_number],
+    ['来店日時', r.visit_date + ' ' + r.visit_time.slice(0,5)],
+    ['担当者', r.staff],
+    ['コース', r.course],
+    ['犬種', r.breed],
+    ['オプション', r.options && r.options.length > 0 ? r.options.map(o => o.name).join('、') : 'なし'],
+    ['合計', r.total_price > 0 ? '¥' + r.total_price.toLocaleString() : '要確認'],
+    ['ペット名', r.pet_name],
+    ['性別', r.gender],
+    ['体重', r.weight],
+    ['年齢', r.pet_age],
+    ['毛玉', r.matting],
+    ['狂犬病ワクチン', r.vaccine_rabies || '未記入'],
+    ['5種混合ワクチン', r.vaccine_5mix || '未記入'],
+    ['スタッフへの伝言', r.staff_note || 'なし'],
+    ['飼い主', r.owner_name],
+    ['電話', r.phone],
+    ['LINE', r.line_name || 'なし'],
+    ['メール', r.email || 'なし'],
+  ];
+  document.getElementById('detailTable').innerHTML =
+    rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('');
+
+  document.getElementById('editPetName').value = r.pet_name || '';
+  document.getElementById('editBreed').value = r.breed || '';
+  document.getElementById('editGender').value = r.gender || '';
+  document.getElementById('editWeight').value = r.weight || '';
+  document.getElementById('editPetAge').value = r.pet_age || '';
+  document.getElementById('editMatting').value = r.matting || '';
+  document.getElementById('staffAssign').value = r.staff || 'どちらでもいい';
+  document.getElementById('memoArea').value = r.staff_memo || '';
+  document.getElementById('saveOk').classList.remove('active');
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+async function changeStatus(status) {
+  if (!currentResId) return;
+  const { error } = await supabase
+    .from('trimming_reservations')
+    .update({ status })
+    .eq('id', currentResId);
+  if (!error) {
+    currentResData.status = status;
+    document.getElementById('sbBooked').className = 'status-btn' + (status === '予約済み' ? ' active-booked' : '');
+    document.getElementById('sbVisited').className = 'status-btn' + (status === '来店済み' ? ' active-visited' : '');
+    document.getElementById('sbCancelled').className = 'status-btn' + (status === 'キャンセル' ? ' active-cancelled' : '');
+    loadReservations();
+  } else {
+    console.error('Status update error:', error);
+    alert('ステータス更新に失敗しました：' + (error.message || '不明なエラー'));
+  }
+}
+
+async function saveMemo() {
+  if (!currentResId) return;
+  const memo  = document.getElementById('memoArea').value.trim();
+  const staff = document.getElementById('staffAssign').value;
+  const petName = document.getElementById('editPetName').value.trim();
+  const breed = document.getElementById('editBreed').value.trim();
+  const gender = document.getElementById('editGender').value.trim();
+  const weight = document.getElementById('editWeight').value.trim();
+  const petAge = document.getElementById('editPetAge').value.trim();
+  const matting = document.getElementById('editMatting').value.trim();
+  const btn   = document.getElementById('saveBtn');
+  btn.disabled = true;
+
+  const oldStaff = currentResData.staff;
+  const { error } = await supabase
+    .from('trimming_reservations')
+    .update({
+      staff_memo: memo || null,
+      staff,
+      pet_name: petName || null,
+      breed: breed || null,
+      gender: gender || null,
+      weight: weight || null,
+      pet_age: petAge || null,
+      matting: matting || null
+    })
+    .eq('id', currentResId);
+
+  btn.disabled = false;
+  if (!error) {
+    if (oldStaff !== staff) {
+      const date = currentResData.visit_date;
+      const time = currentResData.visit_time;
+      const timeHour = parseInt(time.slice(0, 2));
+      const TIME_SLOTS_ADMIN = ['10:00','11:00','12:00','13:00','14:00','15:00'];
+
+      // 古いブロック設定を削除
+      if (oldStaff) {
+        const oldStaffList = oldStaff === 'どちらでもいい' ? ['牧', '椛田'] : [oldStaff];
+        await supabase
+          .from('blocked_times')
+          .delete()
+          .eq('block_date', date)
+          .in('staff', oldStaffList);
+      }
+
+      // 新しいブロック設定を追加
+      const blockRows = [];
+      if (staff && staff !== 'どちらでもいい') {
+        const newStaffList = [staff];
+        newStaffList.forEach(s => {
+          TIME_SLOTS_ADMIN.forEach(slot => {
+            const slotHour = parseInt(slot.slice(0, 2));
+            if (timeHour <= slotHour && slotHour < timeHour + 4) {
+              blockRows.push({
+                block_date: date,
+                block_time: slot + ':00',
+                staff: s,
+                reason: null
+              });
+            }
+          });
+        });
+
+        if (blockRows.length > 0) {
+          await supabase.from('blocked_times').insert(blockRows);
+        }
+      }
+    }
+
+    document.getElementById('saveOk').classList.add('active');
+    setTimeout(() => document.getElementById('saveOk').classList.remove('active'), 2000);
+    loadReservations();
+  }
+}
+
+async function sendReviewEmail() {
+  if (!currentResData || !currentResData.email) {
+    alert('お客様のメールアドレスがありません');
+    return;
+  }
+
+  if (currentResData.status !== '来店済み') {
+    alert('来店済みの予約に対してのみ送信できます');
+    return;
+  }
+
+  const btn = document.getElementById('reviewBtn');
+  btn.disabled = true;
+
+  try {
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz70c8M8x7u69_r2y7Ibh1JkMZIsJEYYLdRcRuRAxnhX_ekQclzDQL6RBNHhnzxyvy7_A/exec';
+    const payload = {
+      type: 'review_request',
+      pet_name: currentResData.pet_name,
+      owner_name: currentResData.owner_name,
+      email: currentResData.email
+    };
+
+    const response = await fetch(`${GAS_URL}?token=anella2026secret&type=review_request&data=${encodeURIComponent(JSON.stringify(payload))}`);
+    const text = await response.text();
+
+    btn.disabled = false;
+    if (text === 'ok') {
+      document.getElementById('reviewSendOk').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('reviewSendOk').style.display = 'none';
+      }, 3000);
+    } else {
+      alert('送信に失敗しました: ' + text);
+    }
+  } catch (err) {
+    btn.disabled = false;
+    alert('送信エラー: ' + err.message);
+  }
+}
+
+// ── ブロック設定 ──────────────────────────────────
+function setBlockToday() {
+  document.getElementById('blockFilterDate').value = new Date().toISOString().slice(0, 10);
+  loadBlocks();
+}
+
+async function loadBlocks() {
+  const date = document.getElementById('blockFilterDate').value;
+  const label = document.getElementById('blockListLabel');
+  if (!date) return;
+  label.textContent = `${date} のブロック一覧`;
+
+  try {
+    const { data, error } = await supabase
+      .from('blocked_times')
+      .select('*')
+      .eq('block_date', date)
+      .order('block_time', { ascending: true });
+
+    const list = document.getElementById('blockList');
+
+    if (error) {
+      console.error('[ERROR] Failed to load blocks:', error);
+      list.innerHTML = '<div class="no-blocks" style="color:red;">データ読み込みエラー</div>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div class="no-blocks">この日のブロックはありません</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    data.forEach(b => {
+      const item = document.createElement('div');
+      item.className = 'block-item';
+      item.innerHTML = `
+        <div>
+          <div class="block-item-info">${b.block_time.slice(0,5)} — ${b.staff}</div>
+          <div class="block-item-sub">${b.reason || '理由なし'}</div>
+        </div>
+        <button class="del-block-btn" onclick="deleteBlock('${b.id}')">削除</button>
+      `;
+      list.appendChild(item);
+    });
+  } catch (err) {
+    console.error('[ERROR] loadBlocks exception:', err);
+    document.getElementById('blockList').innerHTML = '<div class="no-blocks" style="color:red;">エラーが発生しました</div>';
+  }
+}
+
+function toggleBlockTime() {
+  const type = document.getElementById('blockType').value;
+  document.getElementById('blockTimeWrap').style.display = type === '時間指定' ? '' : 'none';
+}
+
+async function addBlock() {
+  const date = document.getElementById('blockFilterDate').value;
+  const staff = document.getElementById('blockStaff').value;
+  const type = document.getElementById('blockType').value;
+  const reason = document.getElementById('blockReason').value.trim();
+
+  if (!date) { alert('日付を選択してください'); return; }
+
+  let times;
+  if (type === '終日') {
+    times = ['10:00','11:00','12:00','13:00','14:00','15:00'];
+  } else {
+    const from = parseInt(document.getElementById('blockTimeFrom').value);
+    const to   = parseInt(document.getElementById('blockTimeTo').value);
+    if (from >= to) { alert('終了時間は開始時間より後にしてください'); return; }
+    times = [];
+    for (let h = from; h <= to; h++) {
+      times.push(String(h).padStart(2,'0') + ':00');
+    }
+  }
+  const staffList = staff === 'どちらでもいい' ? ['牧', '椛田'] : [staff];
+
+  const rows = [];
+  staffList.forEach(s => {
+    times.forEach(t => {
+      rows.push({ block_date: date, block_time: t + ':00', staff: s, reason: reason || null });
+    });
+  });
+
+  const { error } = await supabase.from('blocked_times').insert(rows);
+  if (error) { alert('追加に失敗しました'); console.error(error); return; }
+
+  document.getElementById('blockReason').value = '';
+  loadBlocks();
+}
+
+async function deleteBlock(id) {
+  if (!confirm('このブロックを削除しますか？')) return;
+  await supabase.from('blocked_times').delete().eq('id', id);
+  loadBlocks();
+}
+
+// ── 手動予約登録 ──────────────────────────────────
+function openManualModal() {
+  const d = document.getElementById('filterDate').value || new Date().toISOString().slice(0,10);
+  document.getElementById('manualDate').value = d;
+  document.getElementById('manualTime').value = '10:00';
+  document.getElementById('manualCourse').value = '';
+  document.getElementById('manualPetName').value = '';
+  document.getElementById('manualBreed').value = '';
+  document.getElementById('manualGender').value = '';
+  document.getElementById('manualWeight').value = '';
+  document.getElementById('manualPetAge').value = '';
+  document.getElementById('manualMatting').value = '';
+  document.getElementById('manualVaccineRabies').value = '';
+  document.getElementById('manualVaccine5mix').value = '';
+  document.getElementById('manualOwnerName').value = '';
+  document.getElementById('manualPhone').value = '';
+  document.getElementById('manualEmail').value = '';
+  document.getElementById('manualMemo').value = '';
+  document.getElementById('manualReceptionist').value = '';
+  document.getElementById('manualSaveOk').style.display = 'none';
+  document.getElementById('manualErr').style.display = 'none';
+  document.getElementById('manualModalOverlay').classList.add('active');
+}
+
+function closeManualModal(e) {
+  if (e.target === document.getElementById('manualModalOverlay')) closeManualModalDirect();
+}
+
+function closeManualModalDirect() {
+  document.getElementById('manualModalOverlay').classList.remove('active');
+}
+
+async function submitManualReservation() {
+  const date          = document.getElementById('manualDate').value;
+  const course        = document.getElementById('manualCourse').value;
+  const receptionist  = document.getElementById('manualReceptionist').value;
+  const errEl         = document.getElementById('manualErr');
+
+  if (!date)         { errEl.textContent = '来店日を入力してください'; errEl.style.display = 'block'; return; }
+  if (!course)       { errEl.textContent = 'コースを選択してください'; errEl.style.display = 'block'; return; }
+  if (!receptionist) { errEl.textContent = '受付担当者を選択してください'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+
+  // ブロック時間チェック（3時間のバッファを考慮）
+  const time  = document.getElementById('manualTime').value;
+  const timeHour = parseInt(time.slice(0, 2));
+  const { data: allBlocks } = await supabase
+    .from('blocked_times')
+    .select('staff, block_time')
+    .eq('block_date', date);
+
+  if (allBlocks && allBlocks.length > 0) {
+    const makiBlocked = allBlocks.some(b => {
+      const blockHour = parseInt(b.block_time.slice(0, 2));
+      return b.staff === '牧' && blockHour <= timeHour && timeHour < blockHour + 4;
+    });
+    const kabataBlocked = allBlocks.some(b => {
+      const blockHour = parseInt(b.block_time.slice(0, 2));
+      return b.staff === '椛田' && blockHour <= timeHour && timeHour < blockHour + 4;
+    });
+
+    let isBlocked = false;
+    if (receptionist === '牧'          && makiBlocked)                      isBlocked = true;
+    if (receptionist === '椛田'        && kabataBlocked)                    isBlocked = true;
+    if (receptionist === 'どちらでもいい' && makiBlocked && kabataBlocked)  isBlocked = true;
+
+    if (isBlocked) {
+      errEl.textContent = 'この日時はブロックされているため登録できません。ブロック設定を確認してください。';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const otherStaffExists = receptionist !== 'どちらでもいい' && (
+      (receptionist === '牧' && allBlocks.some(b => b.staff === '椛田')) ||
+      (receptionist === '椛田' && allBlocks.some(b => b.staff === '牧'))
+    );
+
+    if (otherStaffExists) {
+      errEl.textContent = 'この日は既に別のスタッフが予約済みです。2人出勤の日は作れません。';
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  const dateStr = date.replace(/-/g, '');
+  const { count } = await supabase
+    .from('trimming_reservations')
+    .select('*', { count: 'exact', head: true })
+    .eq('visit_date', date);
+  const reservationNumber = `${dateStr}-${String((count || 0) + 1).padStart(3, '0')}`;
+
+  const manualPhone         = document.getElementById('manualPhone').value.trim() || null;
+  const manualGender        = document.getElementById('manualGender').value || null;
+  const manualWeight        = document.getElementById('manualWeight').value || null;
+  const manualPetAge        = document.getElementById('manualPetAge').value || null;
+  const manualMatting       = document.getElementById('manualMatting').value || null;
+  const manualVaccineRabies = document.getElementById('manualVaccineRabies').value || null;
+  const manualVaccine5mix   = document.getElementById('manualVaccine5mix').value || null;
+  const manualPetName       = document.getElementById('manualPetName').value.trim() || null;
+  const manualBreed         = document.getElementById('manualBreed').value.trim() || null;
+  const manualOwnerName     = document.getElementById('manualOwnerName').value.trim() || null;
+  const manualEmail         = document.getElementById('manualEmail').value.trim() || null;
+
+  const payload = {
+    reservation_number: reservationNumber,
+    visit_date:  date,
+    visit_time:  time + ':00',
+    staff:       receptionist,
+    course:      course,
+    breed:       manualBreed   || '不明',
+    gender:      manualGender  || '不明',
+    weight:      manualWeight  || '不明',
+    matting:     manualMatting || '不明',
+    visit_experience: '不明',
+    pet_age:     manualPetAge  || '不明',
+    pet_name:    manualPetName || '不明',
+    vaccine_rabies: manualVaccineRabies || '不明',
+    vaccine_5mix:   manualVaccine5mix   || '不明',
+    vaccine_status: `狂犬病:${manualVaccineRabies||'不明'} / 5種:${manualVaccine5mix||'不明'}`,
+    owner_name:  manualOwnerName || '不明',
+    phone:       manualPhone,
+    email:       manualEmail,
+    staff_note:  `【受付担当：${receptionist}】` + (document.getElementById('manualMemo').value ? '\n' + document.getElementById('manualMemo').value : ''),
+    options:     [],
+    course_price: 0,
+    options_price: 0,
+    total_price:  0,
+  };
+
+  const { error } = await supabase.from('trimming_reservations').insert(payload);
+  if (error) { errEl.textContent = '登録に失敗しました: ' + error.message; errEl.style.display = 'block'; return; }
+
+  // カルテ自動作成/更新（電話番号がある場合のみ）
+  if (manualPhone && manualOwnerName && manualPetName) {
+    await supabase.from('pet_kartes').upsert({
+      phone:         manualPhone,
+      owner_name:    manualOwnerName,
+      email:         manualEmail,
+      pet_name:      manualPetName,
+      breed:         manualBreed,
+      gender:        manualGender,
+      weight:        manualWeight,
+      pet_age:       manualPetAge,
+      vaccine_rabies: manualVaccineRabies,
+      vaccine_5mix:  manualVaccine5mix,
+    }, { onConflict: 'phone' });
+  }
+
+  // 手動予約登録時にブロック設定を自動追加（3時間のバッファ）
+  const blockRows = [];
+  const blockStaffList = receptionist === 'どちらでもいい' ? ['牧', '椛田'] : [receptionist];
+  const blockTimeHour = parseInt(time.slice(0, 2));
+  const TIME_SLOTS_ADM = ['10:00','11:00','12:00','13:00','14:00','15:00'];
+
+  blockStaffList.forEach(s => {
+    TIME_SLOTS_ADM.forEach(slot => {
+      const slotHour = parseInt(slot.slice(0, 2));
+      if (blockTimeHour <= slotHour && slotHour < blockTimeHour + 4) {
+        blockRows.push({
+          block_date: date,
+          block_time: slot + ':00',
+          staff: s,
+          reason: `予約: ${course}`
+        });
+      }
+    });
+  });
+  if (blockRows.length > 0) {
+    await supabase.from('blocked_times').insert(blockRows);
+  }
+
+  document.getElementById('manualSaveOk').style.display = 'block';
+  setTimeout(() => {
+    closeManualModalDirect();
+    loadReservations();
+  }, 1200);
+}
+
+// ── カルテ ───────────────────────────────────────
+let currentKarteId = null;
+
+async function loadKartes(search) {
+  const container = document.getElementById('karteList');
+  container.innerHTML = '<div class="no-kartes">読み込み中...</div>';
+
+  try {
+    let query = supabase.from('pet_kartes').select('*').order('updated_at', { ascending: false });
+    if (search && search.trim()) {
+      const s = search.trim();
+      query = query.or(`owner_name.ilike.%${s}%,phone.ilike.%${s}%,pet_name.ilike.%${s}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('[ERROR] Failed to load kartes:', error);
+      container.innerHTML = '<div class="no-kartes" style="color:red;">データ読み込みエラー</div>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="no-kartes">カルテがありません。予約フォームから予約されると自動作成されます。</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    data.forEach(k => {
+      const card = document.createElement('div');
+      card.className = 'karte-card';
+      const memoTags = [];
+      if (k.cut_style_memo)   memoTags.push(`<span class="karte-memo-tag">✂️ カットメモあり</span>`);
+      if (k.personality_memo) memoTags.push(`<span class="karte-memo-tag">😺 性格メモあり</span>`);
+      if (k.allergy_memo)     memoTags.push(`<span class="karte-memo-tag warn">⚠️ アレルギーあり</span>`);
+
+      card.innerHTML = `
+        <div class="karte-card-header">
+          <div class="karte-icon">🐾</div>
+          <div style="flex:1;">
+            <div class="karte-pet-name">${k.pet_name} <span class="karte-breed">${k.breed || ''} ${k.gender || ''}</span></div>
+            <div class="karte-owner">👤 ${k.owner_name}　📞 ${k.phone}</div>
+          </div>
+        </div>
+        ${memoTags.length > 0 ? `<div class="karte-memos">${memoTags.join('')}</div>` : ''}
+      `;
+      card.onclick = () => openKarteModal(k);
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('[ERROR] loadKartes exception:', err);
+    container.innerHTML = '<div class="no-kartes" style="color:red;">エラーが発生しました</div>';
+  }
+}
+
+function openKarteModal(karte) {
+  currentKarteId = karte ? karte.id : null;
+  document.getElementById('karteModalTitle').textContent = karte ? `${karte.pet_name}のカルテ` : '新規カルテ作成';
+  document.getElementById('karteErr').style.display = 'none';
+  document.getElementById('karteSaveOk').classList.remove('active');
+
+  document.getElementById('kOwnerName').value     = karte?.owner_name      || '';
+  document.getElementById('kPhone').value         = karte?.phone            || '';
+  document.getElementById('kEmail').value         = karte?.email            || '';
+  document.getElementById('kLineName').value      = karte?.line_name        || '';
+  document.getElementById('kPetName').value       = karte?.pet_name         || '';
+  document.getElementById('kBreed').value         = karte?.breed            || '';
+  document.getElementById('kGender').value        = karte?.gender           || '';
+  document.getElementById('kWeight').value        = karte?.weight           || '';
+  document.getElementById('kPetAge').value        = karte?.pet_age          || '';
+  document.getElementById('kVaccineRabies').value = karte?.vaccine_rabies   || '';
+  document.getElementById('kVaccine5mix').value   = karte?.vaccine_5mix     || '';
+  document.getElementById('kCutStyleMemo').value  = karte?.cut_style_memo   || '';
+  document.getElementById('kPersonalityMemo').value = karte?.personality_memo || '';
+  document.getElementById('kAllergyMemo').value   = karte?.allergy_memo     || '';
+
+  // 来店履歴
+  const histSection = document.getElementById('karteHistorySection');
+  if (karte?.phone) {
+    histSection.style.display = 'block';
+    loadKarteVisitHistory(karte.phone);
+  } else {
+    histSection.style.display = 'none';
+  }
+
+  document.getElementById('karteModalOverlay').classList.add('active');
+}
+
+async function loadKarteVisitHistory(phone) {
+  const list = document.getElementById('karteHistoryList');
+  list.innerHTML = '<div style="color:var(--text-soft); font-size:13px;">読み込み中...</div>';
+
+  const { data, error } = await supabase
+    .from('trimming_reservations')
+    .select('visit_date, visit_time, course, breed, staff, total_price, status, staff_memo')
+    .eq('phone', phone)
+    .order('visit_date', { ascending: false })
+    .limit(20);
+
+  if (error || !data || data.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-soft); font-size:13px;">来店履歴はまだありません</div>';
+    return;
+  }
+
+  list.innerHTML = data.map(r => `
+    <div class="visit-hist-item">
+      <div class="visit-hist-date">${r.visit_date} ${r.visit_time ? r.visit_time.slice(0,5) : ''}</div>
+      <div class="visit-hist-detail">
+        ${r.course} ／ ${r.breed} ／ 担当：${r.staff}
+        ${r.total_price > 0 ? ' ／ ¥' + r.total_price.toLocaleString() : ''}
+        ／ <span style="color:${r.status === '来店済み' ? 'var(--accent)' : r.status === 'キャンセル' ? 'var(--gray)' : 'var(--primary)'};">${r.status}</span>
+        ${r.staff_memo ? '<br><span style="color:var(--accent-light);">📝 ' + r.staff_memo + '</span>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function saveKarte() {
+  const ownerName = document.getElementById('kOwnerName').value.trim();
+  const phone     = document.getElementById('kPhone').value.trim();
+  const petName   = document.getElementById('kPetName').value.trim();
+  const errEl     = document.getElementById('karteErr');
+
+  if (!ownerName) { errEl.textContent = 'お名前は必須です'; errEl.style.display = 'block'; return; }
+  if (!phone)     { errEl.textContent = '電話番号は必須です'; errEl.style.display = 'block'; return; }
+  if (!petName)   { errEl.textContent = 'ペット名は必須です'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+
+  const btn = document.getElementById('karteSaveBtn');
+  btn.disabled = true;
+
+  const payload = {
+    phone,
+    owner_name:       ownerName,
+    email:            document.getElementById('kEmail').value.trim() || null,
+    line_name:        document.getElementById('kLineName').value.trim() || null,
+    pet_name:         petName,
+    breed:            document.getElementById('kBreed').value.trim() || null,
+    gender:           document.getElementById('kGender').value || null,
+    weight:           document.getElementById('kWeight').value || null,
+    pet_age:          document.getElementById('kPetAge').value || null,
+    vaccine_rabies:   document.getElementById('kVaccineRabies').value || null,
+    vaccine_5mix:     document.getElementById('kVaccine5mix').value || null,
+    cut_style_memo:   document.getElementById('kCutStyleMemo').value.trim() || null,
+    personality_memo: document.getElementById('kPersonalityMemo').value.trim() || null,
+    allergy_memo:     document.getElementById('kAllergyMemo').value.trim() || null,
+  };
+
+  let error;
+  if (currentKarteId) {
+    ({ error } = await supabase.from('pet_kartes').update(payload).eq('id', currentKarteId));
+  } else {
+    ({ error } = await supabase.from('pet_kartes').upsert(payload, { onConflict: 'phone' }));
+  }
+
+  btn.disabled = false;
+  if (error) {
+    errEl.textContent = '保存に失敗しました: ' + error.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  document.getElementById('karteSaveOk').classList.add('active');
+  setTimeout(() => {
+    document.getElementById('karteSaveOk').classList.remove('active');
+    closeKarteModalDirect();
+    loadKartes(document.getElementById('karteSearch').value);
+  }, 1200);
+}
+
+function closeKarteModal(e) {
+  if (e.target === document.getElementById('karteModalOverlay')) closeKarteModalDirect();
+}
+function closeKarteModalDirect() {
+  document.getElementById('karteModalOverlay').classList.remove('active');
+}
+
+// ── キーボード Enter でログイン ───────────────────
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── 初期化 ────────────────────────────────────────
+checkAuth();
+</script>
+
+</body>
+</html>
