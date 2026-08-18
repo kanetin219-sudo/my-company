@@ -213,7 +213,13 @@
     .status-btn.active-visited { border-color: var(--accent); background: #E8F5E9; color: var(--accent); }
     .status-btn.active-cancelled { border-color: var(--gray); background: var(--gray-bg); color: var(--gray); }
     .status-btn.active-deleted { border-color: #d32f2f; background: #ffebee; color: #d32f2f; }
-    #sbDeleted { background: #d32f2f; color: white; border-color: #d32f2f; }
+    #sbDeleted {
+      background: #d32f2f !important;
+      color: white !important;
+      border-color: #d32f2f !important;
+      display: block !important;
+      visibility: visible !important;
+    }
 
     .memo-area {
       width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
