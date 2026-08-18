@@ -1093,6 +1093,9 @@ async function loadReservations() {
 
     if (staff) query = query.eq('staff', staff);
 
+    // キャンセル済み・削除済みを除外
+    query = query.not('status', 'in', '("キャンセル","削除済み")');
+
     // キャッシュバスター：タイムスタンプを追加
     const { data, error } = await query;
     console.log('[DEBUG] Supabase query result:', {
