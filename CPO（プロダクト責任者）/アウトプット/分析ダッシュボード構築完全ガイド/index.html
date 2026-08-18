@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>事業名 個別相談 分析ダッシュボード</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --success: #059669;
+      --warning: #D97706;
+      --danger: #DC2626;
+    }
+
+    body {
+      background: #F1F5F9;
+      font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Segoe UI', sans-serif;
+    }
+
+    .navbar-brand { font-weight: 700; font-size: 1.05rem; }
+
+    .stat-card {
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.11); }
+
+    .stat-icon {
+      width: 46px; height: 46px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.35rem; flex-shrink: 0;
+    }
+    .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+
+    .chart-card {
+      border: none; border-radius: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    .progress-bar-custom { height: 6px; border-radius: 3px; background: #E5E7EB; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #4F46E5, #7C3AED); }
+
+    .status-pill {
+      padding: 3px 11px; border-radius: 999px;
+      font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+    }
+    .status-nyukai  { color: #059669; background: #ECFDF5; }
+    .status-kentou  { color: #D97706; background: #FFFBEB; }
+    .status-miokuri { color: #6B7280; background: #F3F4F6; }
+    .status-expired { color: #DC2626; background: #FEF2F2; }
+
+    .filter-btn.active { background-color: var(--primary); border-color: var(--primary); color: #fff !important; }
+
+    .demo-banner {
+      background: #FEF9C3; border: 1px solid #FDE68A;
+      border-radius: 10px; padding: 9px 16px; font-size: 0.84rem;
+    }
+
+    .table > :not(caption) > * > * { padding: 0.7rem 1rem; }
+    .table-container { border: none; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    tr.row-expired  { background-color: #FFF5F5 !important; }
+    tr.row-kentou   { background-color: #FFFDF0 !important; }
+
+    .btn-xs { padding: 1px 10px; font-size: 0.76rem; }
+
+    .tag-pill {
+      display: inline-block; padding: 1px 9px; border-radius: 999px;
+      font-size: 0.75rem; background: #EEF2FF; color: #4F46E5; font-weight: 600;
+    }
+
+    @media (max-width: 576px) {
+      .stat-value { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== ナビゲーション ===== -->
+<nav class="navbar navbar-light bg-white border-bottom px-4 py-2 sticky-top">
+  <span class="navbar-brand">
+    <i class="bi bi-camera2 text-primary me-2"></i>事業名 個別相談 分析ダッシュボード
+  </span>
+  <div class="d-flex align-items-center gap-2">
+    <small class="text-muted d-none d-sm-inline" id="lastUpdated"></small>
+    <button class="btn btn-sm btn-primary" onclick="loadData()">
+      <i class="bi bi-arrow-clockwise me-1"></i>更新
+    </button>
+  </div>
+</nav>
+
+<!-- ===== メインコンテンツ ===== -->
+<div class="container-fluid py-4 px-3 px-md-4">
+
+  <!-- エラーバナー -->
+  <div id="errorBanner" class="demo-banner mb-3 align-items-center gap-2" style="display:none;">
+    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+    <span>データの取得に失敗しました。スプレッドシートの公開設定（リンクを知っている全員が閲覧可）を確認してください。</span>
+  </div>
+
+  <!-- ローディング -->
+  <div id="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-2 text-muted small">データを読み込み中...</div>
+  </div>
+
+  <!-- ダッシュボード本体 -->
+  <div id="dashboard" style="display:none;">
+
+    <!-- ① サマリーカード -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card p-3">
+          <div class="d-flex align-items-start gap-3">
+            <div class="stat-icon" style="background:#EEF2FF; color:#4F46E5;"><i class="bi bi-people-fill"></i></div>
+            <div>
+              <div class="text-muted small">総相談数</div>
+              <div class="stat-value text-dark" id="statTotal">0</div>
+              <div class="text-muted small mt-1" id="statTotalSub"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card p-3">
+          <div class="d-flex align-items-start gap-3">
+            <div class="stat-icon" style="background:#ECFDF5; color:#059669;"><i class="bi bi-check-circle-fill"></i></div>
+            <div>
+              <div class="text-muted small">入会数</div>
+              <div class="stat-value" style="color:#059669;" id="statNyukai">0</div>
+              <div class="text-muted small mt-1" id="statNyukaiSub"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card p-3">
+          <div class="d-flex align-items-start gap-3">
+            <div class="stat-icon" style="background:#EEF2FF; color:#4F46E5;"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="flex-grow-1">
+              <div class="text-muted small">転換率</div>
+              <div class="stat-value" style="color:#4F46E5;" id="statRate">0%</div>
+              <div class="text-muted small mt-1">相談 → 入会</div>
+            </div>
+          </div>
+          <div class="progress-bar-custom mt-2">
+            <div class="progress-fill" id="progressBar" style="width:0%;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-xl-3">
+        <div class="card stat-card p-3">
+          <div class="d-flex align-items-start gap-3">
+            <div class="stat-icon" style="background:#FFFBEB; color:#D97706;"><i class="bi bi-clock-fill"></i></div>
+            <div>
+              <div class="text-muted small">検討中</div>
+              <div class="stat-value" style="color:#D97706;" id="statKentou">0</div>
+              <div class="text-muted small mt-1" id="statKentouSub"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② 月別推移 + 担当者別 -->
+    <div class="row g-3 mb-4">
+      <div class="col-lg-8">
+        <div class="card chart-card p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="fw-bold mb-0">📈 月別推移</h6>
+            <div class="d-flex gap-1">
+              <button class="btn btn-xs btn-outline-secondary" id="btn3m" onclick="setPeriod(3)">3ヶ月</button>
+              <button class="btn btn-xs btn-outline-secondary active" id="btn6m" onclick="setPeriod(6)">6ヶ月</button>
+              <button class="btn btn-xs btn-outline-secondary" id="btnAll" onclick="setPeriod(0)">全期間</button>
+            </div>
+          </div>
+          <div style="position:relative; height:250px;">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card chart-card p-3 h-100">
+          <h6 class="fw-bold mb-3">👤 担当者別実績</h6>
+          <div id="staffTable"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ ジャンル / 年齢 / 今月 -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card chart-card p-3 h-100">
+          <h6 class="fw-bold mb-3">📷 撮影ジャンル別（入会者）</h6>
+          <div style="position:relative; height:200px;">
+            <canvas id="genreChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card chart-card p-3 h-100">
+          <h6 class="fw-bold mb-3">🎂 年齢別 相談・入会数</h6>
+          <div style="position:relative; height:200px;">
+            <canvas id="ageChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card chart-card p-3 h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="fw-bold mb-0">📅 月別サマリー</h6>
+            <div class="d-flex align-items-center gap-1">
+              <button class="btn btn-xs btn-outline-secondary px-2" onclick="shiftMonth(-1)"><i class="bi bi-chevron-left"></i></button>
+              <span class="small fw-semibold" id="selectedMonthLabel" style="min-width:42px; text-align:center;"></span>
+              <button class="btn btn-xs btn-outline-secondary px-2" id="nextMonthBtn" onclick="shiftMonth(1)"><i class="bi bi-chevron-right"></i></button>
+            </div>
+          </div>
+          <div id="thisMonthStats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 個別データ一覧 -->
+    <div class="card table-container">
+      <div class="card-header bg-white border-bottom p-3">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <h6 class="fw-bold mb-0 me-1">📋 個別相談 一覧</h6>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-secondary filter-btn active" onclick="filterTable('all',this)">すべて</button>
+            <button class="btn btn-sm btn-outline-success filter-btn"         onclick="filterTable('入会',this)">入会</button>
+            <button class="btn btn-sm btn-outline-warning filter-btn"         onclick="filterTable('検討中',this)">検討中</button>
+            <button class="btn btn-sm btn-outline-secondary filter-btn"       onclick="filterTable('見送り',this)">見送り</button>
+          </div>
+          <div class="ms-auto d-flex gap-2 align-items-center">
+            <select class="form-select form-select-sm" id="monthFilter" onchange="filterByMonth(this.value)" style="width:110px;">
+              <option value="">全期間</option>
+            </select>
+            <input type="text" class="form-control form-control-sm" id="searchInput"
+              placeholder="名前で検索..." oninput="renderTable()" style="width:150px;">
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-nowrap small">実施日</th>
+              <th class="text-nowrap small">お名前</th>
+              <th class="text-nowrap small">担当者</th>
+              <th class="text-nowrap small">撮影ジャンル</th>
+              <th class="text-nowrap small">年齢</th>
+              <th class="text-nowrap small">活動地域</th>
+              <th class="text-nowrap small">入会状況</th>
+              <th class="text-nowrap small">検討期限</th>
+              <th class="text-nowrap small">インスタ</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+      <div class="card-footer bg-white text-muted small p-2 px-3" id="tableFooter"></div>
+    </div>
+
+  </div><!-- /dashboard -->
+</div>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ================================================================
+// 【カスタマイズ対象1】SHEET_ID と GID を設定してください
+// ================================================================
+// スプレッドシートの URL: https://docs.google.com/spreadsheets/d/【SHEET_ID】/edit#gid=【GID】
+// 例: https://docs.google.com/spreadsheets/d/1abc2def3ghi4jkl5mno6pqr7stu8vwx/edit#gid=123456789
+//
+// 以下の値を自分のスプレッドシート情報に置き換えてください：
+const SHEET_ID = '1jdfpZdQcCCZa2A1-cCKBL9yxWUKJ3O7CyEQbQ71Jljc';
+const GID      = '1497922169';
+
+// ================================================================
+// 設定 & 状態
+// ================================================================
+let allData          = [];
+let currentFilter    = 'all';
+let currentPeriod    = 6;
+let charts           = {};
+let selectedMonth    = '';
+let currentMonthFilter = '';
+
+// ================================================================
+// デモデータ
+// ================================================================
+function getDemoData() {
+  return [
+    { 'タイムスタンプ':'2025-10-05','実施日':'2025-10-05','実施内容':'個別相談','担当者':'佐藤','お名前':'山田 花子','現在の職業':'フリーランス','年齢':'28','活動地域':'東京','撮影ジャンル':'ポートレート','インスタアカウント':'@hanako_photo','目標':'プロ活動','人柄':'明るい','料金案内':'済','入会':'入会','検討中の場合の期限':'','特記事項':'' },
+    { 'タイムスタンプ':'2025-10-15','実施日':'2025-10-15','実施内容':'個別相談','担当者':'鈴木','お名前':'田中 太郎','現在の職業':'会社員','年齢':'34','活動地域':'大阪','撮影ジャンル':'風景','インスタアカウント':'@taro_landscape','目標':'副業','人柄':'真面目','料金案内':'済','入会':'見送り','検討中の場合の期限':'','特記事項':'予算の問題' },
+    { 'タイムスタンプ':'2025-11-08','実施日':'2025-11-08','実施内容':'個別相談','担当者':'佐藤','お名前':'伊藤 美咲','現在の職業':'主婦','年齢':'32','活動地域':'名古屋','撮影ジャンル':'ウェディング','インスタアカウント':'@misaki_wed','目標':'独立','人柄':'丁寧','料金案内':'済','入会':'入会','検討中の場合の期限':'','特記事項':'' },
+    { 'タイムスタンプ':'2025-11-20','実施日':'2025-11-20','実施内容':'個別相談','担当者':'鈴木','お名前':'渡辺 健一','現在の職業':'学生','年齢':'22','活動地域':'福岡','撮影ジャンル':'スナップ','インスタアカウント':'@kenichi_snap','目標':'スキルアップ','人柄':'情熱的','料金案内':'済','入会':'検討中','検討中の場合の期限':'2026-01-31','特記事項':'就活落ち着いてから' },
+    { 'タイムスタンプ':'2025-12-03','実施日':'2025-12-03','実施内容':'個別相談','担当者':'佐藤','お名前':'中村 さくら','現在の職業':'パート','年齢':'38','活動地域':'東京','撮影ジャンル':'ペット','インスタアカウント':'@sakura_pet','目標':'趣味を仕事に','人柄':'温かい','料金案内':'済','入会':'入会','検討中の場合の期限':'','特記事項':'' },
+  ];
+}
+
+// ================================================================
+// Google Visualization API (JSONP) でデータ取得
+// ================================================================
+function loadSheetData() {
+  return new Promise((resolve, reject) => {
+    const cbName = '__gvizCb' + Date.now();
+
+    window[cbName] = function(resp) {
+      try {
+        const old = document.getElementById('__gvizScript');
+        if (old) old.remove();
+        delete window[cbName];
+
+        const table = resp && resp.table;
+        if (!table) { resolve([]); return; }
+
+        const headers = table.cols.map(c => c.label || c.id || '');
+        const rows = (table.rows || []).map(row => {
+          const obj = {};
+          headers.forEach((h, i) => {
+            const cell = row.c ? row.c[i] : null;
+            let val = '';
+            if (cell != null) {
+              if (cell.f != null) val = String(cell.f);
+              else if (cell.v != null) val = String(cell.v);
+            }
+            obj[h] = val;
+          });
+          return obj;
+        }).filter(row => Object.values(row).some(v => v !== ''));
+
+        resolve(rows);
+      } catch(e) { reject(e); }
+    };
+
+    const script = document.createElement('script');
+    script.id = '__gvizScript';
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cbName}&gid=${GID}&t=${Date.now()}`;
+    script.onerror = () => { delete window[cbName]; reject(new Error('Script load error')); };
+    document.head.appendChild(script);
+  });
+}
+
+// ================================================================
+// データ読み込み
+// ================================================================
+async function loadData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('errorBanner').style.display = 'none';
+
+  let hasError = false;
+  try {
+    allData = await loadSheetData();
+    if (allData.length === 0) throw new Error('データが空です');
+  } catch (e) {
+    console.warn('データ取得失敗:', e);
+    allData = getDemoData();
+    hasError = true;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  if (hasError) document.getElementById('errorBanner').style.display = 'flex';
+  document.getElementById('lastUpdated').textContent =
+    '最終更新: ' + new Date().toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit'});
+
+  updateAll();
+}
+
+function updateAll() {
+  updateSummary();
+  updateMonthlyChart();
+  updateStaffTable();
+  updateGenreChart();
+  updateAgeChart();
+  updateThisMonth();
+  updateMonthFilterOptions();
+  renderTable();
+}
+
+function updateMonthFilterOptions() {
+  const months = [...new Set(allData.map(d => dateStr(d).substring(0,7)).filter(m => m.length === 7))].sort().reverse();
+  const sel = document.getElementById('monthFilter');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">全期間</option>';
+  months.forEach(m => {
+    const [y, mo] = m.split('-');
+    const label = `${y}年${parseInt(mo)}月`;
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+  if (prev && months.includes(prev)) sel.value = prev;
+}
+
+function filterByMonth(month) {
+  currentMonthFilter = month;
+  renderTable();
+}
+
+// ================================================================
+// ① サマリーカード
+// ================================================================
+function updateSummary() {
+  const total   = allData.length;
+  const nyukai  = allData.filter(d => statusGroup(d['入会']) === '入会').length;
+  const kentou  = allData.filter(d => statusGroup(d['入会']) === '検討中').length;
+  const rate    = total > 0 ? Math.round(nyukai / total * 100) : 0;
+
+  const now = new Date();
+  const thisMonth = toYYYYMM(now);
+  const tmData    = allData.filter(d => dateStr(d).startsWith(thisMonth));
+  const tmNyukai  = tmData.filter(d => statusGroup(d['入会']) === '入会').length;
+
+  const today   = new Date();
+  const expired = allData.filter(d => statusGroup(d['入会']) === '検討中' && d['検討中の場合の期限'] && new Date(d['検討中の場合の期限']) < today).length;
+
+  document.getElementById('statTotal').textContent   = total;
+  document.getElementById('statTotalSub').textContent = '今月 ' + tmData.length + '件';
+  document.getElementById('statNyukai').textContent   = nyukai;
+  document.getElementById('statNyukaiSub').textContent = '今月 ' + tmNyukai + '件';
+  document.getElementById('statRate').textContent     = rate + '%';
+  document.getElementById('progressBar').style.width  = rate + '%';
+  document.getElementById('statKentou').textContent   = kentou;
+
+  const kentouSub = document.getElementById('statKentouSub');
+  if (expired > 0) {
+    kentouSub.textContent    = '⚠ 期限切れ ' + expired + '件';
+    kentouSub.style.color    = '#DC2626';
+  } else {
+    kentouSub.textContent    = '期限切れなし';
+    kentouSub.style.color    = '';
+  }
+}
+
+// ================================================================
+// ② 月別推移グラフ
+// ================================================================
+function setPeriod(n) {
+  currentPeriod = n;
+  ['btn3m','btn6m','btnAll'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(n===3?'btn3m':n===6?'btn6m':'btnAll').classList.add('active');
+  updateMonthlyChart();
+}
+
+function updateMonthlyChart() {
+  const map = {};
+  allData.forEach(d => {
+    const m = dateStr(d).substring(0,7);
+    if (!m || m.length < 7) return;
+    if (!map[m]) map[m] = {total:0, nyukai:0};
+    map[m].total++;
+    if (statusGroup(d['入会']) === '入会') map[m].nyukai++;
+  });
+
+  let months = Object.keys(map).sort();
+  if (currentPeriod > 0) months = months.slice(-currentPeriod);
+
+  const labels  = months.map(m => m.slice(2,4) + '/' + m.slice(5,7));
+  const totals  = months.map(m => map[m].total);
+  const nyukais = months.map(m => map[m].nyukai);
+  const rates   = months.map(m => map[m].total > 0 ? Math.round(map[m].nyukai / map[m].total * 100) : 0);
+
+  if (charts.monthly) charts.monthly.destroy();
+  charts.monthly = new Chart(document.getElementById('monthlyChart'), {
+    data: {
+      labels,
+      datasets: [
+        { type:'bar',  label:'相談数',    data:totals,  backgroundColor:'#BFDBFE', borderColor:'#3B82F6', borderWidth:1, borderRadius:4, yAxisID:'y' },
+        { type:'bar',  label:'入会数',    data:nyukais, backgroundColor:'#A7F3D0', borderColor:'#059669', borderWidth:1, borderRadius:4, yAxisID:'y' },
+        { type:'line', label:'転換率(%)', data:rates,   borderColor:'#F59E0B', backgroundColor:'transparent', borderWidth:2.5, pointBackgroundColor:'#F59E0B', pointRadius:4, tension:0.35, yAxisID:'y1' }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'bottom', labels:{ boxWidth:12, font:{size:11} } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label==='転換率(%)' ? ` ${ctx.dataset.label}: ${ctx.parsed.y}%` : ` ${ctx.dataset.label}: ${ctx.parsed.y}件` } }
+      },
+      scales: {
+        y:  { type:'linear', position:'left',  ticks:{stepSize:1,font:{size:11}}, grid:{color:'#F1F5F9'} },
+        y1: { type:'linear', position:'right', max:100, ticks:{callback:v=>v+'%',font:{size:11}}, grid:{drawOnChartArea:false} },
+        x:  { ticks:{font:{size:11}}, grid:{color:'#F1F5F9'} }
+      }
+    }
+  });
+}
+
+// ================================================================
+// 担当者別実績
+// ================================================================
+function updateStaffTable() {
+  const map = {};
+  allData.forEach(d => {
+    const s = d['担当者'] || '不明';
+    if (!map[s]) map[s] = {total:0,nyukai:0};
+    map[s].total++;
+    if (statusGroup(d['入会'])==='入会') map[s].nyukai++;
+  });
+
+  const list = Object.entries(map).sort((a,b) => b[1].total - a[1].total);
+  const maxTotal = Math.max(...list.map(([,v]) => v.total), 1);
+
+  let html = '<div class="d-flex flex-column gap-3">';
+  list.forEach(([name, v]) => {
+    const rate = v.total > 0 ? Math.round(v.nyukai / v.total * 100) : 0;
+    const bar  = Math.round(v.total / maxTotal * 100);
+    html += `
+      <div>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-semibold small">${name}</span>
+          <span class="text-muted small">
+            ${v.nyukai}/${v.total}件
+            <span class="fw-bold ms-1" style="color:#4F46E5;">${rate}%</span>
+          </span>
+        </div>
+        <div class="progress-bar-custom">
+          <div class="progress-fill" style="width:${bar}%;"></div>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+  document.getElementById('staffTable').innerHTML = html;
+}
+
+// ================================================================
+// 撮影ジャンル別
+// ================================================================
+function updateGenreChart() {
+  const map = {};
+  allData.filter(d => statusGroup(d['入会'])==='入会').forEach(d => {
+    const g = d['撮影ジャンル'] || 'その他';
+    map[g] = (map[g] || 0) + 1;
+  });
+
+  const labels = Object.keys(map);
+  const vals   = Object.values(map);
+  const colors = ['#4F46E5','#059669','#D97706','#DC2626','#7C3AED','#0891B2','#BE185D','#065F46','#92400E'];
+
+  if (charts.genre) charts.genre.destroy();
+  charts.genre = new Chart(document.getElementById('genreChart'), {
+    type:'doughnut',
+    data: {
+      labels,
+      datasets: [{ data:vals, backgroundColor:colors.slice(0,labels.length), borderWidth:2, borderColor:'#fff' }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ position:'bottom', labels:{boxWidth:12, font:{size:11}} } }
+    }
+  });
+}
+
+// ================================================================
+// 年齢別グラフ
+// ================================================================
+function updateAgeChart() {
+  const bands = {
+    '〜24歳':{t:0,n:0}, '25-29歳':{t:0,n:0}, '30-34歳':{t:0,n:0}, '35-39歳':{t:0,n:0},
+    '40代':{t:0,n:0}, '50代':{t:0,n:0}, '60代':{t:0,n:0}, '70代〜':{t:0,n:0}
+  };
+  allData.forEach(d => {
+    const age = parseInt(d['年齢'] || '0');
+    const key = age < 25 ? '〜24歳'
+              : age < 30 ? '25-29歳'
+              : age < 35 ? '30-34歳'
+              : age < 40 ? '35-39歳'
+              : age < 50 ? '40代'
+              : age < 60 ? '50代'
+              : age < 70 ? '60代'
+              : '70代〜';
+    bands[key].t++;
+    if (statusGroup(d['入会'])==='入会') bands[key].n++;
+  });
+
+  const labels = Object.keys(bands);
+  if (charts.age) charts.age.destroy();
+  charts.age = new Chart(document.getElementById('ageChart'), {
+    type:'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'相談数', data:labels.map(l=>bands[l].t), backgroundColor:'#BFDBFE', borderColor:'#3B82F6', borderWidth:1, borderRadius:3 },
+        { label:'入会数', data:labels.map(l=>bands[l].n), backgroundColor:'#A7F3D0', borderColor:'#059669', borderWidth:1, borderRadius:3 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{ position:'bottom', labels:{boxWidth:12, font:{size:11}} } },
+      scales: {
+        y: { ticks:{stepSize:1, font:{size:10}}, grid:{color:'#F1F5F9'} },
+        x: { ticks:{font:{size:10}}, grid:{color:'#F1F5F9'} }
+      }
+    }
+  });
+}
+
+// ================================================================
+// 月別サマリー
+// ================================================================
+function shiftMonth(delta) {
+  const base = selectedMonth || toYYYYMM(new Date());
+  const [y, m] = base.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  selectedMonth = toYYYYMM(d);
+  updateThisMonth();
+}
+
+function updateThisMonth() {
+  const now      = new Date();
+  const todayStr = toYYYYMM(now);
+  if (!selectedMonth) selectedMonth = todayStr;
+
+  const [sy, sm] = selectedMonth.split('-').map(Number);
+  document.getElementById('selectedMonthLabel').textContent = sm + '月';
+
+  const nextBtn = document.getElementById('nextMonthBtn');
+  if (nextBtn) nextBtn.disabled = (selectedMonth >= todayStr);
+
+  const tmData = allData.filter(d => dateStr(d).startsWith(selectedMonth));
+
+  const nyukai  = tmData.filter(d => statusGroup(d['入会'])==='入会').length;
+  const kentou  = tmData.filter(d => statusGroup(d['入会'])==='検討中').length;
+  const miokuri = tmData.filter(d => statusGroup(d['入会'])==='見送り').length;
+  const rate    = tmData.length > 0 ? Math.round(nyukai / tmData.length * 100) : 0;
+
+  const today    = new Date();
+  const isThisMonth = (selectedMonth === todayStr);
+  const upcoming = isThisMonth ? allData
+    .filter(d => {
+      if (statusGroup(d['入会']) !== '検討中') return false;
+      const dl = d['検討中の場合の期限'];
+      if (!dl) return false;
+      const diff = (new Date(dl) - today) / 86400000;
+      return diff >= 0 && diff <= 30;
+    })
+    .sort((a,b) => new Date(a['検討中の場合の期限']) - new Date(b['検討中の場合の期限']))
+    : [];
+
+  const isCurrentMonth = selectedMonth === todayStr;
+  const monthLabel = isCurrentMonth ? `${sm}月（今月）の実績` : `${sy}年${sm}月の実績`;
+
+  let html = `
+    <div class="mb-3">
+      <div class="text-muted small mb-2 fw-semibold">${monthLabel}</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <div class="text-center p-2 rounded" style="background:#EEF2FF; min-width:60px;">
+          <div class="fw-bold" style="color:#4F46E5; font-size:1.4rem;">${tmData.length}</div>
+          <div class="text-muted" style="font-size:0.7rem;">相談数</div>
+        </div>
+        <div class="text-center p-2 rounded" style="background:#ECFDF5; min-width:60px;">
+          <div class="fw-bold" style="color:#059669; font-size:1.4rem;">${nyukai}</div>
+          <div class="text-muted" style="font-size:0.7rem;">入会</div>
+        </div>
+        <div class="text-center p-2 rounded" style="background:#FFFBEB; min-width:60px;">
+          <div class="fw-bold" style="color:#D97706; font-size:1.4rem;">${kentou}</div>
+          <div class="text-muted" style="font-size:0.7rem;">検討中</div>
+        </div>
+        <div class="text-center p-2 rounded" style="background:#F3F4F6; min-width:60px;">
+          <div class="fw-bold" style="color:#6B7280; font-size:1.4rem;">${miokuri}</div>
+          <div class="text-muted" style="font-size:0.7rem;">見送り</div>
+        </div>
+      </div>
+      <div class="mt-2">
+        <div class="d-flex justify-content-between small mb-1">
+          <span class="text-muted">転換率</span>
+          <span class="fw-bold" style="color:#4F46E5;">${rate}%</span>
+        </div>
+        <div class="progress-bar-custom">
+          <div class="progress-fill" style="width:${rate}%;"></div>
+        </div>
+      </div>
+    </div>`;
+
+  if (upcoming.length > 0) {
+    html += `<div>
+      <div class="text-muted small fw-semibold mb-2">⏰ 検討中 — 期限まで30日以内</div>
+      <div class="d-flex flex-column gap-1">`;
+    upcoming.slice(0, 4).forEach(d => {
+      const diff = Math.ceil((new Date(d['検討中の場合の期限']) - today) / 86400000);
+      html += `<div class="d-flex justify-content-between align-items-center px-2 py-1 rounded" style="background:#FFFBEB;">
+        <span class="small fw-semibold">${d['お名前']}</span>
+        <span class="small fw-bold" style="color:#D97706;">残${diff}日</span>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+
+  if (tmData.length === 0) {
+    html += `<div class="text-center text-muted small py-3">この月のデータはありません</div>`;
+  }
+
+  document.getElementById('thisMonthStats').innerHTML = html;
+}
+
+// ================================================================
+// 個別データ一覧
+// ================================================================
+function filterTable(filter, btn) {
+  currentFilter = filter;
+  if (btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  renderTable();
+}
+
+function renderTable() {
+  const search = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  const today  = new Date();
+
+  let filtered = allData.filter(d => {
+    if (currentFilter !== 'all' && statusGroup(d['入会']) !== currentFilter) return false;
+    if (currentMonthFilter && !dateStr(d).startsWith(currentMonthFilter)) return false;
+    if (search && !(d['お名前'] || '').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => dateStr(b).localeCompare(dateStr(a)));
+
+  let html = '';
+  filtered.forEach(d => {
+    const status    = d['入会'] || '';
+    const grp       = statusGroup(status);
+    const deadline  = d['検討中の場合の期限'] || '';
+    const expired   = deadline && new Date(deadline) < today;
+
+    let statusHtml = '';
+    let rowClass   = '';
+
+    if (grp === '入会') {
+      statusHtml = `<span class="status-pill status-nyukai">✓ ${status}</span>`;
+    } else if (grp === '検討中') {
+      if (expired) {
+        statusHtml = `<span class="status-pill status-expired">⚠ ${status}</span>`;
+        rowClass   = 'row-expired';
+      } else {
+        statusHtml = `<span class="status-pill status-kentou">⏳ ${status}</span>`;
+        rowClass   = 'row-kentou';
+      }
+    } else if (grp === '見送り') {
+      statusHtml = `<span class="status-pill status-miokuri">${status}</span>`;
+    } else {
+      statusHtml = `<span class="status-pill status-miokuri">${status}</span>`;
+    }
+
+    let deadlineHtml = '<span class="text-muted small">—</span>';
+    if (deadline) {
+      const diff  = Math.ceil((new Date(deadline) - today) / 86400000);
+      const color = expired ? '#DC2626' : diff <= 14 ? '#D97706' : '#374151';
+      const sub   = expired ? '<br><small style="font-size:0.7rem;">期限切れ</small>'
+                            : diff <= 14 ? `<br><small style="font-size:0.7rem;">残${diff}日</small>` : '';
+      deadlineHtml = `<span style="color:${color}; font-size:0.82rem;">${deadline}${sub}</span>`;
+    }
+
+    const insta = d['インスタアカウント'] || '';
+    const instaHtml = insta
+      ? `<a href="https://instagram.com/${insta.replace('@','')}" target="_blank" rel="noopener" class="text-decoration-none small text-primary">${insta}</a>`
+      : '<span class="text-muted small">—</span>';
+
+    html += `<tr class="${rowClass}">
+      <td class="text-nowrap small">${d['実施日'] || '—'}</td>
+      <td class="fw-semibold small">${d['お名前'] || '—'}</td>
+      <td class="small"><span class="tag-pill">${d['担当者'] || '—'}</span></td>
+      <td class="small">${d['撮影ジャンル'] || '—'}</td>
+      <td class="text-center small">${d['年齢'] ? d['年齢']+'歳' : '—'}</td>
+      <td class="small">${d['活動地域'] || '—'}</td>
+      <td>${statusHtml}</td>
+      <td>${deadlineHtml}</td>
+      <td>${instaHtml}</td>
+    </tr>`;
+  });
+
+  document.getElementById('dataTableBody').innerHTML =
+    html || '<tr><td colspan="9" class="text-center text-muted py-4">データがありません</td></tr>';
+  document.getElementById('tableFooter').textContent =
+    `${filtered.length}件表示 / 全${allData.length}件`;
+}
+
+// ================================================================
+// 【カスタマイズ対象2】ステータス判定ロジック
+// ================================================================
+// スプレッドシート「入会」列に独自の値を使用している場合は、
+// 以下の関数を修正して対応してください
+//
+// 例: スプレッドシートに「希望・フォーム回答済」という値がある場合
+// if (val === '希望・フォーム回答済') return '入会';
+// を追加してください
+//
+function statusGroup(val) {
+  if (val === '入会') return '入会';
+  if (val === '検討中') return '検討中';
+  if (val === '見送り') return '見送り';
+  // 必要に応じてここに追加の判定を記述してください
+  return '不明';
+}
+
+// ================================================================
+// ユーティリティ
+// ================================================================
+function dateStr(d) {
+  const raw = d['実施日'] || d['タイムスタンプ'] || '';
+  return raw.replace(/\//g, '-');
+}
+function toYYYYMM(date) {
+  return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0');
+}
+
+// ================================================================
+// 起動
+// ================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  loadData();
+});
+</script>
+</body>
+</html>

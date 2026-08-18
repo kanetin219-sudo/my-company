@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>在庫管理表 - ANELLA CAFE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: #FFF8F3;
+      color: #333;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: #5D4037;
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 18px; font-weight: 700; }
+    header p  { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+    .tabs { display: flex; background: #4E342E; }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      color: white;
+      border-bottom: 3px solid #FF8F00;
+    }
+
+    .tab-content { display: none; padding: 16px; }
+    .tab-content.active { display: block; }
+
+    /* ---- Date bar ---- */
+    .date-bar {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .date-bar label { font-size: 13px; font-weight: 700; color: #5D4037; white-space: nowrap; }
+    .date-bar input[type="date"] {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #FAFAFA;
+      -webkit-appearance: none;
+    }
+    .date-bar input[type="date"]:focus {
+      outline: none;
+      border-color: #5D4037;
+      background: white;
+    }
+
+    /* ---- Section card ---- */
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #5D4037;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #EFEBE9;
+    }
+    .section-title .badge-new {
+      display: inline-block;
+      background: #FF8F00;
+      color: white;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* ---- Item row ---- */
+    .item-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #F5F5F5;
+      gap: 8px;
+    }
+    .item-row:last-child { border-bottom: none; }
+
+    .item-name {
+      flex: 1;
+      font-size: 13px;
+      color: #333;
+    }
+    .item-unit {
+      font-size: 11px;
+      color: #999;
+      width: 22px;
+      text-align: center;
+    }
+    .item-input {
+      width: 72px;
+      padding: 8px 10px;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: right;
+      background: #FAFAFA;
+      -webkit-appearance: none;
+    }
+    .item-input:focus {
+      outline: none;
+      border-color: #5D4037;
+      background: white;
+    }
+    .item-row.new-item .item-name { color: #E65100; font-weight: 600; }
+    .item-row.new-item .item-input { border-color: #FFCC80; background: #FFF8E1; }
+
+    /* ---- Save button ---- */
+    .save-btn {
+      width: 100%;
+      padding: 16px;
+      background: #5D4037;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background 0.2s;
+    }
+    .save-btn:active { background: #4E342E; }
+    .save-btn:disabled { background: #BCAAA4; cursor: not-allowed; }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { background: #388E3C; }
+    .toast.error   { background: #C62828; }
+
+    /* ---- History tab ---- */
+    .history-date-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .history-date-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5D4037;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .history-table th {
+      background: #EFEBE9;
+      padding: 6px 8px;
+      text-align: left;
+      color: #5D4037;
+      font-weight: 700;
+    }
+    .history-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #F5F5F5;
+    }
+    .history-table td:last-child { text-align: right; font-weight: 600; }
+    .history-table tr:last-child td { border-bottom: none; }
+
+    .empty-msg {
+      text-align: center;
+      color: #BCAAA4;
+      font-size: 14px;
+      padding: 40px 20px;
+    }
+
+    .loading-spinner {
+      text-align: center;
+      color: #BCAAA4;
+      font-size: 13px;
+      padding: 20px;
+    }
+
+    .history-filter {
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .history-filter label { font-size: 12px; font-weight: 700; color: #5D4037; white-space: nowrap; }
+    .history-filter input[type="month"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #FAFAFA;
+      -webkit-appearance: none;
+    }
+    .load-history-btn {
+      padding: 9px 16px;
+      background: #5D4037;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>在庫管理表</h1>
+  <p>ANELLA CAFE</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('input')">在庫入力</button>
+  <button class="tab-btn" onclick="switchTab('history')">履歴</button>
+</div>
+
+<!-- ========== 在庫入力タブ ========== -->
+<div id="tab-input" class="tab-content active">
+
+  <div class="date-bar">
+    <label>日付</label>
+    <input type="date" id="record-date">
+  </div>
+
+  <!-- おむつ -->
+  <div class="section">
+    <div class="section-title">おむつ</div>
+    <div class="item-row"><span class="item-name">おむつ（SS）女</span><span class="item-unit">枚</span><input class="item-input" type="number" min="0" data-item="おむつ（SS）女" data-unit="枚" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">おむつ（S）女</span><span class="item-unit">枚</span><input class="item-input" type="number" min="0" data-item="おむつ（S）女" data-unit="枚" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">おむつ（L）女</span><span class="item-unit">枚</span><input class="item-input" type="number" min="0" data-item="おむつ（L）女" data-unit="枚" placeholder="0"></div>
+  </div>
+
+  <!-- 清掃用品 -->
+  <div class="section">
+    <div class="section-title">清掃用品</div>
+    <div class="item-row"><span class="item-name">ペーパータオル</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="ペーパータオル" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ゴミ袋 20ℓ</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ゴミ袋 20ℓ" data-unit="袋" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ゴミ袋 30ℓ</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ゴミ袋 30ℓ" data-unit="袋" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ゴミ袋 45ℓ</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ゴミ袋 45ℓ" data-unit="袋" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ゴミ袋 70ℓ</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ゴミ袋 70ℓ" data-unit="袋" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">黒ゴミ袋</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="黒ゴミ袋" data-unit="袋" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">レジロール紙</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="レジロール紙" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ストッキングシート</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ストッキングシート" data-unit="袋" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">泡ハンドソープ</span><span class="item-unit">本</span><input class="item-input" type="number" min="0" data-item="泡ハンドソープ" data-unit="本" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">クイックワイパー（ウェット）</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="クイックワイパー（ウェット）" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">クイックワイパー（ドライ）</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="クイックワイパー（ドライ）" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">トイレクリーナー</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="トイレクリーナー" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">窓クリーナー</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="窓クリーナー" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">消毒液</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="消毒液" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">食器洗いスポンジ</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="食器洗いスポンジ" data-unit="個" placeholder="0"></div>
+  </div>
+
+  <!-- 事務用品 -->
+  <div class="section">
+    <div class="section-title">事務用品</div>
+    <div class="item-row"><span class="item-name">コピー用紙</span><span class="item-unit">箱</span><input class="item-input" type="number" min="0" data-item="コピー用紙" data-unit="箱" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">スペアテープ</span><span class="item-unit">本</span><input class="item-input" type="number" min="0" data-item="スペアテープ" data-unit="本" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">プリンターインク</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="プリンターインク" data-unit="個" placeholder="0"></div>
+  </div>
+
+  <!-- 飲料・食品 -->
+  <div class="section">
+    <div class="section-title">飲料・食品</div>
+    <div class="item-row"><span class="item-name">コーヒースティック</span><span class="item-unit">本</span><input class="item-input" type="number" min="0" data-item="コーヒースティック" data-unit="本" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">マドラー</span><span class="item-unit">本</span><input class="item-input" type="number" min="0" data-item="マドラー" data-unit="本" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">コーヒーカップ（蓋）</span><span class="item-unit">枚</span><input class="item-input" type="number" min="0" data-item="コーヒーカップ（蓋）" data-unit="枚" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">コーヒーカップ（本体）</span><span class="item-unit">枚</span><input class="item-input" type="number" min="0" data-item="コーヒーカップ（本体）" data-unit="枚" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ミルク</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="ミルク" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">シュガー</span><span class="item-unit">本</span><input class="item-input" type="number" min="0" data-item="シュガー" data-unit="本" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">紙パック（緑茶）</span><span class="item-unit">箱</span><input class="item-input" type="number" min="0" data-item="紙パック（緑茶）" data-unit="箱" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">紙パック（リンゴジュース）</span><span class="item-unit">箱</span><input class="item-input" type="number" min="0" data-item="紙パック（リンゴジュース）" data-unit="箱" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">紙パック（オレンジジュース）</span><span class="item-unit">箱</span><input class="item-input" type="number" min="0" data-item="紙パック（オレンジジュース）" data-unit="箱" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">弁当</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="弁当" data-unit="個" placeholder="0"></div>
+  </div>
+
+  <!-- 日用品 -->
+  <div class="section">
+    <div class="section-title">日用品</div>
+    <div class="item-row"><span class="item-name">洗濯用洗剤</span><span class="item-unit">本</span><input class="item-input" type="number" min="0" data-item="洗濯用洗剤" data-unit="本" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">食器洗い用洗剤</span><span class="item-unit">本</span><input class="item-input" type="number" min="0" data-item="食器洗い用洗剤" data-unit="本" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ウェットティッシュ</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="ウェットティッシュ" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ティッシュ</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="ティッシュ" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ペットシート小</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="ペットシート小" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">ペットシート大</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="ペットシート大" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">トイレットペーパー</span><span class="item-unit">個</span><input class="item-input" type="number" min="0" data-item="トイレットペーパー" data-unit="個" placeholder="0"></div>
+    <div class="item-row"><span class="item-name">猫すな</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="猫すな" data-unit="袋" placeholder="0"></div>
+  </div>
+
+  <!-- ペットフード（新規追加） -->
+  <div class="section">
+    <div class="section-title">ペットフード <span class="badge-new">NEW</span></div>
+    <div class="item-row new-item"><span class="item-name">ワンタイムサーモン 800g</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ワンタイムサーモン 800g" data-unit="袋" placeholder="0"></div>
+    <div class="item-row new-item"><span class="item-name">ワンタイムサーモン 3kg</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ワンタイムサーモン 3kg" data-unit="袋" placeholder="0"></div>
+    <div class="item-row new-item"><span class="item-name">ニャンタイムアダルト 400g</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ニャンタイムアダルト 400g" data-unit="袋" placeholder="0"></div>
+    <div class="item-row new-item"><span class="item-name">ニャンタイムアダルト 2kg</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="ニャンタイムアダルト 2kg" data-unit="袋" placeholder="0"></div>
+    <div class="item-row new-item"><span class="item-name">わんにゃんまぐろ</span><span class="item-unit">袋</span><input class="item-input" type="number" min="0" data-item="わんにゃんまぐろ" data-unit="袋" placeholder="0"></div>
+  </div>
+
+  <button class="save-btn" id="save-btn" onclick="saveInventory()">この日の在庫を保存する</button>
+
+</div>
+
+<!-- ========== 履歴タブ ========== -->
+<div id="tab-history" class="tab-content">
+
+  <div class="history-filter">
+    <label>月選択</label>
+    <input type="month" id="history-month">
+    <button class="load-history-btn" onclick="loadHistory()">表示</button>
+  </div>
+
+  <div id="history-content">
+    <div class="empty-msg">月を選択して「表示」を押してくださいっちゃ</div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // 今日の日付をセット
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('record-date').value = today;
+
+  const nowYM = today.slice(0, 7);
+  document.getElementById('history-month').value = nowYM;
+
+  // 日付変更時に既存データを読み込み
+  document.getElementById('record-date').addEventListener('change', loadTodayData);
+
+  // 初回ロード
+  loadTodayData();
+
+  /* ========== タブ切替 ========== */
+  function switchTab(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  /* ========== 既存データ読み込み ========== */
+  async function loadTodayData() {
+    const date = document.getElementById('record-date').value;
+    if (!date) return;
+
+    const { data, error } = await db
+      .from('inventory_records')
+      .select('item_name, quantity')
+      .eq('record_date', date);
+
+    // 全入力をリセット
+    document.querySelectorAll('.item-input').forEach(input => { input.value = ''; });
+
+    if (!error && data && data.length > 0) {
+      data.forEach(row => {
+        const input = document.querySelector(`.item-input[data-item="${row.item_name}"]`);
+        if (input) input.value = row.quantity;
+      });
+      showToast(`${formatDate(date)} のデータを読み込みました`, 'success');
+    }
+  }
+
+  /* ========== 保存 ========== */
+  async function saveInventory() {
+    const date = document.getElementById('record-date').value;
+    if (!date) { showToast('日付を選択してください', 'error'); return; }
+
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.textContent = '保存中...';
+
+    const inputs = document.querySelectorAll('.item-input');
+    const records = [];
+    inputs.forEach(input => {
+      const qty = input.value !== '' ? parseInt(input.value) : null;
+      if (qty !== null) {
+        records.push({
+          record_date: date,
+          item_name:   input.dataset.item,
+          unit:        input.dataset.unit,
+          quantity:    qty
+        });
+      }
+    });
+
+    if (records.length === 0) {
+      showToast('数量を1つ以上入力してください', 'error');
+      btn.disabled = false;
+      btn.textContent = 'この日の在庫を保存する';
+      return;
+    }
+
+    // upsert（同日同品目は上書き）
+    const { error } = await db
+      .from('inventory_records')
+      .upsert(records, { onConflict: 'record_date,item_name' });
+
+    btn.disabled = false;
+    btn.textContent = 'この日の在庫を保存する';
+
+    if (error) {
+      showToast('保存に失敗しました: ' + error.message, 'error');
+    } else {
+      showToast(`${formatDate(date)} の在庫を保存しました ✓`, 'success');
+    }
+  }
+
+  /* ========== 履歴表示 ========== */
+  async function loadHistory() {
+    const month = document.getElementById('history-month').value;
+    if (!month) return;
+
+    const container = document.getElementById('history-content');
+    container.innerHTML = '<div class="loading-spinner">読み込み中...</div>';
+
+    const from = month + '-01';
+    const to   = month + '-31';
+
+    const { data, error } = await db
+      .from('inventory_records')
+      .select('record_date, item_name, unit, quantity')
+      .gte('record_date', from)
+      .lte('record_date', to)
+      .order('record_date', { ascending: false })
+      .order('item_name', { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      container.innerHTML = '<div class="empty-msg">この月のデータはまだないっちゃ</div>';
+      return;
+    }
+
+    // 日付ごとにグループ化
+    const grouped = {};
+    data.forEach(row => {
+      if (!grouped[row.record_date]) grouped[row.record_date] = [];
+      grouped[row.record_date].push(row);
+    });
+
+    container.innerHTML = '';
+    Object.keys(grouped).sort((a,b) => b.localeCompare(a)).forEach(date => {
+      const rows = grouped[date];
+      const card = document.createElement('div');
+      card.className = 'history-date-card';
+      card.innerHTML = `
+        <div class="history-date-title">
+          <span>${formatDate(date)}</span>
+          <span style="font-size:12px;color:#BCAAA4;">${rows.length}品目</span>
+        </div>
+        <table class="history-table">
+          <thead><tr><th>品名</th><th>単位</th><th>数量</th></tr></thead>
+          <tbody>
+            ${rows.map(r => `<tr><td>${r.item_name}</td><td>${r.unit}</td><td>${r.quantity}</td></tr>`).join('')}
+          </tbody>
+        </table>`;
+      container.appendChild(card);
+    });
+  }
+
+  /* ========== ユーティリティ ========== */
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
+  }
+
+  let toastTimer;
+  function showToast(msg, type = '') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = 'toast'; }, 2800);
+  }
+</script>
+
+<!--
+  =============================================
+  Supabase テーブル作成SQL（初回のみ実行）
+  =============================================
+
+  CREATE TABLE inventory_records (
+    id          uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
+    record_date date        NOT NULL,
+    item_name   text        NOT NULL,
+    unit        text        NOT NULL,
+    quantity    integer     NOT NULL DEFAULT 0,
+    created_at  timestamptz DEFAULT now(),
+    updated_at  timestamptz DEFAULT now(),
+    UNIQUE (record_date, item_name)
+  );
+
+  -- RLS（全員読み書きOK）
+  ALTER TABLE inventory_records ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "allow_all" ON inventory_records FOR ALL USING (true) WITH CHECK (true);
+
+  =============================================
+-->
+</body>
+</html>

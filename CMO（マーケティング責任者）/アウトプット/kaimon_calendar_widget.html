@@ -1,0 +1,175 @@
+<!-- kaimonロードマップ作成会 予約カレンダー -->
+<div id="kbk-wrap" style="max-width:420px;margin:0 auto;font-family:'Hiragino Sans','Noto Sans JP',sans-serif;box-sizing:border-box;">
+
+  <div id="kbk-steps" style="display:flex;flex-direction:row;margin-bottom:24px;">
+    <div id="kbk-s1" style="flex:1;text-align:center;padding:8px 4px;font-size:11px;color:#06C755;font-weight:600;border-bottom:2px solid #06C755;">
+      <div style="width:22px;height:22px;border-radius:50%;background:#06C755;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">①</div>日程を選ぶ
+    </div>
+    <div id="kbk-s2" style="flex:1;text-align:center;padding:8px 4px;font-size:11px;color:#bbb;font-weight:600;border-bottom:2px solid #e8e8e8;">
+      <div style="width:22px;height:22px;border-radius:50%;background:#e8e8e8;color:#aaa;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">②</div>時間を選ぶ
+    </div>
+    <div id="kbk-s3" style="flex:1;text-align:center;padding:8px 4px;font-size:11px;color:#bbb;font-weight:600;border-bottom:2px solid #e8e8e8;">
+      <div style="width:22px;height:22px;border-radius:50%;background:#e8e8e8;color:#aaa;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;">③</div>予約する
+    </div>
+  </div>
+
+  <div id="kbk-cal" style="display:block;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <button id="kbk-prev" onclick="kbkChangeMonth(-1)" style="width:34px;height:34px;border:1px solid #e0e0e0;border-radius:50%;background:#fff;font-size:18px;color:#555;cursor:pointer;padding:0;">&#8249;</button>
+      <div id="kbk-month-title" style="font-size:17px;font-weight:700;color:#1a1a1a;"></div>
+      <button id="kbk-next" onclick="kbkChangeMonth(1)" style="width:34px;height:34px;border:1px solid #e0e0e0;border-radius:50%;background:#fff;font-size:18px;color:#555;cursor:pointer;padding:0;">&#8250;</button>
+    </div>
+    <div id="kbk-day-hdrs" style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;"></div>
+    <div id="kbk-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+    <div style="display:flex;gap:14px;margin-top:12px;justify-content:center;font-size:11px;color:#888;">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#06C755;margin-right:4px;vertical-align:middle;"></span>予約可能</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#eee;margin-right:4px;vertical-align:middle;"></span>満員・休業</span>
+    </div>
+  </div>
+
+  <div id="kbk-slots" style="display:none;padding-top:4px;">
+    <div id="kbk-slots-title" style="font-size:15px;font-weight:700;margin-bottom:14px;text-align:center;padding:12px;background:#f0fdf4;border-radius:10px;color:#166534;"></div>
+    <div id="kbk-slots-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;"></div>
+    <button onclick="kbkShow('cal')" style="width:100%;padding:9px;background:none;border:1px solid #ddd;border-radius:8px;color:#999;font-size:12px;cursor:pointer;margin-top:8px;">← 日程を選び直す</button>
+  </div>
+
+  <div id="kbk-confirm" style="display:none;padding-top:4px;text-align:center;">
+    <div style="background:#f0fdf4;border-radius:14px;padding:20px;margin-bottom:20px;border:2px solid #bbf7d0;">
+      <div id="kbk-confirm-date" style="font-size:16px;font-weight:800;color:#166534;line-height:1.6;"></div>
+    </div>
+    <a id="kbk-book-btn" href="https://step.lme.jp/mobile/calendar-salon/O3nqdJjVW2Z8" target="_blank"
+       style="display:block;padding:18px;background:linear-gradient(135deg,#06C755,#04a844);color:#fff;font-size:16px;font-weight:800;border-radius:50px;text-decoration:none;box-shadow:0 4px 20px rgba(6,199,85,0.4);margin-bottom:10px;">
+      📅 この日時でL Message予約ページへ
+    </a>
+    <p style="font-size:11px;color:#999;margin-bottom:12px;">タップするとL Messageの予約ページが開きます</p>
+    <button onclick="kbkShow('slots')" style="width:100%;padding:9px;background:none;border:1px solid #ddd;border-radius:8px;color:#999;font-size:12px;cursor:pointer;">← 時間を選び直す</button>
+  </div>
+
+</div>
+
+<style>#kbk-spin{animation:kbkspin .7s linear infinite;}@keyframes kbkspin{to{transform:rotate(360deg)}}</style>
+
+<script>
+(function init(){
+  if(!document.getElementById('kbk-grid')){return setTimeout(init,50);}
+  var GAS_URL='https://kaimon-calendar.vercel.app/api/bookings';
+  var BOOKED={}, ALL_SLOTS=['09:00','11:00','13:00','15:00','17:00','19:00'], SLOT_HOURS=2;
+  var today=new Date(); today.setHours(0,0,0,0);
+  var cy=today.getFullYear(), cm=today.getMonth(), selDate=null;
+
+  var dh=document.getElementById('kbk-day-hdrs');
+  ['日','月','火','水','木','金','土'].forEach(function(d,i){
+    var s=document.createElement('div');
+    s.textContent=d;
+    s.style.cssText='text-align:center;font-size:11px;font-weight:700;padding:6px 0;color:'+(i===0?'#ef4444':i===6?'#3b82f6':'#aaa')+';';
+    dh.appendChild(s);
+  });
+
+  function ds(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+  function p(n){return String(n).padStart(2,'0');}
+  function avail(s){var b=BOOKED[s]||[];return ALL_SLOTS.filter(function(t){return b.indexOf(t)===-1;});}
+
+  function loadLiveData(){
+    build();
+    fetch(GAS_URL,{mode:'cors'})
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.success){
+          BOOKED=data.booked||{};
+          if(data.all_slots)ALL_SLOTS=data.all_slots;
+          if(data.slot_hours)SLOT_HOURS=data.slot_hours;
+          build();
+        }
+      })
+      .catch(function(){});
+  }
+
+  function build(){
+    document.getElementById('kbk-month-title').textContent=cy+'年'+(cm+1)+'月';
+    var fd=new Date(cy,cm,1).getDay(), ld=new Date(cy,cm+1,0).getDate(), pl=new Date(cy,cm,0).getDate();
+    var g=document.getElementById('kbk-grid'); g.innerHTML='';
+    var cells=[];
+    for(var i=fd-1;i>=0;i--)cells.push({d:pl-i,m:cm-1,o:true});
+    for(var d=1;d<=ld;d++)cells.push({d:d,m:cm,o:false});
+    while(cells.length%7)cells.push({d:cells.length-ld-fd+1,m:cm+1,o:true});
+    cells.forEach(function(c){
+      var cd=new Date(cy,c.m,c.d), dStr=ds(cd), dow=cd.getDay();
+      var past=cd<today, isToday=cd.getTime()===today.getTime();
+      var hasAv=!c.o&&!past&&avail(dStr).length>0, isSel=dStr===selDate;
+      var el=document.createElement('div');
+      var base='aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:default;box-sizing:border-box;min-height:36px;';
+      if(isSel){
+        el.style.cssText=base+'background:#06C755;color:#fff;';
+      } else if(hasAv){
+        el.style.cssText=base+'background:#f0fdf4;color:#166534;cursor:pointer;';
+        el.onmouseover=function(){this.style.background='#06C755';this.style.color='#fff';};
+        el.onmouseout=function(){this.style.background='#f0fdf4';this.style.color='#166534';};
+      } else if(isToday){
+        el.style.cssText=base+'border:2px solid #06C755;color:#06C755;font-weight:800;';
+      } else {
+        el.style.cssText=base+'color:'+(c.o||past?'#e5e5e5':'#ccc')+';';
+      }
+      el.textContent=c.d;
+      if(hasAv)(function(ds2,cd2){el.onclick=function(){selDate=ds2;build();showSlots(ds2,cd2);};})(dStr,cd);
+      g.appendChild(el);
+    });
+  }
+
+  function showSlots(dateStr,cd){
+    var dow=['日','月','火','水','木','金','土'][cd.getDay()];
+    var label=(cd.getMonth()+1)+'月'+cd.getDate()+'日（'+dow+'）';
+    document.getElementById('kbk-slots-title').textContent='📅 '+label+' の時間帯を選んでください';
+    var booked=BOOKED[dateStr]||[];
+    var sg=document.getElementById('kbk-slots-grid'); sg.innerHTML='';
+    ALL_SLOTS.forEach(function(s){
+      var eh=parseInt(s)+SLOT_HOURS, end=p(eh)+':00', isB=booked.indexOf(s)!==-1;
+      var btn=document.createElement('button');
+      btn.textContent=s+'〜'+end;
+      btn.disabled=isB;
+      if(isB){
+        btn.style.cssText='padding:14px 8px;border:2px solid #eee;border-radius:10px;background:#f5f5f5;color:#ccc;font-size:14px;font-weight:700;text-align:center;width:100%;text-decoration:line-through;cursor:not-allowed;';
+      } else {
+        btn.style.cssText='padding:14px 8px;border:2px solid #bbf7d0;border-radius:10px;background:#f0fdf4;color:#166534;font-size:14px;font-weight:700;cursor:pointer;text-align:center;width:100%;';
+        btn.onmouseover=function(){this.style.background='#06C755';this.style.color='#fff';this.style.borderColor='#06C755';};
+        btn.onmouseout=function(){this.style.background='#f0fdf4';this.style.color='#166534';this.style.borderColor='#bbf7d0';};
+        (function(s2,e2,lbl){btn.onclick=function(){
+          showConfirm(lbl,s2,e2);
+        };})(s,end,label);
+      }
+      sg.appendChild(btn);
+    });
+    kbkStep(2); kbkShow('slots');
+  }
+
+  function showConfirm(label,s,e){
+    document.getElementById('kbk-confirm-date').innerHTML=label+'<br>'+s+'〜'+e;
+    kbkStep(3); kbkShow('confirm');
+  }
+
+  window.kbkChangeMonth=function(d){cm+=d;if(cm<0){cm=11;cy--;}if(cm>11){cm=0;cy++;}build();};
+
+  window.kbkShow=function(name){
+    ['cal','slots','confirm'].forEach(function(n){
+      document.getElementById('kbk-'+n).style.display=n===name?'block':'none';
+    });
+    if(name==='cal'){selDate=null;kbkStep(1);build();}
+  };
+
+  function kbkStep(n){
+    var colors=['#06C755','#bbb','#bbb'];
+    var borders=['#06C755','#e8e8e8','#e8e8e8'];
+    for(var i=1;i<=3;i++){
+      var el=document.getElementById('kbk-s'+i);
+      var active=(i===n), done=(i<n);
+      var c=active||done?'#06C755':'#bbb';
+      var b=active||done?'#06C755':'#e8e8e8';
+      el.style.color=c;
+      el.style.borderBottomColor=b;
+      var snum=el.querySelector('div');
+      if(snum){snum.style.background=active||done?'#06C755':'#e8e8e8';snum.style.color=active||done?'#fff':'#aaa';}
+    }
+  }
+
+  loadLiveData();
+})()
+</script>

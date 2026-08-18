@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>申し送りツール - ANELLA CAFE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: #FFF8F3;
+      color: #333;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: #5D4037;
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 18px; font-weight: 700; }
+    header p  { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+    .tabs { display: flex; background: #4E342E; }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      color: white;
+      border-bottom: 3px solid #FF8F00;
+    }
+
+    .tab-content { display: none; padding: 16px; }
+    .tab-content.active { display: block; }
+
+    /* ---- Cards ---- */
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #5D4037;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #EFEBE9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-title .icon { font-size: 15px; }
+
+    /* ---- Form fields ---- */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    .row2 { display: flex; gap: 10px; }
+    .row2 .field { flex: 1; }
+
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #FAFAFA;
+      -webkit-appearance: none;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #5D4037;
+      background: white;
+    }
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea.tall { min-height: 120px; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: #5D4037;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+    .submit-btn:active  { background: #4E342E; }
+    .submit-btn:disabled { background: #BCAAA4; cursor: not-allowed; }
+
+    /* ---- 一覧タブ ---- */
+    .filter-bar {
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .filter-bar input[type="date"] { flex: 1; padding: 9px 12px; font-size: 14px; }
+    .filter-btn {
+      padding: 9px 16px;
+      background: #5D4037;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ---- Handover card ---- */
+    .handover-card {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .card-header {
+      background: #5D4037;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .card-header-left { display: flex; flex-direction: column; gap: 2px; }
+    .card-date { font-size: 13px; font-weight: 700; }
+    .card-author { font-size: 11px; opacity: 0.8; }
+    .card-read-count {
+      font-size: 11px;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+    .card-read-count.all-read { background: #FF8F00; }
+
+    .card-body { padding: 16px; display: none; }
+    .card-body.open { display: block; }
+
+    .detail-block { margin-bottom: 14px; }
+    .detail-block:last-child { margin-bottom: 0; }
+    .detail-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #BCAAA4;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .detail-text {
+      font-size: 13px;
+      line-height: 1.7;
+      color: #333;
+      white-space: pre-wrap;
+      background: #FAFAFA;
+      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid #F0F0F0;
+    }
+    .detail-empty { color: #BCAAA4; font-size: 13px; font-style: italic; }
+
+    /* ---- 既読チェック ---- */
+    .read-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 2px solid #EFEBE9;
+    }
+    .read-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #5D4037;
+      margin-bottom: 10px;
+    }
+    .staff-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+    .staff-chip {
+      padding: 8px 4px;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #999;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #FAFAFA;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .staff-chip.read {
+      background: #E8F5E9;
+      border-color: #81C784;
+      color: #388E3C;
+    }
+    .staff-chip.read::before { content: "✓ "; font-size: 10px; }
+
+    /* ---- Empty / Loading ---- */
+    .empty-msg {
+      text-align: center;
+      color: #BCAAA4;
+      font-size: 14px;
+      padding: 40px 20px;
+    }
+    .loading { text-align: center; color: #BCAAA4; font-size: 13px; padding: 24px; }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show    { opacity: 1; }
+    .toast.success { background: #388E3C; }
+    .toast.error   { background: #C62828; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📋 申し送りツール</h1>
+  <p>ANELLA CAFE</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('input', this)">新規入力</button>
+  <button class="tab-btn"       onclick="switchTab('list',  this)">申し送り一覧</button>
+</div>
+
+<!-- ===== 新規入力タブ ===== -->
+<div id="tab-input" class="tab-content active">
+
+  <div class="section">
+    <div class="section-title"><span class="icon">📅</span>基本情報</div>
+    <div class="row2">
+      <div class="field">
+        <label>日付</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field">
+        <label>時間</label>
+        <input type="time" id="f-time">
+      </div>
+    </div>
+    <div class="field">
+      <label>記入者</label>
+      <select id="f-author">
+        <option value="">-- 選択してください --</option>
+        <option>坂本</option>
+        <option>三浦</option>
+        <option>三浦母</option>
+        <option>小嶋</option>
+        <option>平迫</option>
+        <option>須崎</option>
+        <option>池田</option>
+        <option>末光</option>
+        <option>今本</option>
+        <option>名倉</option>
+        <option>篠田</option>
+        <option>牧</option>
+        <option>椛田</option>
+        <option>後藤</option>
+        <option>佐藤</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">📢</span>全体連絡事項</div>
+    <div class="field">
+      <textarea id="f-general" class="tall" placeholder="全体への連絡・お知らせを入力してください"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">👥</span>利用者報告</div>
+    <div class="field">
+      <textarea id="f-users" class="tall" placeholder="例）田中さん：体調良好、作業集中できていました&#10;山田さん：午後より頭痛を訴え、早退されました"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><span class="icon">🔁</span>次シフトへの引き継ぎ</div>
+    <div class="field">
+      <textarea id="f-next" class="tall" placeholder="次のシフト担当者への引き継ぎ事項を入力してください"></textarea>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="submitHandover()">申し送りを投稿する</button>
+
+</div>
+
+<!-- ===== 申し送り一覧タブ ===== -->
+<div id="tab-list" class="tab-content">
+
+  <div class="filter-bar">
+    <input type="date" id="filter-date">
+    <button class="filter-btn" onclick="loadList()">表示</button>
+    <button class="filter-btn" style="background:#8D6E63;" onclick="clearFilter()">全件</button>
+  </div>
+
+  <div id="list-content">
+    <div class="empty-msg">上の「全件」ボタンを押すと表示されるっちゃよ</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const STAFF = ['坂本','三浦','三浦母','小嶋','平迫','須崎','池田','末光','今本','名倉','篠田','牧','椛田','後藤','佐藤'];
+
+  // 初期値
+  const now = new Date();
+  document.getElementById('f-date').value = toDateStr(now);
+  document.getElementById('f-time').value = toTimeStr(now);
+
+  // URLパラメータで日付指定があれば一覧タブを開いてフィルター（LINE内ブラウザ対応）
+  function initFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramDate = urlParams.get('date');
+    if (paramDate) {
+      document.getElementById('filter-date').value = paramDate;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-list').classList.add('active');
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      loadList();
+    }
+  }
+  window.addEventListener('load', initFromUrl);
+
+  /* ===== タブ切替 ===== */
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'list') loadList();
+  }
+
+  /* ===== 投稿 ===== */
+  async function submitHandover() {
+    const date   = document.getElementById('f-date').value;
+    const time   = document.getElementById('f-time').value;
+    const author = document.getElementById('f-author').value;
+
+    if (!date || !time || !author) {
+      showToast('日付・時間・記入者は必須っちゃ！', 'error'); return;
+    }
+
+    const general = document.getElementById('f-general').value.trim();
+    const users   = document.getElementById('f-users').value.trim();
+    const next    = document.getElementById('f-next').value.trim();
+
+    if (!general && !users && !next) {
+      showToast('内容を1つ以上入力してっちゃ！', 'error'); return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '投稿中...';
+
+    const { error } = await db.from('handovers').insert({
+      record_date:      date,
+      record_time:      time,
+      author,
+      general_notes:    general || null,
+      user_reports:     users   || null,
+      next_shift_notes: next    || null
+    });
+
+    btn.disabled = false;
+    btn.textContent = '申し送りを投稿する';
+
+    if (error) {
+      showToast('投稿失敗: ' + error.message, 'error');
+    } else {
+      showToast('申し送りを投稿したっちゃ！ ✓', 'success');
+      // LINE通知を送信
+      sendLineNotification(author, date, time, general, users, next);
+      document.getElementById('f-general').value = '';
+      document.getElementById('f-users').value   = '';
+      document.getElementById('f-next').value    = '';
+      // 自動で一覧タブへ
+      setTimeout(() => {
+        document.querySelectorAll('.tab-btn')[1].click();
+      }, 800);
+    }
+  }
+
+  /* ===== 一覧読み込み ===== */
+  async function loadList() {
+    const container = document.getElementById('list-content');
+    container.innerHTML = '<div class="loading">読み込み中...</div>';
+
+    const filterDate = document.getElementById('filter-date').value;
+
+    let query = db.from('handovers')
+      .select('*')
+      .order('record_date', { ascending: false })
+      .order('record_time', { ascending: false })
+      .limit(50);
+
+    if (filterDate) query = query.eq('record_date', filterDate);
+
+    const { data: handovers, error } = await query;
+
+    if (error || !handovers || handovers.length === 0) {
+      container.innerHTML = '<div class="empty-msg">申し送りがまだないっちゃ</div>';
+      return;
+    }
+
+    // 既読データを一括取得
+    const ids = handovers.map(h => h.id);
+    const { data: reads } = await db
+      .from('handover_reads')
+      .select('handover_id, staff_name')
+      .in('handover_id', ids);
+
+    const readMap = {};
+    (reads || []).forEach(r => {
+      if (!readMap[r.handover_id]) readMap[r.handover_id] = [];
+      readMap[r.handover_id].push(r.staff_name);
+    });
+
+    container.innerHTML = '';
+    handovers.forEach(h => {
+      const readList = readMap[h.id] || [];
+      container.appendChild(buildCard(h, readList));
+    });
+  }
+
+  function clearFilter() {
+    document.getElementById('filter-date').value = '';
+    loadList();
+  }
+
+  /* ===== カード生成 ===== */
+  function buildCard(h, readList) {
+    const card = document.createElement('div');
+    card.className = 'handover-card';
+    card.dataset.id = h.id;
+
+    const readCount = readList.length;
+    const allRead   = readCount >= STAFF.length;
+
+    card.innerHTML = `
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="card-header-left">
+          <span class="card-date">${formatDate(h.record_date)}　${h.record_time.slice(0,5)}</span>
+          <span class="card-author">記入者：${h.author}</span>
+        </div>
+        <span class="card-read-count ${allRead ? 'all-read' : ''}">
+          既読 ${readCount}/${STAFF.length}
+        </span>
+      </div>
+      <div class="card-body">
+        ${h.general_notes    ? `<div class="detail-block"><div class="detail-label">📢 全体連絡事項</div><div class="detail-text">${esc(h.general_notes)}</div></div>` : ''}
+        ${h.user_reports     ? `<div class="detail-block"><div class="detail-label">👥 利用者報告</div><div class="detail-text">${esc(h.user_reports)}</div></div>` : ''}
+        ${h.next_shift_notes ? `<div class="detail-block"><div class="detail-label">🔁 次シフトへの引き継ぎ</div><div class="detail-text">${esc(h.next_shift_notes)}</div></div>` : ''}
+
+        <div class="read-section">
+          <div class="read-title">✅ 既読チェック（自分の名前をタップ）</div>
+          <div class="staff-grid">
+            ${STAFF.map(name => `
+              <div class="staff-chip ${readList.includes(name) ? 'read' : ''}"
+                   data-handover="${h.id}"
+                   data-name="${name}"
+                   onclick="toggleRead(this)">
+                ${name}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>`;
+
+    return card;
+  }
+
+  /* ===== カード開閉 ===== */
+  function toggleCard(header) {
+    const body = header.nextElementSibling;
+    body.classList.toggle('open');
+  }
+
+  /* ===== 既読チェック ===== */
+  async function toggleRead(chip) {
+    const handoverId = chip.dataset.handover;
+    const staffName  = chip.dataset.name;
+    const isRead     = chip.classList.contains('read');
+
+    if (isRead) {
+      // 既読解除
+      await db.from('handover_reads')
+        .delete()
+        .eq('handover_id', handoverId)
+        .eq('staff_name', staffName);
+      chip.classList.remove('read');
+    } else {
+      // 既読登録
+      await db.from('handover_reads')
+        .upsert({ handover_id: handoverId, staff_name: staffName }, { onConflict: 'handover_id,staff_name' });
+      chip.classList.add('read');
+    }
+
+    // カウント更新
+    const card = chip.closest('.handover-card');
+    const readChips = card.querySelectorAll('.staff-chip.read');
+    const countEl   = card.querySelector('.card-read-count');
+    countEl.textContent = `既読 ${readChips.length}/${STAFF.length}`;
+    countEl.className   = `card-read-count ${readChips.length >= STAFF.length ? 'all-read' : ''}`;
+  }
+
+  /* ===== LINE通知 ===== */
+  async function sendLineNotification(author, date, time, general, users, next) {
+    const lines = [`📋 【申し送り】${formatDate(date)} ${time}`, `記入者：${author}`];
+    if (general) lines.push(`\n📢 全体連絡\n${general}`);
+    if (users)   lines.push(`\n👥 利用者報告\n${users}`);
+    if (next)    lines.push(`\n🔁 引き継ぎ\n${next}`);
+    lines.push(`\n▶ 申し送りを確認する\nhttps://kanetin219-sudo.github.io/anella-cafe/handover.html?date=${date}`);
+
+    await fetch('https://abeekodehorlwsmnhoza.supabase.co/functions/v1/line-notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: lines.join('\n') })
+    }).catch(() => {});
+  }
+
+  /* ===== ユーティリティ ===== */
+  function toDateStr(d) {
+    return d.toFullYear ? d.toFullYear() :
+      d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function toTimeStr(d) {
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  function formatDate(s) {
+    const d = new Date(s + 'T00:00:00');
+    return `${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
+  }
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  let toastTimer;
+  function showToast(msg, type = '') {
+    const el = document.getElementById('toast');
+    el.textContent  = msg;
+    el.className    = 'toast show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
+  }
+</script>
+</body>
+</html>

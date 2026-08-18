@@ -1,0 +1,57 @@
+name: Rakuten Travel → Threads Auto-Post
+
+on:
+  schedule:
+    - cron: '0 10 * * *'  # 毎日19時（JST）に実行 (10:00 UTC = 19:00 JST)
+  workflow_dispatch:
+
+jobs:
+  post-to-threads:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Debug - Check environment variables
+        run: |
+          echo "Checking if secrets are loaded..."
+          [ -z "$RAKUTEN_APPLICATION_ID" ] && echo "ERROR: RAKUTEN_APPLICATION_ID is empty" || echo "OK: RAKUTEN_APPLICATION_ID is set"
+          [ -z "$RAKUTEN_ACCESS_KEY" ] && echo "ERROR: RAKUTEN_ACCESS_KEY is empty" || echo "OK: RAKUTEN_ACCESS_KEY is set"
+          [ -z "$RAKUTEN_AFFILIATE_ID" ] && echo "ERROR: RAKUTEN_AFFILIATE_ID is empty" || echo "OK: RAKUTEN_AFFILIATE_ID is set"
+          [ -z "$THREADS_USER_ID" ] && echo "ERROR: THREADS_USER_ID is empty" || echo "OK: THREADS_USER_ID is set"
+          [ -z "$THREADS_ACCESS_TOKEN" ] && echo "ERROR: THREADS_ACCESS_TOKEN is empty" || echo "OK: THREADS_ACCESS_TOKEN is set"
+        env:
+          RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+
+      - name: Run daily post
+        env:
+          RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          SEARCH_KEYWORDS: 札幌,函館,小樽,釧路,青森,秋田,仙台,山形,福島,東京,横浜,日光,箱根,伊豆,名古屋,金沢,岐阜,松本,熱海,京都,大阪,神戸,奈良,和歌山,広島,岡山,倉敷,高知,香川,愛媛,福岡,佐賀,長崎,熊本,大分,由布院,別府,宮崎,鹿児島,子連れ旅行,温泉宿,グランピング
+          TIMEZONE: Asia/Tokyo
+          POST_HOUR: 19
+        run: npm run start -- --now
+
+      - name: Upload logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs/
+          retention-days: 7

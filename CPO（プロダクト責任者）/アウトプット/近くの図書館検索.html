@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>近くの図書館検索</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(135deg, #4c63d2 0%, #5e3d8c 100%);
+    color: #fff;
+    padding: 30px;
+    text-align: center;
+  }
+  header h1 { font-size: 28px; margin-bottom: 8px; }
+  header p { opacity: 0.9; font-size: 14px; }
+  .controls {
+    padding: 24px;
+    background: #f7f8fc;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .input-group label {
+    flex: 0 0 100%;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  input[type="text"], input[type="password"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border 0.2s;
+  }
+  input[type="text"]:focus, input[type="password"]:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  button {
+    padding: 12px 24px;
+    background: #667eea;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  button:hover { background: #5567d8; }
+  button:active { transform: scale(0.98); }
+  button:disabled { background: #9ca3af; cursor: not-allowed; }
+  .btn-secondary {
+    background: #fff;
+    color: #667eea;
+    border: 1px solid #667eea;
+  }
+  .btn-secondary:hover { background: #f0f3ff; }
+  .help {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .help a { color: #667eea; }
+  .status {
+    padding: 16px 24px;
+    font-size: 14px;
+    text-align: center;
+    color: #6b7280;
+  }
+  .status.error { color: #dc2626; background: #fef2f2; }
+  .status.loading { color: #667eea; }
+  .results { padding: 24px; }
+  .result-count {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 16px;
+  }
+  .library-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: box-shadow 0.2s, transform 0.1s;
+  }
+  .library-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  .library-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 6px;
+  }
+  .library-system {
+    font-size: 12px;
+    color: #667eea;
+    background: #eef2ff;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .library-info {
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.7;
+    margin-top: 8px;
+  }
+  .library-info .label {
+    display: inline-block;
+    width: 60px;
+    color: #9ca3af;
+    font-weight: 600;
+  }
+  .library-distance {
+    float: right;
+    font-size: 14px;
+    font-weight: 700;
+    color: #10b981;
+  }
+  .library-links {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .library-links a {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    background: #f3f4f6;
+    color: #4b5563;
+    transition: background 0.2s;
+  }
+  .library-links a:hover { background: #e5e7eb; }
+  .library-links a.primary {
+    background: #667eea;
+    color: #fff;
+  }
+  .library-links a.primary:hover { background: #5567d8; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📚 近くの図書館検索</h1>
+    <p>Calil API を使って、あなたの近くにある図書館を探せるっちゃ</p>
+  </header>
+
+  <div class="controls">
+    <div class="input-group">
+      <label>検索方法 1：現在地から探す</label>
+      <button id="btn-geo">📍 現在地で検索</button>
+    </div>
+
+    <div class="input-group">
+      <label>検索方法 2：都道府県・市区町村で探す</label>
+      <input type="text" id="pref" placeholder="都道府県（例：宮崎県）" />
+      <input type="text" id="city" placeholder="市区町村（例：宮崎市・任意）" />
+      <button id="btn-area">🔍 エリアで検索</button>
+    </div>
+
+    <p class="help">
+      ※ ブラウザの位置情報を許可する必要があるどん。
+    </p>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="results" class="results"></div>
+</div>
+
+<script>
+const CALIL_APPKEY = '30a548c24090c92e403d82a6acd17932';
+const $ = (id) => document.getElementById(id);
+const statusEl = $('status');
+const resultsEl = $('results');
+
+const setStatus = (msg, type = '') => {
+  statusEl.textContent = msg;
+  statusEl.className = 'status ' + type;
+};
+
+// JSONP でCalil APIを叩く
+const callCalil = (params) => {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'calilCb_' + Date.now() + Math.floor(Math.random() * 10000);
+    const timeout = setTimeout(() => {
+      reject(new Error('タイムアウト：APIキーまたはネットワークを確認してくれんね'));
+      cleanup();
+    }, 15000);
+
+    const cleanup = () => {
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+
+    window[callbackName] = (data) => {
+      clearTimeout(timeout);
+      cleanup();
+      resolve(data);
+    };
+
+    const query = new URLSearchParams({
+      ...params,
+      format: 'json',
+      callback: callbackName,
+    }).toString();
+
+    const script = document.createElement('script');
+    script.src = 'https://api.calil.jp/library?' + query;
+    script.onerror = () => {
+      clearTimeout(timeout);
+      cleanup();
+      reject(new Error('API呼び出しに失敗したっちゃ'));
+    };
+    document.head.appendChild(script);
+  });
+};
+
+// 距離計算（Haversine、km）
+const calcDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const renderResults = (libraries, baseLat, baseLon) => {
+  if (!libraries || libraries.length === 0) {
+    resultsEl.innerHTML = '<p class="result-count">図書館が見つからんかったっちゃ。</p>';
+    return;
+  }
+
+  // 距離でソート（基準座標があれば）
+  if (baseLat && baseLon) {
+    libraries.forEach(lib => {
+      if (lib.geocode) {
+        const [lon, lat] = lib.geocode.split(',').map(Number);
+        lib._distance = calcDistance(baseLat, baseLon, lat, lon);
+      }
+    });
+    libraries.sort((a, b) => (a._distance ?? 999) - (b._distance ?? 999));
+  }
+
+  const html = `
+    <p class="result-count">${libraries.length}件の図書館が見つかったが</p>
+    ${libraries.map(lib => {
+      const dist = lib._distance != null
+        ? `<span class="library-distance">📍 ${lib._distance.toFixed(2)} km</span>`
+        : '';
+      const mapLink = lib.geocode
+        ? `https://www.google.com/maps?q=${lib.geocode.split(',').reverse().join(',')}`
+        : null;
+      return `
+        <div class="library-card">
+          ${dist}
+          <div class="library-name">${escapeHtml(lib.formal || lib.short || '名称不明')}</div>
+          <div class="library-system">${escapeHtml(lib.systemname || lib.systemid || '')}</div>
+          <div class="library-info">
+            ${lib.address ? `<div><span class="label">住所</span>${escapeHtml(lib.address)}</div>` : ''}
+            ${lib.tel ? `<div><span class="label">電話</span>${escapeHtml(lib.tel)}</div>` : ''}
+            ${lib.post ? `<div><span class="label">郵便</span>${escapeHtml(lib.post)}</div>` : ''}
+            ${lib.category ? `<div><span class="label">区分</span>${escapeHtml(lib.category)}</div>` : ''}
+          </div>
+          <div class="library-links">
+            ${lib.url_pc ? `<a href="${lib.url_pc}" target="_blank" class="primary">公式サイト</a>` : ''}
+            ${mapLink ? `<a href="${mapLink}" target="_blank">Google マップで見る</a>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+  resultsEl.innerHTML = html;
+};
+
+const escapeHtml = (str) => String(str)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+const search = async (params, baseLat, baseLon) => {
+  setStatus('検索中…ちょっと待っちょって', 'loading');
+  resultsEl.innerHTML = '';
+
+  try {
+    const data = await callCalil({ appkey: CALIL_APPKEY, ...params });
+    setStatus('');
+    renderResults(data, baseLat, baseLon);
+  } catch (err) {
+    setStatus('エラー：' + err.message, 'error');
+  }
+};
+
+$('btn-geo').addEventListener('click', () => {
+  if (!navigator.geolocation) {
+    setStatus('このブラウザは位置情報に対応しとらんっちゃ', 'error');
+    return;
+  }
+  setStatus('現在地を取得中…', 'loading');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      // Calil APIは「経度,緯度」の順
+      search({ geocode: `${longitude},${latitude}`, limit: 30 }, latitude, longitude);
+    },
+    (err) => {
+      setStatus('位置情報を取得できんかった：' + err.message, 'error');
+    }
+  );
+});
+
+$('btn-area').addEventListener('click', () => {
+  const pref = $('pref').value.trim();
+  const city = $('city').value.trim();
+  if (!pref) {
+    setStatus('都道府県を入れてくれんね', 'error');
+    return;
+  }
+  const params = { pref, limit: 50 };
+  if (city) params.city = city;
+  search(params);
+});
+
+</script>
+</body>
+</html>

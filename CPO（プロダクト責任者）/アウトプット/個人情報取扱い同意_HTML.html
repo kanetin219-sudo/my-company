@@ -1,0 +1,207 @@
+<!-- 個人情報取扱い同意項目 -->
+<div class="privacy-consent-section">
+  <div class="consent-container">
+    <div class="consent-box">
+      <h3 class="consent-title">個人情報の取扱いについて</h3>
+
+      <div class="consent-text">
+        <p><strong>当社は、お客様からいただいた個人情報を大切に扱い、以下のとおり適切に管理いたします。</strong></p>
+
+        <div class="consent-item">
+          <h4>■ 収集する情報</h4>
+          <p>申し込みフォームでご入力いただく、お名前・メールアドレス・電話番号・住所などの個人情報</p>
+        </div>
+
+        <div class="consent-item">
+          <h4>■ 利用目的</h4>
+          <ul>
+            <li>お申し込み内容の確認・処理</li>
+            <li>サービス提供に関するご連絡</li>
+            <li>アフターフォローや商品・サービス情報のご案内</li>
+            <li>お客様満足度調査（ご希望の方）</li>
+          </ul>
+        </div>
+
+        <div class="consent-item">
+          <h4>■ 情報の管理</h4>
+          <ul>
+            <li>お客様の個人情報は、本人の同意がない限り第三者には提供いたしません</li>
+            <li>個人情報は、セキュアなサーバーで厳重に管理いたします</li>
+            <li>情報漏洩防止のため、定期的にセキュリティチェックを実施いたします</li>
+          </ul>
+        </div>
+
+        <div class="consent-item">
+          <h4>■ 個人情報の保持期間</h4>
+          <p>サービス提供終了後、法令で定められた期間保管いたします</p>
+        </div>
+
+        <div class="consent-item">
+          <h4>■ お問い合わせ</h4>
+          <p>個人情報についてのご質問やご不明な点がございましたら、お気軽にお問い合わせください。</p>
+        </div>
+      </div>
+
+      <div class="consent-checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" name="privacy-consent" value="agreed">
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">上記の個人情報取扱いについて同意します</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.privacy-consent-section {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.consent-container {
+  padding: 0;
+}
+
+.consent-box {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.consent-title {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.consent-title::before {
+  content: "≡";
+  margin-right: 8px;
+  color: #666;
+}
+
+.consent-text {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  background-color: white;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid #f0f0f0;
+}
+
+.consent-text p {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.consent-text strong {
+  color: #333;
+}
+
+.consent-text ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.consent-text li {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+  margin: 4px 0;
+}
+
+.consent-item {
+  margin: 12px 0;
+}
+
+.consent-item h4 {
+  margin: 8px 0 6px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.consent-checkbox {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-custom {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  background-color: white;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
+  background-color: #2196F3;
+  border-color: #2196F3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M13.5 2L5.5 12L2 8.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px;
+}
+
+.checkbox-text {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* モバイル対応 */
+@media (max-width: 480px) {
+  .consent-box {
+    padding: 16px;
+  }
+
+  .consent-text {
+    font-size: 12px;
+    padding: 10px;
+    max-height: 250px;
+  }
+
+  .consent-text p,
+  .consent-text li {
+    font-size: 12px;
+  }
+
+  .consent-title {
+    font-size: 14px;
+  }
+
+  .checkbox-custom {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+  }
+
+  .checkbox-text {
+    font-size: 13px;
+  }
+}
+</style>

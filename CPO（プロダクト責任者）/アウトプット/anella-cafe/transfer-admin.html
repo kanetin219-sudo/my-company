@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>送迎管理 | ANELLA CAFE 就労継続支援B型</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --accent-light: #6FA898;
+      --text: #2C1F14;
+      --text-mid: #6B4F3A;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --shadow: rgba(150, 80, 30, 0.12);
+      --warn: #D4502A;
+      --warn-bg: #FFF3EE;
+      --gray: #9E9E9E;
+      --gray-bg: #F5F5F5;
+      --nav-h: 64px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Noto Sans JP', sans-serif; font-size: 15px; line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ===== ログイン ===== */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 40px 36px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px var(--shadow);
+    }
+    .login-logo { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--primary); text-align: center; margin-bottom: 2px; letter-spacing: 0.04em; }
+    .login-tagline { font-size: 11px; color: var(--accent); text-align: center; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .login-sub { font-size: 13px; color: var(--text-soft); text-align: center; margin-bottom: 32px; }
+    .login-field { margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 6px; }
+    .login-field input {
+      width: 100%; padding: 13px 14px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Noto Sans JP', sans-serif; font-size: 16px; color: var(--text); outline: none;
+    }
+    .login-field input:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(201,106,59,0.12); }
+    .login-btn {
+      width: 100%; padding: 15px; background: var(--primary); color: #fff; border: none; border-radius: 12px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;
+      margin-top: 8px; box-shadow: 0 4px 12px rgba(201,106,59,0.3); transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { background: #D0B49E; box-shadow: none; cursor: not-allowed; }
+    .login-err { color: var(--warn); font-size: 13px; margin-top: 10px; text-align: center; display: none; }
+    .login-err.active { display: block; }
+
+    /* ===== メイン画面 ===== */
+    #mainScreen { display: none; flex-direction: column; min-height: 100vh; }
+    #mainScreen.active { display: flex; }
+
+    /* ===== ヘッダー ===== */
+    .app-header {
+      background: var(--text); color: #fff; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .header-logo { font-family: 'DM Serif Display', serif; font-size: 17px; color: var(--primary-light); }
+    .header-logo span { font-size: 11px; color: #aaa; font-family: 'Noto Sans JP', sans-serif; display: block; line-height: 1; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .header-user { font-size: 11px; color: #aaa; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .logout-btn {
+      padding: 6px 12px; background: transparent; border: 1px solid #555; border-radius: 8px;
+      color: #ccc; font-family: 'Noto Sans JP', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: #aaa; color: #fff; }
+
+    /* ===== コンテンツ ===== */
+    .page-content {
+      flex: 1; overflow-y: auto; padding: 16px 16px calc(var(--nav-h) + 16px);
+    }
+
+    /* ===== ボトムナビ ===== */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--border);
+      display: flex; height: var(--nav-h); z-index: 200;
+      box-shadow: 0 -4px 16px var(--shadow);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; cursor: pointer; color: var(--text-soft); font-size: 10px; font-weight: 500;
+      transition: color 0.2s; padding: 8px 2px; border: none; background: none;
+    }
+    .nav-item .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active .nav-icon { transform: scale(1.1); }
+
+    /* ===== ページ ===== */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ===== 共通 ===== */
+    .section-title {
+      font-size: 13px; font-weight: 700; color: var(--text-soft); letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px var(--shadow);
+    }
+    .btn {
+      padding: 10px 18px; border: none; border-radius: 10px; font-family: 'Noto Sans JP', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(201,106,59,0.25); }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-accent { background: var(--accent); color: #fff; box-shadow: 0 3px 10px rgba(74,124,111,0.25); }
+    .btn-accent:hover { opacity: 0.9; }
+    .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-outline:hover { background: rgba(201,106,59,0.06); }
+    .btn-warn { background: var(--warn); color: #fff; }
+    .btn-warn:hover { opacity: 0.9; }
+    .btn-ghost { background: transparent; color: var(--text-soft); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 8px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    }
+    .badge-green { background: rgba(74,124,111,0.12); color: var(--accent); }
+    .badge-red { background: rgba(212,80,42,0.1); color: var(--warn); }
+    .badge-gray { background: var(--gray-bg); color: var(--gray); }
+    .badge-primary { background: rgba(201,106,59,0.12); color: var(--primary); }
+    .badge-blue   { background: rgba(59,123,201,0.13); color: #3B7BC9; }
+    .badge-accent { background: rgba(74,124,111,0.13); color: var(--accent); }
+    .group-header-orange { background: rgba(201,106,59,0.07) !important; }
+    .group-header-blue   { background: rgba(59,123,201,0.07) !important; }
+    .group-header-green  { background: rgba(74,124,111,0.07) !important; }
+    .card-border-orange { border-left: 4px solid var(--primary) !important; }
+    .card-border-blue   { border-left: 4px solid #3B7BC9 !important; }
+    .card-border-green  { border-left: 4px solid var(--accent) !important; }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 5px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 11px 13px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Noto Sans JP', sans-serif; font-size: 15px; color: var(--text); outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(201,106,59,0.1);
+    }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ===== トースト ===== */
+    #toast {
+      position: fixed; bottom: calc(var(--nav-h) + 16px); left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--text); color: #fff; padding: 12px 20px; border-radius: 12px;
+      font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s; z-index: 9999;
+      white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.2); pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.warn { background: var(--warn); }
+    #toast.success { background: var(--accent); }
+
+    /* ===== モーダル ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(44,31,20,0.5); z-index: 500;
+      display: none; align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-sheet {
+      background: var(--surface); border-radius: 20px 20px 0 0; padding: 24px 20px;
+      width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-title {
+      font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text);
+      margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border);
+      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text-soft); flex-shrink: 0;
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; justify-content: center; padding: 13px; }
+
+    /* ===== ホーム画面 ===== */
+    .home-date-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff; border-radius: 20px; padding: 24px; margin-bottom: 16px;
+      box-shadow: 0 6px 24px rgba(201,106,59,0.3);
+    }
+    .home-date-label { font-size: 12px; opacity: 0.8; letter-spacing: 0.1em; }
+    .home-date-main { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1.1; margin: 4px 0; }
+    .home-date-sub { font-size: 14px; opacity: 0.85; }
+    .home-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; text-align: center; box-shadow: 0 2px 8px var(--shadow);
+    }
+    .stat-num { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: var(--text-soft); }
+    .stat-card.attend .stat-num { color: var(--accent); }
+    .stat-card.absent .stat-num { color: var(--warn); }
+    .shortcut-btn {
+      display: flex; align-items: center; gap: 12px; width: 100%;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 10px; cursor: pointer; text-align: left;
+      box-shadow: 0 2px 8px var(--shadow); transition: all 0.2s;
+    }
+    .shortcut-btn:hover { border-color: var(--primary-light); box-shadow: 0 4px 16px var(--shadow); }
+    .shortcut-icon { font-size: 28px; width: 48px; height: 48px; background: var(--bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .shortcut-text-main { font-size: 15px; font-weight: 700; color: var(--text); }
+    .shortcut-text-sub { font-size: 12px; color: var(--text-soft); }
+    .history-item {
+      padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-light); margin-top: 7px; flex-shrink: 0; }
+    .history-name { font-weight: 700; font-size: 14px; }
+    .history-detail { font-size: 13px; color: var(--text-mid); }
+    .history-time { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+
+    /* ===== カレンダー ===== */
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .cal-nav-btn {
+      width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border);
+      font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      color: var(--text-mid); transition: all 0.2s;
+    }
+    .cal-nav-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cal-month { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-dow {
+      text-align: center; font-size: 11px; font-weight: 700; color: var(--text-soft);
+      padding: 4px 0; letter-spacing: 0.05em;
+    }
+    .cal-dow:first-child { color: var(--warn); }
+    .cal-dow:last-child { color: var(--accent); }
+    .cal-day {
+      aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border); transition: all 0.15s;
+      padding: 2px; position: relative;
+    }
+    .cal-day:hover { border-color: var(--primary-light); background: rgba(201,106,59,0.04); }
+    .cal-day.today { border-color: var(--primary); background: rgba(201,106,59,0.08); }
+    .cal-day.other-month { opacity: 0.3; pointer-events: none; }
+    .cal-day.sunday .cal-day-num { color: var(--warn); }
+    .cal-day.saturday .cal-day-num { color: var(--accent); }
+    .cal-day-num { font-size: 14px; font-weight: 700; line-height: 1; }
+    .cal-day-count { font-size: 10px; color: var(--accent); font-weight: 700; margin-top: 1px; }
+    .cal-gen-btn { width: 100%; margin-top: 12px; justify-content: center; padding: 14px; }
+
+    /* ===== 送迎表 ===== */
+    .transfer-date-bar {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px;
+    }
+    .transfer-date-bar label { font-size: 13px; font-weight: 700; color: var(--text-mid); white-space: nowrap; }
+    .transfer-date-bar input[type="date"] {
+      flex: 1; border: none; background: transparent; font-family: 'Noto Sans JP', sans-serif;
+      font-size: 16px; color: var(--text); outline: none;
+    }
+    .route-label {
+      display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-soft);
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .route-point {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 4px 10px; font-weight: 700; color: var(--text-mid); font-size: 12px;
+    }
+    .route-arrow { color: var(--text-soft); font-size: 16px; }
+    .time-section-divider {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; font-weight: 700; color: var(--text-soft);
+      letter-spacing: 0.08em; margin: 6px 0 12px;
+    }
+    .time-section-divider::before, .time-section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .group-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      margin-bottom: 14px; overflow: hidden; box-shadow: 0 2px 8px var(--shadow);
+    }
+    .group-header {
+      padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .group-title { font-weight: 700; font-size: 15px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .group-badge { font-size: 11px; }
+    .driver-row { display: flex; align-items: center; gap: 8px; }
+    .driver-label { font-size: 12px; color: var(--text-soft); white-space: nowrap; }
+    .driver-select {
+      padding: 6px 10px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; font-family: 'Noto Sans JP', sans-serif; font-size: 13px; color: var(--text); outline: none;
+    }
+    .driver-select:focus { border-color: var(--primary-light); }
+    .rider-list { padding: 8px; }
+    .rider-item {
+      display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px;
+      margin-bottom: 6px; background: var(--bg); border: 1px solid var(--border);
+      cursor: grab; transition: all 0.2s;
+    }
+    .rider-item:last-child { margin-bottom: 0; }
+    .rider-item.dragging { opacity: 0.5; box-shadow: 0 4px 16px var(--shadow); transform: scale(1.02); }
+    .rider-item.drag-over { border-color: var(--primary); background: rgba(201,106,59,0.06); }
+    .rider-item.absent { opacity: 0.45; background: var(--gray-bg); text-decoration: line-through; }
+    .drag-handle { color: var(--text-soft); font-size: 18px; cursor: grab; user-select: none; }
+    .rider-order {
+      width: 22px; height: 22px; background: var(--primary); color: #fff;
+      border-radius: 50%; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .rider-name { flex: 1; font-weight: 700; font-size: 14px; }
+    .rider-time { font-size: 12px; color: var(--text-soft); white-space: nowrap; }
+    .rider-absent-btn {
+      padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--border); background: transparent; cursor: pointer;
+      color: var(--text-soft); transition: all 0.2s; white-space: nowrap;
+    }
+    .rider-absent-btn:hover { border-color: var(--warn); color: var(--warn); }
+    .rider-absent-btn.active { background: var(--warn); color: #fff; border-color: var(--warn); }
+    .rider-delete-btn {
+      padding: 5px 8px; border-radius: 8px; font-size: 13px;
+      border: 1px solid var(--border); background: transparent; cursor: pointer;
+      color: var(--text-soft); transition: all 0.2s; white-space: nowrap; line-height: 1;
+    }
+    .rider-delete-btn:hover { border-color: var(--warn); color: var(--warn); background: var(--warn-bg); }
+    .rider-detail-btn {
+      padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--primary-light); background: transparent; cursor: pointer;
+      color: var(--primary); transition: all 0.2s; white-space: nowrap;
+    }
+    .rider-detail-btn:hover { background: rgba(201,106,59,0.1); }
+    .rider-switch-btn {
+      padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--accent); background: transparent; cursor: pointer;
+      color: var(--accent); transition: all 0.2s; white-space: nowrap;
+    }
+    .rider-switch-btn:hover { background: rgba(74,124,111,0.1); }
+    .add-rider-btn { width: 100%; text-align: center; padding: 12px; margin: 8px 0; }
+
+    /* ===== 利用者管理 ===== */
+    .user-list-table { width: 100%; border-collapse: collapse; }
+    .user-list-table th {
+      text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 700;
+      color: var(--text-soft); border-bottom: 2px solid var(--border); background: var(--bg);
+    }
+    .user-list-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+    .user-list-table tr:last-child td { border-bottom: none; }
+    .user-list-table tr:hover td { background: rgba(201,106,59,0.04); }
+    .user-list-table .actions { display: flex; gap: 6px; }
+    .inactive-row td { opacity: 0.5; }
+    .schedule-panel {
+      background: var(--surface); border: 1px solid var(--primary-light); border-radius: 16px;
+      padding: 16px; margin-top: 16px;
+    }
+    .schedule-panel-title { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+    .dow-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 14px; }
+    .dow-check {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 4px;
+    }
+    .dow-check label { font-size: 12px; font-weight: 700; color: var(--text-mid); }
+    .dow-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+    .dow-check.checked { background: rgba(201,106,59,0.08); border-color: var(--primary-light); }
+    .sched-row { display: grid; grid-template-columns: auto 1fr 1fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; }
+    .sched-row-label { font-weight: 700; color: var(--text-mid); min-width: 24px; }
+    .sched-row select { padding: 7px 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
+
+    /* ===== 出欠変更 ===== */
+    .attendance-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px; margin-bottom: 10px; box-shadow: 0 2px 6px var(--shadow);
+    }
+    .attendance-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .attendance-name { font-weight: 700; font-size: 16px; }
+    .status-toggle { display: flex; gap: 4px; }
+    .status-btn {
+      padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
+      border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--text-soft);
+      transition: all 0.15s;
+    }
+    .status-btn.active-attend { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .status-btn.active-absent { background: var(--warn); color: #fff; border-color: var(--warn); }
+    .status-btn.active-add { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .attendance-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .att-time-group label { font-size: 11px; color: var(--text-soft); margin-bottom: 3px; display: block; }
+    .att-time-group select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--text); outline: none; }
+    .att-memo { grid-column: 1/-1; }
+    .att-memo input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--text); outline: none; }
+
+    /* ===== 月次印刷 ===== */
+    .print-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .print-table-wrap { overflow-x: auto; }
+    .print-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .print-table th {
+      padding: 10px 8px; background: var(--text); color: #fff; font-size: 12px;
+      font-weight: 700; text-align: center; white-space: nowrap;
+    }
+    .print-table td { padding: 8px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
+    .print-table tr:nth-child(even) td { background: rgba(201,106,59,0.03); }
+    .print-table .sun td { color: var(--warn); }
+    .print-table .sat td { color: var(--accent); }
+
+    /* ===== 印刷スタイル ===== */
+    @media print {
+      @page { size: A4 portrait; margin: 8mm; }
+      .app-header, .bottom-nav, .print-controls, .no-print { display: none !important; }
+      .page-content { padding: 0; max-width: none; margin: 0; }
+      body { background: #fff; }
+      .print-table { font-size: 9px; width: 100%; table-layout: fixed; }
+      .print-table th { padding: 4px 3px; font-size: 8px; }
+      .print-table td { padding: 4px 3px; word-break: break-all; vertical-align: top; }
+      .print-driver { font-size: 7.5px; color: #555; }
+      /* 列幅：月・日・曜は狭く、時間帯5列で残りを均等割り */
+      .print-table th:nth-child(1), .print-table td:nth-child(1) { width: 4%; }
+      .print-table th:nth-child(2), .print-table td:nth-child(2) { width: 4%; }
+      .print-table th:nth-child(3), .print-table td:nth-child(3) { width: 5%; }
+      .print-table th:nth-child(4), .print-table td:nth-child(4) { width: 17.4%; }
+      .print-table th:nth-child(5), .print-table td:nth-child(5) { width: 17.4%; }
+      .print-table th:nth-child(6), .print-table td:nth-child(6) { width: 17.4%; }
+      .print-table th:nth-child(7), .print-table td:nth-child(7) { width: 17.4%; }
+      .print-table th:nth-child(8), .print-table td:nth-child(8) { width: 17.4%; }
+    }
+
+    /* ===== レスポンシブ ===== */
+    @media (min-width: 600px) {
+      .page-content { max-width: 720px; margin: 0 auto; }
+      .home-stats { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (min-width: 900px) {
+      .bottom-nav { left: 0; width: 72px; height: 100vh; flex-direction: column; border-top: none; border-right: 1px solid var(--border); top: 0; bottom: auto; }
+      .nav-item { padding: 16px 8px; }
+      .app-header { padding-left: 88px; }
+      .page-content { margin-left: 72px; }
+    }
+
+    /* ===== タブバー ===== */
+    .tab-bar { display: flex; gap: 0; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .tab-btn { flex: 1; padding: 9px 4px; font-size: 12px; font-weight: 700; border: none; background: transparent; cursor: pointer; color: var(--text-soft); font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    /* ===== ドライバー管理 ===== */
+    .driver-mgmt-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .driver-mgmt-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; }
+    .driver-mgmt-name { font-weight: 700; font-size: 14px; }
+    /* ===== 週間予定グリッド ===== */
+    .week-grid { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 16px; }
+    .week-table { width: 100%; border-collapse: collapse; min-width: 520px; }
+    .week-table th { background: var(--bg); padding: 8px 3px; text-align: center; font-weight: 700; border: 1px solid var(--border); color: var(--text-mid); font-size: 11px; }
+    .week-table td { padding: 4px 2px; border: 1px solid var(--border); text-align: center; vertical-align: middle; }
+    .week-name-cell { text-align: left !important; padding: 6px 8px !important; font-weight: 700; font-size: 12px; min-width: 70px; position: sticky; left: 0; background: var(--surface); z-index: 1; white-space: nowrap; }
+    .week-cell { min-height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; border-radius: 6px; padding: 4px 2px; transition: background 0.15s; }
+    .week-cell:hover { background: rgba(201,106,59,0.1); }
+    .week-cell.attend { background: rgba(74,124,111,0.08); }
+    .week-cell-time { font-size: 11px; font-weight: 700; color: var(--primary); line-height: 1.3; }
+    .week-cell-dropoff { font-size: 10px; color: var(--accent); }
+    .week-cell.off { color: var(--text-soft); font-size: 10px; }
+
+    /* ===== ローディング ===== */
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(253,246,238,0.8); z-index: 9000;
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+    }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== ドロップゾーン ===== */
+    .drop-zone { min-height: 40px; }
+    .empty-state { text-align: center; padding: 24px; color: var(--text-soft); font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<!-- ローディング -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div style="color:var(--text-soft);font-size:14px;">読み込み中...</div>
+</div>
+
+<!-- トースト -->
+<div id="toast"></div>
+
+<!-- ===== ログイン画面 ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">ANELLA CAFE</div>
+    <div class="login-tagline">就労継続支援 B型</div>
+    <div class="login-sub">送迎管理システム</div>
+    <div class="login-field">
+      <label>メールアドレス</label>
+      <input type="email" id="loginEmail" placeholder="email@example.com" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>パスワード</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="handleLogin()">ログイン</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ===== メイン画面 ===== -->
+<div id="mainScreen">
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div class="header-logo">
+      ANELLA CAFE
+      <span>送迎管理</span>
+    </div>
+    <div class="header-right">
+      <span class="header-user" id="headerUser"></span>
+      <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
+    </div>
+  </header>
+
+  <!-- コンテンツ -->
+  <div class="page-content">
+
+    <!-- ===== ホーム ===== -->
+    <div class="page active" id="pageHome">
+      <div class="home-date-card">
+        <div class="home-date-label">TODAY</div>
+        <div class="home-date-main" id="homeDateMain"></div>
+        <div class="home-date-sub" id="homeDateSub"></div>
+      </div>
+      <div class="home-stats">
+        <div class="stat-card attend">
+          <div class="stat-num" id="statAttend">–</div>
+          <div class="stat-label">出席</div>
+        </div>
+        <div class="stat-card absent">
+          <div class="stat-num" id="statAbsent">–</div>
+          <div class="stat-label">欠席</div>
+        </div>
+      </div>
+      <button class="shortcut-btn" onclick="goToTransfer()">
+        <div class="shortcut-icon">🚐</div>
+        <div>
+          <div class="shortcut-text-main">今日の送迎表へ</div>
+          <div class="shortcut-text-sub">送迎ルート・ドライバー確認</div>
+        </div>
+        <span style="color:var(--text-soft);margin-left:auto;">›</span>
+      </button>
+      <button class="shortcut-btn" onclick="goToAttendance()">
+        <div class="shortcut-icon">✅</div>
+        <div>
+          <div class="shortcut-text-main">出欠を変更する</div>
+          <div class="shortcut-text-sub">当日の出欠・時間変更</div>
+        </div>
+        <span style="color:var(--text-soft);margin-left:auto;">›</span>
+      </button>
+      <div class="section-title">最近の変更履歴</div>
+      <div class="card" id="historyList">
+        <div class="empty-state">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- ===== カレンダー ===== -->
+    <div class="page" id="pageCalendar">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calPrevMonth()">‹</button>
+        <div class="cal-month" id="calMonthLabel"></div>
+        <button class="cal-nav-btn" onclick="calNextMonth()">›</button>
+      </div>
+      <div class="card" style="padding:12px;">
+        <div class="cal-grid" id="calDowRow"></div>
+        <div class="cal-grid" id="calDaysGrid"></div>
+      </div>
+      <button class="btn btn-accent cal-gen-btn no-print" onclick="generateMonthSchedule()">
+        📋 翌月の送迎表を生成
+      </button>
+    </div>
+
+    <!-- ===== 送迎表 ===== -->
+    <div class="page" id="pageTransfer">
+      <div class="transfer-date-bar">
+        <label>📅 日付</label>
+        <input type="date" id="transferDate" onchange="loadTransferPage()">
+      </div>
+
+      <div id="transferGroups"></div>
+      <button class="btn btn-outline add-rider-btn no-print" onclick="openAddRiderModal()">＋ 利用者を追加</button>
+    </div>
+
+    <!-- ===== 利用者管理 ===== -->
+    <div class="page" id="pageUsers">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tabBtnUsers" onclick="switchUserTab('users')">👥 利用者</button>
+        <button class="tab-btn" id="tabBtnWeekly" onclick="switchUserTab('weekly')">📅 週間予定</button>
+        <button class="tab-btn" id="tabBtnDrivers" onclick="switchUserTab('drivers')">🚗 ドライバー</button>
+      </div>
+
+      <!-- 利用者一覧 -->
+      <div id="usersTabContent">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="section-title" style="margin:0;border:none;">利用者一覧</div>
+          <button class="btn btn-primary btn-sm" onclick="openUserModal()">＋ 新規追加</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="overflow-x:auto;">
+            <table class="user-list-table" id="userTable">
+              <thead>
+                <tr>
+                  <th>名前</th>
+                  <th>よみ</th>
+                  <th>担当車</th>
+                  <th>状態</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+                <tr><td colspan="5" class="empty-state">読み込み中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="schedule-panel" id="schedulePanel" style="display:none;">
+          <div class="schedule-panel-title" id="schedulePanelTitle">基本スケジュール設定</div>
+          <div class="dow-grid" id="dowGrid"></div>
+          <div id="schedDetailRows"></div>
+          <button class="btn btn-primary btn-sm" onclick="saveDefaultSchedule()">保存</button>
+        </div>
+      </div>
+
+      <!-- 週間予定表 -->
+      <div id="weeklyTabContent" style="display:none;">
+        <div class="section-title">週間スケジュール（基本設定）</div>
+        <div class="week-grid">
+          <table class="week-table">
+            <thead>
+              <tr>
+                <th class="week-name-cell">名前</th>
+                <th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th><th>日</th>
+              </tr>
+            </thead>
+            <tbody id="weeklyTableBody">
+              <tr><td colspan="8" class="empty-state">読み込み中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:12px;color:var(--text-soft);margin-top:8px;">※ セルをタップして編集。保存すると今日から来月末まで自動反映されます。</div>
+      </div>
+
+      <!-- ドライバー管理 -->
+      <div id="driversTabContent" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="section-title" style="margin:0;border:none;">ドライバー一覧</div>
+          <button class="btn btn-primary btn-sm" onclick="openDriverEditModal()">＋ 新規追加</button>
+        </div>
+        <div class="driver-mgmt-list" id="driverMgmtList">
+          <div class="empty-state">読み込み中...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 出欠変更 ===== -->
+    <div class="page" id="pageAttendance">
+      <div class="transfer-date-bar">
+        <label>📅 日付</label>
+        <input type="date" id="attendanceDate" onchange="loadAttendancePage()">
+      </div>
+      <div id="attendanceList">
+        <div class="empty-state">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- ===== 月次印刷 ===== -->
+    <div class="page" id="pagePrint">
+      <div class="print-controls no-print">
+        <div class="form-group" style="margin:0;display:flex;align-items:center;gap:8px;">
+          <label class="form-label" style="margin:0;white-space:nowrap;">月を選択</label>
+          <input type="month" id="printMonth" class="form-input" style="width:auto;" onchange="loadPrintPage()">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ 印刷</button>
+      </div>
+      <div class="print-table-wrap">
+        <table class="print-table" id="printTable">
+          <thead>
+            <tr>
+              <th>月</th><th>日</th><th>曜</th>
+              <th>行き10:00①</th>
+              <th>行き10:00②</th>
+              <th>行き11:00</th>
+              <th>帰り15:00</th>
+              <th>帰り16:00</th>
+            </tr>
+          </thead>
+          <tbody id="printTableBody">
+            <tr><td colspan="8" class="empty-state">月を選択してください</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /page-content -->
+
+  <!-- ボトムナビ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="navHome" onclick="switchPage('home')">
+      <span class="nav-icon">🏠</span>ホーム
+    </button>
+    <button class="nav-item" id="navCalendar" onclick="switchPage('calendar')">
+      <span class="nav-icon">📅</span>カレンダー
+    </button>
+    <button class="nav-item" id="navTransfer" onclick="switchPage('transfer')">
+      <span class="nav-icon">🚐</span>送迎表
+    </button>
+    <button class="nav-item" id="navUsers" onclick="switchPage('users')">
+      <span class="nav-icon">👥</span>利用者
+    </button>
+    <button class="nav-item" id="navAttendance" onclick="switchPage('attendance')">
+      <span class="nav-icon">✅</span>出欠
+    </button>
+    <button class="nav-item" id="navPrint" onclick="switchPage('print')">
+      <span class="nav-icon">🖨️</span>印刷
+    </button>
+  </nav>
+</div><!-- /mainScreen -->
+
+<!-- ===== モーダル: カレンダー日付詳細 ===== -->
+<div class="modal-overlay" id="calDayModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span id="calDayModalTitle"></span>
+      <button class="modal-close" onclick="closeModal('calDayModal')">✕</button>
+    </div>
+    <div id="calDayModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="goToDateTransfer()">この日の送迎表へ</button>
+      <button class="btn btn-ghost" onclick="closeModal('calDayModal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 利用者追加/編集 ===== -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span id="userModalTitle">利用者を追加</span>
+      <button class="modal-close" onclick="closeModal('userModal')">✕</button>
+    </div>
+    <input type="hidden" id="editUserId">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">名前 *</label>
+        <input type="text" class="form-input" id="userModalName" placeholder="山田 太郎">
+      </div>
+      <div class="form-group">
+        <label class="form-label">よみ *</label>
+        <input type="text" class="form-input" id="userModalKana" placeholder="やまだ たろう">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">住所</label>
+      <input type="text" class="form-input" id="userModalAddress" placeholder="大分市〇〇">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">本人電話</label>
+        <input type="tel" class="form-input" id="userModalPhone" placeholder="090-0000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">家族電話</label>
+        <input type="tel" class="form-input" id="userModalFamilyPhone" placeholder="090-0000-0000">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">担当車</label>
+        <select class="form-select" id="userModalCar">
+          <option value="社用車">社用車</option>
+          <option value="車1">車1</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">状態</label>
+        <select class="form-select" id="userModalActive">
+          <option value="true">有効</option>
+          <option value="false">無効</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">送迎</label>
+      <select class="form-select" id="userModalTransfer">
+        <option value="true">送迎あり</option>
+        <option value="false">🚶 自力（送迎不要）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">備考</label>
+      <textarea class="form-textarea" id="userModalNote" placeholder="特記事項など"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveUser()">保存</button>
+      <button class="btn btn-ghost" onclick="closeModal('userModal')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 送迎表へ利用者追加 ===== -->
+<div class="modal-overlay" id="addRiderModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span>利用者を追加</span>
+      <button class="modal-close" onclick="closeModal('addRiderModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">利用者を選択</label>
+      <select class="form-select" id="addRiderSelect"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">グループ</label>
+        <select class="form-select" id="addRiderGroup" onchange="onAddGroupChange(this.value)">
+          <option value="go">行き（帰りも自動設定）</option>
+          <option value="return15">帰り 15:00</option>
+          <option value="return16">帰り 16:00</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">車</label>
+        <select class="form-select" id="addRiderCar">
+          <option value="社用車">社用車</option>
+          <option value="車1">車1</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" id="addRiderTimeRow" style="display:block;">
+      <label class="form-label">行き時間</label>
+      <select class="form-select" id="addRiderPickupTime">
+        <option value="10:00">10:00（帰り15:00自動）</option>
+        <option value="11:00">11:00（帰り16:00自動）</option>
+        <option value="12:00">12:00（帰り15:00自動）</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="addRiderToSchedule()">追加</button>
+      <button class="btn btn-ghost" onclick="closeModal('addRiderModal')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: ドライバー追加/編集 ===== -->
+<div class="modal-overlay" id="driverEditModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span id="driverEditModalTitle">ドライバーを追加</span>
+      <button class="modal-close" onclick="closeModal('driverEditModal')">✕</button>
+    </div>
+    <input type="hidden" id="driverEditId">
+    <div class="form-group">
+      <label class="form-label">名前 *</label>
+      <input type="text" class="form-input" id="driverEditName" placeholder="例：坂本">
+    </div>
+    <div class="form-group">
+      <label class="form-label">状態</label>
+      <select class="form-select" id="driverEditActive">
+        <option value="true">有効</option>
+        <option value="false">無効</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveDriverEdit()">保存</button>
+      <button class="btn btn-ghost" onclick="closeModal('driverEditModal')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 週間予定セル編集 ===== -->
+<div class="modal-overlay" id="weekCellModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span id="weekCellModalTitle">スケジュール編集</span>
+      <button class="modal-close" onclick="closeModal('weekCellModal')">✕</button>
+    </div>
+    <input type="hidden" id="weekCellUserId">
+    <input type="hidden" id="weekCellDow">
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="weekCellAttend" style="width:18px;height:18px;">
+        <span class="form-label" style="margin:0;">出席する</span>
+      </label>
+    </div>
+    <div id="weekCellTimeFields">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">行き時間</label>
+          <select class="form-select" id="weekCellPickup">
+            <option value="10:00">10:00</option>
+            <option value="11:00">11:00</option>
+            <option value="12:00">12:00</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">帰り時間</label>
+          <select class="form-select" id="weekCellDropoff">
+            <option value="15:00">15:00</option>
+            <option value="16:00">16:00</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">送迎順(行)</label>
+          <input type="number" class="form-input" id="weekCellPickupOrder" value="1" min="1" max="20">
+        </div>
+        <div class="form-group">
+          <label class="form-label">送迎順(帰)</label>
+          <input type="number" class="form-input" id="weekCellDropoffOrder" value="1" min="1" max="20">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveWeekCell()">保存・自動反映</button>
+      <button class="btn btn-ghost" onclick="closeModal('weekCellModal')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル: 利用者備考 ===== -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal-sheet">
+    <div class="modal-title">
+      <span id="noteModalName">備考</span>
+      <button class="modal-close" onclick="closeModal('noteModal')">✕</button>
+    </div>
+    <div id="noteModalContent" style="font-size:15px;line-height:1.7;white-space:pre-wrap;color:var(--text-main);min-height:60px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('noteModal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  グローバル変数
+// ============================================================
+const DOW = ['日','月','火','水','木','金','土'];
+const PICKUP_TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00'];
+const DROPOFF_TIMES = ['14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
+
+let currentUser = null;
+let currentPage = 'home';
+let calYear, calMonth;
+let selectedUserId = null;
+let selectedCalDate = null;
+let transferChannel = null;
+
+// ============================================================
+//  初期化
+// ============================================================
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  hideLoading();
+  if (session) {
+    currentUser = session.user;
+    showMainScreen();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+})();
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    currentUser = session.user;
+    showMainScreen();
+  } else if (event === 'SIGNED_OUT') {
+    currentUser = null;
+    document.getElementById('mainScreen').classList.remove('active');
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+});
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+// ============================================================
+//  認証
+// ============================================================
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+  err.classList.remove('active');
+  btn.disabled = true;
+  btn.textContent = 'ログイン中...';
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pwd });
+  if (error) {
+    err.textContent = 'メールアドレスまたはパスワードが正しくありません';
+    err.classList.add('active');
+    btn.disabled = false;
+    btn.textContent = 'ログイン';
+  }
+}
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+
+async function handleLogout() {
+  await supabase.auth.signOut();
+}
+
+// ============================================================
+//  メイン画面表示
+// ============================================================
+function showMainScreen() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainScreen').classList.add('active');
+  document.getElementById('headerUser').textContent = currentUser?.email || '';
+  const today = new Date();
+  calYear = today.getFullYear();
+  calMonth = today.getMonth();
+  initDateInputs();
+  switchPage('home');
+}
+
+function initDateInputs() {
+  const today = todayStr();
+  document.getElementById('transferDate').value = today;
+  document.getElementById('attendanceDate').value = today;
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('printMonth').value = ym;
+}
+
+// ============================================================
+//  ページ切替
+// ============================================================
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page${capitalize(name)}`).classList.add('active');
+  document.getElementById(`nav${capitalize(name)}`).classList.add('active');
+  currentPage = name;
+  if (name === 'home') loadHomePage();
+  if (name === 'calendar') loadCalendar();
+  if (name === 'transfer') loadTransferPage();
+  if (name === 'users') loadUsersPage();
+  if (name === 'attendance') loadAttendancePage();
+  if (name === 'print') loadPrintPage();
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function goToTransfer() { switchPage('transfer'); }
+function goToAttendance() { switchPage('attendance'); }
+
+// ============================================================
+//  ホーム画面
+// ============================================================
+async function loadHomePage() {
+  const now = new Date();
+  const days = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+  document.getElementById('homeDateMain').textContent =
+    `${now.getMonth()+1}月${now.getDate()}日（${DOW[now.getDay()]}）`;
+  document.getElementById('homeDateSub').textContent =
+    `${now.getFullYear()}年 ${days[now.getDay()]}`;
+
+  const today = todayStr();
+  const { data: schedules } = await supabase
+    .from('transfer_schedules')
+    .select('status, transfer_users!inner(needs_transfer)')
+    .eq('schedule_date', today);
+
+  const attend = (schedules || []).filter(s => (s.status === '出席' || s.status === '追加') && s.transfer_users?.needs_transfer !== false).length;
+  const absent = (schedules || []).filter(s => s.status === '欠席' && s.transfer_users?.needs_transfer !== false).length;
+  document.getElementById('statAttend').textContent = attend;
+  document.getElementById('statAbsent').textContent = absent;
+
+  const { data: history } = await supabase
+    .from('transfer_schedules')
+    .select('user_id, schedule_date, status, updated_by, updated_at, transfer_users(name)')
+    .order('updated_at', { ascending: false })
+    .limit(5);
+
+  const histEl = document.getElementById('historyList');
+  if (!history || history.length === 0) {
+    histEl.innerHTML = '<div class="empty-state">変更履歴はありません</div>';
+    return;
+  }
+  histEl.innerHTML = history.map(h => `
+    <div class="history-item">
+      <div class="history-dot"></div>
+      <div>
+        <div class="history-name">${h.transfer_users?.name || '不明'}</div>
+        <div class="history-detail">${formatDate(h.schedule_date)} → <span class="badge ${statusBadgeClass(h.status)}">${h.status}</span></div>
+        <div class="history-time">${h.updated_by || ''} ${h.updated_at ? relativeTime(h.updated_at) : ''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function statusBadgeClass(s) {
+  if (s === '出席') return 'badge-green';
+  if (s === '欠席') return 'badge-red';
+  if (s === '追加') return 'badge-primary';
+  return 'badge-gray';
+}
+
+function relativeTime(isoStr) {
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const m = Math.floor(diff/60000);
+  if (m < 1) return 'たった今';
+  if (m < 60) return `${m}分前`;
+  const h = Math.floor(m/60);
+  if (h < 24) return `${h}時間前`;
+  return `${Math.floor(h/24)}日前`;
+}
+
+// ============================================================
+//  カレンダー
+// ============================================================
+async function loadCalendar() {
+  const label = document.getElementById('calMonthLabel');
+  label.textContent = `${calYear}年 ${calMonth+1}月`;
+
+  const dowRow = document.getElementById('calDowRow');
+  dowRow.innerHTML = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const lastDate = new Date(calYear, calMonth+1, 0).getDate();
+  const today = todayStr();
+
+  // 月の出席数を取得
+  const startDate = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const endDate = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(lastDate).padStart(2,'0')}`;
+  const { data: scheds } = await supabase
+    .from('transfer_schedules')
+    .select('schedule_date, status, transfer_users!inner(needs_transfer)')
+    .gte('schedule_date', startDate)
+    .lte('schedule_date', endDate)
+    .in('status', ['出席','追加']);
+
+  const countMap = {};
+  (scheds || []).filter(s => s.transfer_users?.needs_transfer !== false).forEach(s => {
+    countMap[s.schedule_date] = (countMap[s.schedule_date] || 0) + 1;
+  });
+
+  const grid = document.getElementById('calDaysGrid');
+  let html = '';
+  // 前月の空白
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day other-month"></div>`;
+  for (let d = 1; d <= lastDate; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(calYear, calMonth, d).getDay();
+    const isToday = dateStr === today;
+    const count = countMap[dateStr] || 0;
+    html += `<div class="cal-day ${isToday?'today':''} ${dow===0?'sunday':''} ${dow===6?'saturday':''}"
+      onclick="openCalDayModal('${dateStr}')">
+      <div class="cal-day-num">${d}</div>
+      ${count > 0 ? `<div class="cal-day-count">${count}人</div>` : ''}
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function calPrevMonth() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} loadCalendar(); }
+function calNextMonth() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} loadCalendar(); }
+
+async function openCalDayModal(dateStr) {
+  selectedCalDate = dateStr;
+  document.getElementById('calDayModalTitle').textContent = formatDate(dateStr);
+  const { data } = await supabase
+    .from('transfer_schedules')
+    .select('status, transfer_users(name, needs_transfer)')
+    .eq('schedule_date', dateStr);
+
+  const body = document.getElementById('calDayModalBody');
+  if (!data || data.length === 0) {
+    body.innerHTML = '<div class="empty-state">スケジュールデータがありません</div>';
+  } else {
+    const attend = data.filter(s => (s.status === '出席' || s.status === '追加') && s.transfer_users?.needs_transfer !== false);
+    const absent = data.filter(s => s.status === '欠席' && s.transfer_users?.needs_transfer !== false);
+    body.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <span class="badge badge-green">出席 ${attend.length}名</span>
+        <span class="badge badge-red" style="margin-left:6px;">欠席 ${absent.length}名</span>
+      </div>
+      ${attend.length > 0 ? `<div style="margin-bottom:8px;"><div class="form-label">出席</div>${attend.map(s=>`<span style="display:inline-block;margin:2px 4px;font-size:14px;">${s.transfer_users?.name||'?'}</span>`).join('')}</div>` : ''}
+      ${absent.length > 0 ? `<div><div class="form-label" style="color:var(--warn);">欠席</div>${absent.map(s=>`<span style="display:inline-block;margin:2px 4px;font-size:14px;color:var(--text-soft);text-decoration:line-through;">${s.transfer_users?.name||'?'}</span>`).join('')}</div>` : ''}
+    `;
+  }
+  openModal('calDayModal');
+}
+
+function goToDateTransfer() {
+  if (selectedCalDate) {
+    document.getElementById('transferDate').value = selectedCalDate;
+    closeModal('calDayModal');
+    switchPage('transfer');
+  }
+}
+
+async function generateMonthSchedule() {
+  const nextDate = new Date(calYear, calMonth+1, 1);
+  const ny = nextDate.getFullYear();
+  const nm = nextDate.getMonth();
+  const lastDay = new Date(ny, nm+1, 0).getDate();
+
+  if (!confirm(`${ny}年${nm+1}月の送迎表を生成しますか？\n既存データがある日はスキップされます。`)) return;
+
+  showLoading();
+
+  const { data: defaults } = await supabase
+    .from('transfer_default_schedules')
+    .select('*, transfer_users(id, name, car, is_active, needs_transfer)')
+    .eq('is_attend', true);
+
+  const { data: existing } = await supabase
+    .from('transfer_schedules')
+    .select('schedule_date, user_id')
+    .gte('schedule_date', `${ny}-${String(nm+1).padStart(2,'0')}-01`)
+    .lte('schedule_date', `${ny}-${String(nm+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`);
+
+  const existSet = new Set((existing||[]).map(e => `${e.schedule_date}_${e.user_id}`));
+
+  const inserts = [];
+  for (let d = 1; d <= lastDay; d++) {
+    const date = new Date(ny, nm, d);
+    const dow = date.getDay();
+    const dateStr = `${ny}-${String(nm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    (defaults||[]).forEach(def => {
+      if (def.day_of_week !== dow) return;
+      if (!def.transfer_users?.is_active) return;
+      if (def.transfer_users?.needs_transfer === false) return;
+      const key = `${dateStr}_${def.user_id}`;
+      if (existSet.has(key)) return;
+      inserts.push({
+        user_id: def.user_id,
+        schedule_date: dateStr,
+        status: '出席',
+        pickup_time: def.pickup_time,
+        dropoff_time: def.dropoff_time,
+        car: def.transfer_users?.car || '社用車',
+        pickup_order: def.pickup_order,
+        dropoff_order: def.dropoff_order,
+        updated_by: currentUser?.email || '',
+        updated_at: new Date().toISOString()
+      });
+    });
+  }
+
+  if (inserts.length > 0) {
+    const { error } = await supabase.from('transfer_schedules').insert(inserts);
+    if (error) { toast('生成エラー: ' + error.message, 'warn'); }
+    else { toast(`${inserts.length}件のスケジュールを生成しました`, 'success'); }
+  } else {
+    toast('生成するデータがありませんでした', '');
+  }
+  hideLoading();
+  loadCalendar();
+}
+
+// ============================================================
+//  送迎表
+// ============================================================
+async function loadTransferPage() {
+  const date = document.getElementById('transferDate').value;
+  if (!date) return;
+
+  const { data: schedules } = await supabase
+    .from('transfer_schedules')
+    .select('*, transfer_users(name, car, note)')
+    .eq('schedule_date', date)
+    .order('pickup_order');
+
+  const { data: drivers } = await supabase
+    .from('transfer_drivers')
+    .select('*')
+    .eq('is_active', true);
+
+  const { data: dailyDrivers } = await supabase
+    .from('transfer_daily_drivers')
+    .select('*')
+    .eq('drive_date', date);
+
+  // 自力ユーザーの当日スケジュールを取得（曜日から判定）
+  const [y, m, d] = date.split('-').map(Number);
+  const dow = new Date(y, m - 1, d).getDay();
+  const { data: selfDefaults } = await supabase
+    .from('transfer_default_schedules')
+    .select('user_id, is_attend, transfer_users(id, name, needs_transfer, is_active)')
+    .eq('day_of_week', dow)
+    .eq('is_attend', true);
+  const selfUsers = (selfDefaults || []).filter(
+    s => s.transfer_users?.needs_transfer === false && s.transfer_users?.is_active === true
+  );
+
+  // 自力ユーザーをschedules テーブルに登録（欠席状態を管理するため）
+  for (const selfUser of selfUsers) {
+    const { data: existing } = await supabase
+      .from('transfer_schedules')
+      .select('id')
+      .eq('schedule_date', date)
+      .eq('user_id', selfUser.user_id);
+
+    if (!existing || existing.length === 0) {
+      await supabase.from('transfer_schedules').insert({
+        schedule_date: date,
+        user_id: selfUser.user_id,
+        status: '出席'
+      });
+    }
+  }
+
+  // 自力ユーザーのスケジュールも取得（欠席状態を反映するため）
+  const { data: selfSchedules } = await supabase
+    .from('transfer_schedules')
+    .select('id, user_id, status, transfer_users(name)')
+    .eq('schedule_date', date)
+    .in('user_id', selfUsers.map(u => u.user_id));
+
+  renderTransferGroups(schedules || [], drivers || [], dailyDrivers || [], date, selfUsers, selfSchedules || []);
+  setupRealtimeTransfer(date);
+}
+
+function renderTransferGroups(schedules, drivers, dailyDrivers, date, selfUsers, selfSchedules) {
+  const go10_1 = schedules.filter(s => s.pickup_time && s.pickup_time < '10:30' && (s.pickup_group||1) === 1).sort((a,b)=>(a.pickup_order||99)-(b.pickup_order||99));
+  const go10_2 = schedules.filter(s => s.pickup_time && s.pickup_time < '10:30' && (s.pickup_group||1) === 2).sort((a,b)=>(a.pickup_order||99)-(b.pickup_order||99));
+  const go11 = schedules.filter(s => s.pickup_time && s.pickup_time >= '10:30' && s.pickup_time < '13:00').sort((a,b)=>(a.pickup_order||99)-(b.pickup_order||99));
+  const ret15_1 = schedules.filter(s => s.dropoff_time && s.dropoff_time >= '14:30' && s.dropoff_time < '15:30' && (s.dropoff_group||1) === 1).sort((a,b)=>(a.dropoff_order||99)-(b.dropoff_order||99));
+  const ret15_2 = schedules.filter(s => s.dropoff_time && s.dropoff_time >= '14:30' && s.dropoff_time < '15:30' && (s.dropoff_group||1) === 2).sort((a,b)=>(a.dropoff_order||99)-(b.dropoff_order||99));
+  const ret16 = schedules.filter(s => s.dropoff_time && s.dropoff_time >= '15:30').sort((a,b)=>(a.dropoff_order||99)-(b.dropoff_order||99));
+
+  const groups = [
+    { key: 'go10_1', label: '🌅 行き 10:00 ①便', items: go10_1, driverKey: 'pickup_driver',    badge: 'badge-primary', headerClass: 'group-header-orange', cardClass: 'card-border-orange', divider: null,          groupField: 'pickup_group',  groupNum: 1 },
+    { key: 'go10_2', label: '🌅 行き 10:00 ②便', items: go10_2, driverKey: 'pickup_driver_2',  badge: 'badge-primary', headerClass: 'group-header-orange', cardClass: 'card-border-orange', divider: null,          groupField: 'pickup_group',  groupNum: 2 },
+    { key: 'go11',   label: '🌅 行き 11:00',      items: go11,   driverKey: 'pickup_driver',    badge: 'badge-blue',    headerClass: 'group-header-blue',   cardClass: 'card-border-blue',   divider: '11:00',       groupField: null,            groupNum: null },
+    { key: 'return15_1', label: '🌇 帰り 15:00 ①便', items: ret15_1, driverKey: 'dropoff_driver_15',   badge: 'badge-accent', headerClass: 'group-header-green', cardClass: 'card-border-green', divider: '帰り', groupField: 'dropoff_group', groupNum: 1 },
+    { key: 'return15_2', label: '🌇 帰り 15:00 ②便', items: ret15_2, driverKey: 'dropoff_driver_15_2', badge: 'badge-accent', headerClass: 'group-header-green', cardClass: 'card-border-green', divider: null,   groupField: 'dropoff_group', groupNum: 2 },
+    { key: 'return16',   label: '🌙 帰り 16:00',     items: ret16,   driverKey: 'dropoff_driver_16',    badge: 'badge-green',  headerClass: '',                   cardClass: '',                  divider: null,   groupField: null,            groupNum: null },
+  ];
+
+  const container = document.getElementById('transferGroups');
+  const dd = {};
+  (dailyDrivers || []).forEach(d => {
+    if (d.car === '社用車') {
+      Object.assign(dd, d);
+    }
+  });
+  container.innerHTML = groups.map(g => {
+    const driverVal = dd[g.driverKey] || '';
+    const dividerHtml = g.divider ? `<div class="time-section-divider">${g.divider}</div>` : '';
+    return dividerHtml + `
+    <div class="group-card ${g.cardClass || ''}">
+      <div class="group-header ${g.headerClass || ''}">
+        <div class="group-title">
+          ${g.label}
+          <span class="badge ${g.badge}">${g.items.length}名</span>
+        </div>
+        <div class="driver-row">
+          <span class="driver-label">ドライバー</span>
+          <select class="driver-select" onchange="saveDriver('${date}','${g.driverKey}',this.value)">
+            <option value="">未設定</option>
+            ${drivers.map(d=>`<option value="${d.name}" ${d.name===driverVal?'selected':''}>${d.name}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="rider-list drop-zone" id="riderList_${g.key}" data-group="${g.key}">
+        ${g.items.length === 0 ? `<div class="empty-state">利用者なし</div>` : ''}
+        ${g.items.map((s,i) => renderRiderItem(s, i+1, g.key, g.groupField, g.groupNum)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // 自力参加ユーザーセクション
+  if (selfUsers && selfUsers.length > 0) {
+    const selfCount = selfSchedules.filter(s => s.status !== '欠席').length;
+    const selfAbsentCount = selfSchedules.filter(s => s.status === '欠席').length;
+    const selfScheduleMap = {};
+    (selfSchedules || []).forEach(s => {
+      selfScheduleMap[s.user_id] = s;
+    });
+
+    container.innerHTML += `
+    <div class="time-section-divider">自力参加</div>
+    <div class="group-card" style="border-left: 4px solid var(--accent);">
+      <div class="group-header" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+        <div class="group-title">
+          🚶 自力参加
+          <span class="badge badge-gray">${selfCount}名${selfAbsentCount > 0 ? ` / 欠席${selfAbsentCount}名` : ''}</span>
+        </div>
+      </div>
+      <div class="rider-list">
+        ${selfUsers.map(s => {
+          const sched = selfScheduleMap[s.user_id];
+          const isAbsent = sched?.status === '欠席';
+          const note = s.transfer_users?.note || '';
+          return `
+          <div class="rider-item ${isAbsent?'absent':''}" style="opacity:0.85;">
+            <span style="font-size:18px;margin-right:4px;">🚶</span>
+            <div class="rider-name">${escHtml(s.transfer_users?.name || '不明')}</div>
+            <button class="rider-detail-btn" data-name="${escHtml(s.transfer_users?.name || '不明')}" data-note="${escHtml(note)}" onclick="showUserNote(this)">詳細</button>
+            ${sched ? `<button class="rider-absent-btn ${isAbsent?'active':''}" onclick="toggleAbsent('${sched.id}','${isAbsent}')">
+              ${isAbsent ? '出席に戻す' : '欠席'}
+            </button>` : ''}
+            ${sched ? `<button class="rider-delete-btn" onclick="deleteRiderFromSchedule('${sched.id}')">🗑</button>` : ''}
+          </div>
+        `;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ドラッグ&ドロップ設定
+  document.querySelectorAll('.rider-item').forEach(setupDrag);
+}
+
+function renderRiderItem(s, order, group, groupField, groupNum) {
+  const name = s.transfer_users?.name || '不明';
+  const note = s.transfer_users?.note || '';
+  const isAbsent = s.status === '欠席';
+  const otherGroup = groupNum === 1 ? 2 : 1;
+  const switchBtn = groupField
+    ? `<button class="rider-switch-btn" onclick="moveToGroup('${s.id}','${groupField}',${otherGroup})">→${otherGroup}便</button>`
+    : '';
+  return `
+  <div class="rider-item ${isAbsent?'absent':''}" draggable="true" data-id="${s.id}" data-group="${group}">
+    <span class="drag-handle">⠿</span>
+    <div class="rider-order">${order}</div>
+    <div class="rider-name">${escHtml(name)}</div>
+    <button class="rider-detail-btn" data-name="${escHtml(name)}" data-note="${escHtml(note)}" onclick="showUserNote(this)">詳細</button>
+    ${switchBtn}
+    <button class="rider-absent-btn ${isAbsent?'active':''}" onclick="toggleAbsent('${s.id}','${isAbsent}')">
+      ${isAbsent ? '出席に戻す' : '欠席'}
+    </button>
+    <button class="rider-delete-btn" onclick="deleteRiderFromSchedule('${s.id}')">🗑</button>
+  </div>`;
+}
+
+function setupDrag(el) {
+  el.addEventListener('dragstart', e => {
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', el.dataset.id);
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    document.querySelectorAll('.rider-item').forEach(i => i.classList.remove('drag-over'));
+    saveDragOrder(el.closest('.rider-list'));
+  });
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    const dragging = document.querySelector('.dragging');
+    if (dragging && dragging !== el) {
+      el.classList.add('drag-over');
+      const list = el.closest('.rider-list');
+      const items = [...list.querySelectorAll('.rider-item:not(.dragging)')];
+      const afterEl = items.find(item => {
+        const rect = item.getBoundingClientRect();
+        return e.clientY < rect.top + rect.height / 2;
+      });
+      if (afterEl) list.insertBefore(dragging, afterEl);
+      else list.appendChild(dragging);
+    }
+  });
+  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+}
+
+async function moveToGroup(scheduleId, field, newGroup) {
+  await supabase.from('transfer_schedules').update({ [field]: newGroup }).eq('id', scheduleId);
+  loadTransferPage();
+}
+
+async function saveDragOrder(list) {
+  const items = [...list.querySelectorAll('.rider-item')];
+  const group = list.dataset.group;
+  const isGo = group.startsWith('go');
+  const updates = items.map((el, i) => ({
+    id: el.dataset.id,
+    [isGo ? 'pickup_order' : 'dropoff_order']: i + 1
+  }));
+  for (const u of updates) {
+    await supabase.from('transfer_schedules').update({ [isGo?'pickup_order':'dropoff_order']: u[isGo?'pickup_order':'dropoff_order'] }).eq('id', u.id);
+  }
+  // 順番番号を更新
+  items.forEach((el, i) => {
+    const orderEl = el.querySelector('.rider-order');
+    if (orderEl) orderEl.textContent = i + 1;
+  });
+}
+
+async function toggleAbsent(id, currentlyAbsent) {
+  const newStatus = currentlyAbsent === 'true' ? '出席' : '欠席';
+  const { error } = await supabase.from('transfer_schedules').update({
+    status: newStatus,
+    updated_by: currentUser?.email || '',
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) { toast('更新失敗: ' + error.message, 'warn'); return; }
+  toast(`${newStatus}に変更しました`, 'success');
+  loadTransferPage();
+}
+
+async function deleteRiderFromSchedule(id) {
+  if (!confirm('この利用者を今日の送迎表から削除しますか？')) return;
+  const { error } = await supabase.from('transfer_schedules').delete().eq('id', id);
+  if (error) { toast('削除失敗: ' + error.message, 'warn'); return; }
+  toast('削除しました', '');
+  loadTransferPage();
+}
+
+async function saveDriver(date, driverKey, driverName) {
+  const { data: existing } = await supabase.from('transfer_daily_drivers').select('*').eq('drive_date', date).eq('car', '社用車');
+  if (existing && existing.length > 0) {
+    await supabase.from('transfer_daily_drivers').update({ [driverKey]: driverName }).eq('drive_date', date).eq('car', '社用車');
+  } else {
+    await supabase.from('transfer_daily_drivers').insert({ drive_date: date, car: '社用車', [driverKey]: driverName });
+  }
+  toast('ドライバーを保存しました', 'success');
+}
+
+function setupRealtimeTransfer(date) {
+  if (transferChannel) supabase.removeChannel(transferChannel);
+  transferChannel = supabase.channel(`transfer_${date}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'transfer_schedules', filter: `schedule_date=eq.${date}` },
+      () => { if (currentPage === 'transfer') loadTransferPage(); })
+    .subscribe();
+}
+
+function openAddRiderModal() {
+  loadActiveUsersToSelect();
+  openModal('addRiderModal');
+}
+
+async function loadActiveUsersToSelect() {
+  const { data } = await supabase.from('transfer_users').select('id, name').eq('is_active', true).order('kana');
+  const sel = document.getElementById('addRiderSelect');
+  sel.innerHTML = (data||[]).map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+}
+
+async function addRiderToSchedule() {
+  const date = document.getElementById('transferDate').value;
+  const userId = document.getElementById('addRiderSelect').value;
+  const group = document.getElementById('addRiderGroup').value;
+  const car = document.getElementById('addRiderCar').value;
+
+  let pickupTime = null;
+  let dropoffTime = null;
+
+  if (group === 'go') {
+    pickupTime = document.getElementById('addRiderPickupTime').value;
+    dropoffTime = pickupTime < '10:30' ? '15:00' : '16:00';
+  } else if (group === 'return15') {
+    dropoffTime = '15:00';
+  } else {
+    dropoffTime = '16:00';
+  }
+
+  const { error } = await supabase.from('transfer_schedules').insert({
+    user_id: userId,
+    schedule_date: date,
+    status: '追加',
+    pickup_time: pickupTime,
+    dropoff_time: dropoffTime,
+    car,
+    pickup_order: 99,
+    dropoff_order: 99,
+    updated_by: currentUser?.email || '',
+    updated_at: new Date().toISOString()
+  });
+  if (error) { toast('追加失敗: ' + error.message, 'warn'); return; }
+  toast('追加しました', 'success');
+  closeModal('addRiderModal');
+  loadTransferPage();
+}
+
+function onAddGroupChange(val) {
+  document.getElementById('addRiderTimeRow').style.display = val === 'go' ? 'block' : 'none';
+}
+
+// ============================================================
+//  利用者管理
+// ============================================================
+async function loadUsersPage() {
+  const { data: users } = await supabase.from('transfer_users').select('*').order('kana');
+  const tbody = document.getElementById('userTableBody');
+  if (!users || users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">利用者がいません</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => `
+    <tr class="${!u.is_active?'inactive-row':''}">
+      <td><b>${u.name}</b></td>
+      <td style="color:var(--text-soft);">${u.kana||''}</td>
+      <td>${u.needs_transfer === false ? '🚶 自力' : (u.car||'')}</td>
+      <td><span class="badge ${u.is_active?'badge-green':'badge-gray'}">${u.is_active?'有効':'無効'}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="openSchedulePanel('${u.id}','${u.name}')">予定</button>
+          <button class="btn btn-outline btn-sm" onclick="openUserModal('${u.id}')">編集</button>
+          <button class="btn btn-warn btn-sm" onclick="deleteUser('${u.id}','${u.name}')">削除</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openUserModal(userId) {
+  document.getElementById('editUserId').value = userId || '';
+  document.getElementById('userModalTitle').textContent = userId ? '利用者を編集' : '利用者を追加';
+  if (!userId) {
+    ['userModalName','userModalKana','userModalAddress','userModalPhone','userModalFamilyPhone','userModalNote'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('userModalCar').value = '社用車';
+    document.getElementById('userModalActive').value = 'true';
+    document.getElementById('userModalTransfer').value = 'true';
+    openModal('userModal');
+    return;
+  }
+  supabase.from('transfer_users').select('*').eq('id', userId).single().then(({ data: u }) => {
+    if (!u) return;
+    document.getElementById('userModalName').value = u.name || '';
+    document.getElementById('userModalKana').value = u.kana || '';
+    document.getElementById('userModalAddress').value = u.address || '';
+    document.getElementById('userModalPhone').value = u.phone || '';
+    document.getElementById('userModalFamilyPhone').value = u.family_phone || '';
+    document.getElementById('userModalCar').value = u.car || '社用車';
+    document.getElementById('userModalActive').value = u.is_active ? 'true' : 'false';
+    document.getElementById('userModalTransfer').value = u.needs_transfer === false ? 'false' : 'true';
+    document.getElementById('userModalNote').value = u.note || '';
+    openModal('userModal');
+  });
+}
+
+async function saveUser() {
+  const userId = document.getElementById('editUserId').value;
+  const data = {
+    name: document.getElementById('userModalName').value.trim(),
+    kana: document.getElementById('userModalKana').value.trim(),
+    address: document.getElementById('userModalAddress').value.trim(),
+    phone: document.getElementById('userModalPhone').value.trim(),
+    family_phone: document.getElementById('userModalFamilyPhone').value.trim(),
+    car: document.getElementById('userModalCar').value,
+    is_active: document.getElementById('userModalActive').value === 'true',
+    needs_transfer: document.getElementById('userModalTransfer').value !== 'false',
+    note: document.getElementById('userModalNote').value.trim()
+  };
+  if (!data.name) { toast('名前を入力してください', 'warn'); return; }
+
+  let error;
+  if (userId) {
+    ({ error } = await supabase.from('transfer_users').update(data).eq('id', userId));
+  } else {
+    ({ error } = await supabase.from('transfer_users').insert(data));
+  }
+  if (error) { toast('保存失敗: ' + error.message, 'warn'); return; }
+  toast('保存しました', 'success');
+  closeModal('userModal');
+  loadUsersPage();
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`「${name}」を削除しますか？`)) return;
+  const { error } = await supabase.from('transfer_users').delete().eq('id', id);
+  if (error) { toast('削除失敗: ' + error.message, 'warn'); return; }
+  toast('削除しました', '');
+  loadUsersPage();
+}
+
+// ===== 基本スケジュール =====
+async function openSchedulePanel(userId, userName) {
+  selectedUserId = userId;
+  document.getElementById('schedulePanelTitle').textContent = `${userName} の基本スケジュール`;
+  document.getElementById('schedulePanel').style.display = 'block';
+  document.getElementById('schedulePanel').scrollIntoView({ behavior: 'smooth' });
+
+  const { data: defaults } = await supabase
+    .from('transfer_default_schedules')
+    .select('*')
+    .eq('user_id', userId);
+
+  const dowMap = {};
+  (defaults || []).forEach(d => { dowMap[d.day_of_week] = d; });
+
+  // 曜日チェック
+  const dowGrid = document.getElementById('dowGrid');
+  dowGrid.innerHTML = DOW.map((d, i) => `
+    <div class="dow-check ${dowMap[i]?.is_attend?'checked':''}" id="dowCell_${i}">
+      <label>${d}</label>
+      <input type="checkbox" id="dowChk_${i}" ${dowMap[i]?.is_attend?'checked':''} onchange="toggleDowCell(${i})">
+    </div>
+  `).join('');
+
+  renderSchedRows(dowMap);
+}
+
+function toggleDowCell(dow) {
+  const checked = document.getElementById(`dowChk_${dow}`).checked;
+  document.getElementById(`dowCell_${dow}`).classList.toggle('checked', checked);
+}
+
+function renderSchedRows(dowMap) {
+  const container = document.getElementById('schedDetailRows');
+  container.innerHTML = `
+    <div class="sched-row" style="font-size:11px;color:var(--text-soft);margin-bottom:4px;">
+      <div></div><div>行き時間</div><div>帰り時間</div><div>送迎順(行)</div><div>送迎順(帰)</div>
+    </div>
+    ${DOW.map((d, i) => `
+    <div class="sched-row" id="schedRow_${i}">
+      <div class="sched-row-label">${d}</div>
+      <select id="schedPickup_${i}">
+        ${PICKUP_TIMES.map(t=>`<option value="${t}" ${dowMap[i]?.pickup_time===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <select id="schedDropoff_${i}">
+        ${DROPOFF_TIMES.map(t=>`<option value="${t}" ${dowMap[i]?.dropoff_time===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <input type="number" id="schedPickupOrder_${i}" value="${dowMap[i]?.pickup_order||1}" min="1" max="20"
+        style="padding:7px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:60px;">
+      <input type="number" id="schedDropoffOrder_${i}" value="${dowMap[i]?.dropoff_order||1}" min="1" max="20"
+        style="padding:7px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:60px;">
+    </div>
+    `).join('')}
+  `;
+}
+
+async function saveDefaultSchedule() {
+  if (!selectedUserId) return;
+  const { data: existing } = await supabase.from('transfer_default_schedules').select('id, day_of_week').eq('user_id', selectedUserId);
+  const existMap = {};
+  (existing||[]).forEach(e => { existMap[e.day_of_week] = e.id; });
+
+  const scheduleByDow = {};
+  for (let i = 0; i < 7; i++) {
+    const isAttend = document.getElementById(`dowChk_${i}`)?.checked || false;
+    const pickupTime = document.getElementById(`schedPickup_${i}`)?.value;
+    const dropoffTime = document.getElementById(`schedDropoff_${i}`)?.value;
+    const pickupOrder = parseInt(document.getElementById(`schedPickupOrder_${i}`)?.value) || 1;
+    const dropoffOrder = parseInt(document.getElementById(`schedDropoffOrder_${i}`)?.value) || 1;
+    const payload = { user_id: selectedUserId, day_of_week: i, is_attend: isAttend, pickup_time: pickupTime, dropoff_time: dropoffTime, pickup_order: pickupOrder, dropoff_order: dropoffOrder };
+    scheduleByDow[i] = { is_attend: isAttend, pickup_time: pickupTime, dropoff_time: dropoffTime, pickup_order: pickupOrder, dropoff_order: dropoffOrder };
+    if (existMap[i]) {
+      await supabase.from('transfer_default_schedules').update(payload).eq('id', existMap[i]);
+    } else {
+      await supabase.from('transfer_default_schedules').insert(payload);
+    }
+  }
+
+  const count = await autoGenerateForUser(selectedUserId, scheduleByDow);
+  if (count > 0) {
+    toast(`基本スケジュールを保存し、${count}件を自動反映しました`, 'success');
+  } else {
+    toast('基本スケジュールを保存しました（新規反映なし）', 'success');
+  }
+}
+
+async function autoGenerateForUser(userId, scheduleByDow) {
+  const { data: user } = await supabase.from('transfer_users').select('car, needs_transfer').eq('id', userId).single();
+  if (user?.needs_transfer === false) return 0;
+  const car = user?.car || '社用車';
+
+  const today = new Date();
+  const endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+
+  const todayDateStr = toDateStr(today);
+  const endDateStr = toDateStr(endDate);
+
+  const { data: existing } = await supabase
+    .from('transfer_schedules')
+    .select('schedule_date')
+    .eq('user_id', userId)
+    .gte('schedule_date', todayDateStr)
+    .lte('schedule_date', endDateStr);
+
+  const existSet = new Set((existing || []).map(e => e.schedule_date));
+
+  const inserts = [];
+  const cur = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  while (cur <= endDate) {
+    const dow = cur.getDay();
+    const dateStr = toDateStr(cur);
+    const sched = scheduleByDow[dow];
+    if (sched?.is_attend && !existSet.has(dateStr)) {
+      inserts.push({
+        user_id: userId,
+        schedule_date: dateStr,
+        status: '出席',
+        pickup_time: sched.pickup_time,
+        dropoff_time: sched.dropoff_time,
+        car,
+        pickup_order: sched.pickup_order,
+        dropoff_order: sched.dropoff_order,
+        updated_by: currentUser?.email || '',
+        updated_at: new Date().toISOString()
+      });
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  if (inserts.length > 0) {
+    const { error } = await supabase.from('transfer_schedules').insert(inserts);
+    if (error) { console.error('自動反映エラー:', error); return 0; }
+  }
+  return inserts.length;
+}
+
+function toDateStr(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+// ============================================================
+//  ユーザータブ切り替え
+// ============================================================
+function switchUserTab(tab) {
+  ['users','weekly','drivers'].forEach(t => {
+    document.getElementById(`${t}TabContent`).style.display = t === tab ? 'block' : 'none';
+    document.getElementById(`tabBtn${capitalize(t)}`).classList.toggle('active', t === tab);
+  });
+  if (tab === 'weekly') loadWeeklySchedule();
+  if (tab === 'drivers') loadDriversTab();
+}
+
+// ============================================================
+//  週間予定表
+// ============================================================
+async function loadWeeklySchedule() {
+  const tbody = document.getElementById('weeklyTableBody');
+  tbody.innerHTML = '<tr><td colspan="8" class="empty-state">読み込み中...</td></tr>';
+
+  const { data: users } = await supabase.from('transfer_users').select('id, name, needs_transfer').eq('is_active', true).order('kana');
+  const { data: defaults } = await supabase.from('transfer_default_schedules').select('*');
+
+  if (!users || users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">利用者がいません</td></tr>';
+    return;
+  }
+
+  const defMap = {};
+  (defaults || []).forEach(d => {
+    if (!defMap[d.user_id]) defMap[d.user_id] = {};
+    defMap[d.user_id][d.day_of_week] = d;
+  });
+
+  const dowOrder = [1,2,3,4,5,6,0];
+  const totals = Object.fromEntries(dowOrder.map(d => [d, 0]));
+
+  const rows = users.map(u => {
+    const cells = dowOrder.map(dow => {
+      const d = defMap[u.id]?.[dow];
+      const nameEsc = u.name.replace(/"/g, '&quot;');
+      if (!d || !d.is_attend) {
+        return `<td><div class="week-cell off" data-uid="${u.id}" data-dow="${dow}" data-name="${nameEsc}" onclick="handleWeekCellClick(this)">休</div></td>`;
+      }
+      totals[dow]++;
+      return `<td><div class="week-cell attend" data-uid="${u.id}" data-dow="${dow}" data-name="${nameEsc}" onclick="handleWeekCellClick(this)">
+        <div class="week-cell-time" style="pointer-events:none;">${d.pickup_time||''}</div>
+        <div class="week-cell-dropoff" style="pointer-events:none;">${d.dropoff_time||''}</div>
+      </div></td>`;
+    }).join('');
+    const selfBadge = u.needs_transfer === false ? '<br><span style="font-size:9px;color:var(--accent);font-weight:700;pointer-events:none;">🚶自力</span>' : '';
+    return `<tr><td class="week-name-cell">${u.name}${selfBadge}</td>${cells}</tr>`;
+  }).join('');
+
+  const totalRow = `<tr style="border-top:2px solid var(--border);background:var(--bg);">
+    <td class="week-name-cell" style="font-weight:700;color:var(--primary);font-size:12px;">合計</td>
+    ${dowOrder.map(dow => `<td style="text-align:center;font-weight:700;font-size:14px;color:var(--primary);padding:6px 2px;">${totals[dow] > 0 ? totals[dow]+'人' : '<span style="color:var(--text-soft);font-size:11px;">-</span>'}</td>`).join('')}
+  </tr>`;
+
+  tbody.innerHTML = rows + totalRow;
+}
+
+function handleWeekCellClick(el) {
+  openWeekCellModal(el.dataset.uid, el.dataset.name, parseInt(el.dataset.dow));
+}
+
+async function openWeekCellModal(userId, userName, dow) {
+  const DOW_LABEL = ['日','月','火','水','木','金','土'];
+  document.getElementById('weekCellUserId').value = userId;
+  document.getElementById('weekCellDow').value = dow;
+  document.getElementById('weekCellModalTitle').textContent = `${userName}（${DOW_LABEL[dow]}曜日）`;
+
+  const { data: existing } = await supabase.from('transfer_default_schedules')
+    .select('*').eq('user_id', userId).eq('day_of_week', dow).maybeSingle();
+
+  const isAttend = existing?.is_attend || false;
+  document.getElementById('weekCellAttend').checked = isAttend;
+  document.getElementById('weekCellPickup').value = existing?.pickup_time || '10:00';
+  document.getElementById('weekCellDropoff').value = existing?.dropoff_time || '15:00';
+  document.getElementById('weekCellPickupOrder').value = existing?.pickup_order || 1;
+  document.getElementById('weekCellDropoffOrder').value = existing?.dropoff_order || 1;
+
+  openModal('weekCellModal');
+}
+
+async function saveWeekCell() {
+  const userId = document.getElementById('weekCellUserId').value;
+  const dow = parseInt(document.getElementById('weekCellDow').value);
+  const isAttend = document.getElementById('weekCellAttend').checked;
+  const pickupTime = document.getElementById('weekCellPickup').value;
+  const dropoffTime = document.getElementById('weekCellDropoff').value;
+  const pickupOrder = parseInt(document.getElementById('weekCellPickupOrder').value) || 1;
+  const dropoffOrder = parseInt(document.getElementById('weekCellDropoffOrder').value) || 1;
+
+  const payload = { user_id: userId, day_of_week: dow, is_attend: isAttend, pickup_time: pickupTime, dropoff_time: dropoffTime, pickup_order: pickupOrder, dropoff_order: dropoffOrder };
+
+  const { data: existing } = await supabase.from('transfer_default_schedules').select('id').eq('user_id', userId).eq('day_of_week', dow).single();
+  if (existing?.id) {
+    await supabase.from('transfer_default_schedules').update(payload).eq('id', existing.id);
+  } else {
+    await supabase.from('transfer_default_schedules').insert(payload);
+  }
+
+  const scheduleByDow = { [dow]: { is_attend: isAttend, pickup_time: pickupTime, dropoff_time: dropoffTime, pickup_order: pickupOrder, dropoff_order: dropoffOrder } };
+  const count = await autoGenerateForUser(userId, scheduleByDow);
+
+  closeModal('weekCellModal');
+  loadWeeklySchedule();
+  toast(count > 0 ? `保存・${count}件を自動反映しました` : '保存しました（新規反映なし）', 'success');
+}
+
+// ============================================================
+//  ドライバー管理タブ
+// ============================================================
+async function loadDriversTab() {
+  const list = document.getElementById('driverMgmtList');
+  list.innerHTML = '<div class="empty-state">読み込み中...</div>';
+  const { data: drivers } = await supabase.from('transfer_drivers').select('*').order('name');
+  if (!drivers || drivers.length === 0) {
+    list.innerHTML = '<div class="empty-state">ドライバーがいません</div>';
+    return;
+  }
+  list.innerHTML = drivers.map(d => `
+    <div class="driver-mgmt-item">
+      <div>
+        <div class="driver-mgmt-name">${d.name}</div>
+        <div class="driver-mgmt-status">${d.is_active ? '✅ 有効' : '⛔ 無効'}</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="openDriverEditModal('${d.id}','${d.name}',${d.is_active})">編集</button>
+        <button class="btn btn-warn btn-sm" onclick="deleteDriverFromList('${d.id}','${d.name}')">削除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openDriverEditModal(id, name, isActive) {
+  document.getElementById('driverEditId').value = id || '';
+  document.getElementById('driverEditModalTitle').textContent = id ? 'ドライバーを編集' : 'ドライバーを追加';
+  document.getElementById('driverEditName').value = name || '';
+  document.getElementById('driverEditActive').value = isActive === false ? 'false' : 'true';
+  openModal('driverEditModal');
+}
+
+async function saveDriverEdit() {
+  const id = document.getElementById('driverEditId').value;
+  const name = document.getElementById('driverEditName').value.trim();
+  const isActive = document.getElementById('driverEditActive').value === 'true';
+  if (!name) { toast('名前を入力してください', 'warn'); return; }
+
+  if (id) {
+    const { error } = await supabase.from('transfer_drivers').update({ name, is_active: isActive }).eq('id', id);
+    if (error) { toast('更新失敗: ' + error.message, 'warn'); return; }
+  } else {
+    const { error } = await supabase.from('transfer_drivers').insert({ name, is_active: isActive });
+    if (error) { toast('追加失敗: ' + error.message, 'warn'); return; }
+  }
+  toast('保存しました', 'success');
+  closeModal('driverEditModal');
+  loadDriversTab();
+}
+
+async function deleteDriverFromList(id, name) {
+  if (!confirm(`「${name}」を削除しますか？`)) return;
+  const { error } = await supabase.from('transfer_drivers').delete().eq('id', id);
+  if (error) { toast('削除失敗: ' + error.message, 'warn'); return; }
+  toast('削除しました', '');
+  loadDriversTab();
+}
+
+// ============================================================
+//  出欠変更
+// ============================================================
+async function loadAttendancePage() {
+  const date = document.getElementById('attendanceDate').value;
+  if (!date) return;
+
+  const { data: schedules } = await supabase
+    .from('transfer_schedules')
+    .select('*, transfer_users(name)')
+    .eq('schedule_date', date)
+    .order('pickup_order');
+
+  const container = document.getElementById('attendanceList');
+  if (!schedules || schedules.length === 0) {
+    container.innerHTML = '<div class="empty-state">この日のスケジュールがありません。<br>カレンダーから生成してください。</div>';
+    return;
+  }
+
+  container.innerHTML = schedules.map(s => `
+    <div class="attendance-item">
+      <div class="attendance-header">
+        <div class="attendance-name">${s.transfer_users?.name || '不明'}</div>
+        <div class="status-toggle">
+          <button class="status-btn ${s.status==='出席'?'active-attend':''}" onclick="setStatus('${s.id}','出席')">出席</button>
+          <button class="status-btn ${s.status==='欠席'?'active-absent':''}" onclick="setStatus('${s.id}','欠席')">欠席</button>
+          <button class="status-btn ${s.status==='追加'?'active-add':''}" onclick="setStatus('${s.id}','追加')">追加</button>
+        </div>
+      </div>
+      <div class="attendance-detail">
+        <div class="att-time-group">
+          <label>行き時間</label>
+          <select onchange="updateTime('${s.id}','pickup_time',this.value)">
+            <option value="">なし</option>
+            ${PICKUP_TIMES.map(t=>`<option value="${t}" ${s.pickup_time===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="att-time-group">
+          <label>帰り時間</label>
+          <select onchange="updateTime('${s.id}','dropoff_time',this.value)">
+            <option value="">なし</option>
+            ${DROPOFF_TIMES.map(t=>`<option value="${t}" ${s.dropoff_time===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="att-memo">
+          <label class="form-label" style="font-size:11px;color:var(--text-soft);">メモ</label>
+          <input type="text" value="${s.note||''}" placeholder="特記事項" onchange="updateNote('${s.id}',this.value)">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function setStatus(id, status) {
+  const { error } = await supabase.from('transfer_schedules').update({
+    status,
+    updated_by: currentUser?.email || '',
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) { toast('更新失敗', 'warn'); return; }
+  toast(`${status}に変更しました`, 'success');
+  loadAttendancePage();
+}
+
+async function updateTime(id, field, value) {
+  const { error } = await supabase.from('transfer_schedules').update({
+    [field]: value || null,
+    updated_by: currentUser?.email || '',
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) toast('更新失敗', 'warn');
+  else toast('時間を更新しました', '');
+}
+
+async function updateNote(id, note) {
+  const { error } = await supabase.from('transfer_schedules').update({
+    note,
+    updated_by: currentUser?.email || '',
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) toast('更新失敗', 'warn');
+}
+
+// ============================================================
+//  月次印刷
+// ============================================================
+async function loadPrintPage() {
+  const ym = document.getElementById('printMonth').value;
+  if (!ym) return;
+  const [y, m] = ym.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+
+  const { data: schedules } = await supabase
+    .from('transfer_schedules')
+    .select('*, transfer_users(name)')
+    .gte('schedule_date', `${y}-${String(m).padStart(2,'0')}-01`)
+    .lte('schedule_date', `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`)
+    .order('schedule_date')
+    .order('pickup_order');
+
+  const { data: dailyDrivers } = await supabase
+    .from('transfer_daily_drivers')
+    .select('*')
+    .gte('drive_date', `${y}-${String(m).padStart(2,'0')}-01`)
+    .lte('drive_date', `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`);
+
+  const driverMap = {};
+  (dailyDrivers||[]).forEach(d => { driverMap[d.drive_date] = d; });
+
+  const schedMap = {};
+  (schedules||[]).forEach(s => {
+    if (!schedMap[s.schedule_date]) schedMap[s.schedule_date] = [];
+    schedMap[s.schedule_date].push(s);
+  });
+
+  const tbody = document.getElementById('printTableBody');
+  let rows = '';
+  for (let d = 1; d <= lastDay; d++) {
+    const date = new Date(y, m-1, d);
+    const dow = date.getDay();
+    const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayScheds = schedMap[dateStr] || [];
+    const dd = driverMap[dateStr] || {};
+
+    const go10_1Users = dayScheds.filter(s => s.status !== '欠席' && s.pickup_time && s.pickup_time < '10:30' && (s.pickup_group||1) === 1).map(s=>s.transfer_users?.name).join('、');
+    const go10_2Users = dayScheds.filter(s => s.status !== '欠席' && s.pickup_time && s.pickup_time < '10:30' && (s.pickup_group||1) === 2).map(s=>s.transfer_users?.name).join('、');
+    const go11Users  = dayScheds.filter(s => s.status !== '欠席' && s.pickup_time && s.pickup_time >= '10:30' && s.pickup_time < '13:00').map(s=>s.transfer_users?.name).join('、');
+    const ret15Users = dayScheds.filter(s => s.status !== '欠席' && s.dropoff_time && s.dropoff_time >= '14:30' && s.dropoff_time < '15:30').map(s=>s.transfer_users?.name).join('、');
+    const ret16Users = dayScheds.filter(s => s.status !== '欠席' && s.dropoff_time && s.dropoff_time >= '15:30').map(s=>s.transfer_users?.name).join('、');
+
+    const cell = (users, driver) => {
+      let html = users || '';
+      if (driver) html += `<br><span class="print-driver">▶${driver}</span>`;
+      return html;
+    };
+    const rowClass = dow===0?'sun':dow===6?'sat':'';
+    rows += `<tr class="${rowClass}">
+      <td>${m}</td><td>${d}</td><td>${DOW[dow]}</td>
+      <td style="text-align:left;">${cell(go10_1Users, dd.pickup_driver)}</td>
+      <td style="text-align:left;">${cell(go10_2Users, dd.pickup_driver_2)}</td>
+      <td style="text-align:left;">${cell(go11Users, dd.pickup_driver)}</td>
+      <td style="text-align:left;">${cell(ret15Users, dd.dropoff_driver_15)}</td>
+      <td style="text-align:left;">${cell(ret16Users, dd.dropoff_driver_16)}</td>
+    </tr>`;
+  }
+  tbody.innerHTML = rows;
+}
+
+// ============================================================
+//  ユーティリティ
+// ============================================================
+function todayStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(str) {
+  if (!str) return '';
+  const [y,m,d] = str.split('-');
+  const date = new Date(Number(y), Number(m)-1, Number(d));
+  return `${y}年${Number(m)}月${Number(d)}日（${DOW[date.getDay()]}）`;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showUserNote(btn) {
+  const name = btn.dataset.name;
+  const note = btn.dataset.note;
+  document.getElementById('noteModalName').textContent = name + ' の備考';
+  document.getElementById('noteModalContent').textContent = note || '（備考なし）';
+  openModal('noteModal');
+}
+
+// モーダル背景クリックで閉じる
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('active'); });
+});
+
+let toastTimer;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ` ${type}` : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
+function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+</script>
+</body>
+</html>

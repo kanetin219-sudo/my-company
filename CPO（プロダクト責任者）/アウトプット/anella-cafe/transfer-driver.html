@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANELLA 送迎表</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --accent-light: #6FA898;
+      --text: #2C1F14;
+      --text-mid: #6B4F3A;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --shadow: rgba(150, 80, 30, 0.12);
+      --warn: #D4502A;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ===== ヘッダー ===== */
+    .app-header {
+      background: var(--text);
+      color: #fff;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .header-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--primary-light);
+      letter-spacing: 0.04em;
+    }
+    .header-logo span {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 11px;
+      color: #aaa;
+      display: block;
+      line-height: 1;
+      letter-spacing: 0.1em;
+    }
+    .realtime-dot {
+      width: 10px;
+      height: 10px;
+      background: #4CAF50;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    .realtime-dot.offline { background: #9E9E9E; animation: none; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* ===== 日付ナビ ===== */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .date-nav-btn {
+      width: 48px;
+      height: 48px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+      touch-action: manipulation;
+    }
+    .date-nav-btn:active { background: rgba(255,255,255,0.25); }
+    .date-display {
+      flex: 1;
+      text-align: center;
+    }
+    .date-main {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: #fff;
+      line-height: 1.1;
+    }
+    .date-today-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-top: 4px;
+      letter-spacing: 0.08em;
+    }
+    .date-today-badge.hidden { visibility: hidden; }
+
+    /* ===== コンテンツ ===== */
+    .content {
+      padding: 16px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* ===== セクション ===== */
+    .section {
+      margin-bottom: 20px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 14px 14px 0 0;
+      margin-bottom: 0;
+    }
+    .section-header.go {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+    }
+    .section-header.return15 {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      color: #fff;
+    }
+    .section-header.go11 {
+      background: linear-gradient(135deg, #3B7BC9 0%, #6AA0E0 100%);
+      color: #fff;
+    }
+    .section-header.return16 {
+      background: linear-gradient(135deg, #5B6C8A 0%, #7B8EAA 100%);
+      color: #fff;
+    }
+    .time-section-divider {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; font-weight: 700; color: var(--text-soft);
+      letter-spacing: 0.08em; margin: -8px 0 12px;
+    }
+    .time-section-divider::before, .time-section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .section-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+    .section-title-text {
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+    }
+    .section-count {
+      background: rgba(255,255,255,0.25);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ===== ドライバーバー ===== */
+    .driver-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .driver-label {
+      font-size: 12px;
+      color: var(--text-soft);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .driver-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .driver-name.empty {
+      font-size: 15px;
+      color: var(--text-soft);
+      font-weight: 400;
+    }
+
+    /* ===== 利用者リスト ===== */
+    .rider-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      overflow: hidden;
+    }
+    .rider-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .rider-item:last-child {
+      border-bottom: none;
+    }
+    .rider-item:active {
+      background: rgba(201,106,59,0.04);
+    }
+    .rider-order-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .go .rider-order-badge { background: var(--primary); }
+    .go11 .rider-order-badge { background: #3B7BC9; }
+    .return15 .rider-order-badge { background: var(--accent); }
+    .return16 .rider-order-badge { background: #5B6C8A; }
+    .rider-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .rider-name-text {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .rider-time-text {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+    .addr-btn {
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-mid);
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 44px;
+      touch-action: manipulation;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .addr-btn:active {
+      background: var(--bg);
+      border-color: var(--primary-light);
+      color: var(--primary);
+    }
+    .note-btn {
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid var(--primary-light);
+      border-radius: 10px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 44px;
+      touch-action: manipulation;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .note-btn:active {
+      background: rgba(201,106,59,0.1);
+    }
+
+    /* ===== 空状態 ===== */
+    .empty-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      padding: 24px;
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 15px;
+    }
+
+    /* ===== データなし ===== */
+    .no-data-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 24px;
+      text-align: center;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+    .no-data-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    .no-data-text {
+      font-size: 17px;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+
+    /* ===== ローディング ===== */
+    .loading-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--text-soft); font-size: 15px; }
+
+    /* ===== 住所モーダル ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(44,31,20,0.6);
+      z-index: 500;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-sheet {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 540px;
+      animation: slideUp 0.25s ease;
+      box-shadow: 0 -4px 32px rgba(0,0,0,0.2);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-user-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px;
+      color: var(--text);
+    }
+    .modal-close {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-soft);
+      touch-action: manipulation;
+    }
+    .modal-close:active { background: var(--border); }
+    .modal-addr-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-soft);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .modal-addr-text {
+      font-size: 17px;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.5;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
+    .modal-addr-text.no-addr {
+      color: var(--text-soft);
+      font-style: italic;
+      font-size: 15px;
+    }
+    .map-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 10px;
+      min-height: 56px;
+      touch-action: manipulation;
+      transition: opacity 0.15s;
+    }
+    .map-btn:active { opacity: 0.85; }
+    .map-btn.disabled {
+      background: var(--border);
+      color: var(--text-soft);
+      cursor: default;
+    }
+    .modal-cancel-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 16px;
+      color: var(--text-soft);
+      cursor: pointer;
+      min-height: 52px;
+      touch-action: manipulation;
+    }
+    .modal-cancel-btn:active { background: var(--bg); }
+
+    /* ===== トースト ===== */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 9999;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ===== レスポンシブ ===== */
+    @media (min-width: 640px) {
+      .content { padding: 24px; }
+      .date-main { font-size: 34px; }
+      .rider-name-text { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="app-header">
+  <div class="header-top">
+    <div class="header-logo">
+      ANELLA CAFE
+      <span>送迎表 · DRIVER VIEW</span>
+    </div>
+    <div class="realtime-dot" id="realtimeDot" title="リアルタイム接続中"></div>
+  </div>
+  <div class="date-nav">
+    <button class="date-nav-btn" onclick="changeDate(-1)" aria-label="前日">‹</button>
+    <div class="date-display">
+      <div class="date-main" id="dateMain"></div>
+      <div class="date-today-badge" id="todayBadge">TODAY</div>
+    </div>
+    <button class="date-nav-btn" onclick="changeDate(1)" aria-label="翌日">›</button>
+  </div>
+</header>
+
+<!-- コンテンツ -->
+<div class="content" id="mainContent">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <div class="loading-text">読み込み中...</div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div id="toast"></div>
+
+<!-- 住所モーダル -->
+<!-- 備考モーダル -->
+<div class="modal-overlay" id="noteModal" onclick="handleNoteOverlayClick(event)">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <div class="modal-user-name" id="noteModalUserName"></div>
+      <button class="modal-close" onclick="closeNoteModal()">✕</button>
+    </div>
+    <div class="modal-addr-label">備考</div>
+    <div id="noteModalContent" style="font-size:15px;line-height:1.7;white-space:pre-wrap;color:var(--text-main);min-height:60px;padding:4px 0;"></div>
+    <button class="modal-cancel-btn" onclick="closeNoteModal()">閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addrModal" onclick="handleOverlayClick(event)">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <div class="modal-user-name" id="modalUserName"></div>
+      <button class="modal-close" onclick="closeAddrModal()">✕</button>
+    </div>
+    <div class="modal-addr-label">住所</div>
+    <div class="modal-addr-text" id="modalAddrText"></div>
+    <a id="mapBtn" class="map-btn" target="_blank" rel="noopener">
+      <span>📍</span> Googleマップで開く
+    </a>
+    <button class="modal-cancel-btn" onclick="closeAddrModal()">閉じる</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  グローバル変数
+// ============================================================
+const DOW_JP = ['日', '月', '火', '水', '木', '金', '土'];
+let currentDateStr = todayStr();
+let usersCache = {}; // { id: { name, address } }
+let realtimeChannel = null;
+let toastTimer = null;
+
+// ============================================================
+//  初期化
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  updateDateDisplay();
+  await loadUsers();
+  await loadSchedule();
+  setupRealtime();
+});
+
+// ============================================================
+//  日付ユーティリティ
+// ============================================================
+function todayStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+
+function parseLocalDate(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function updateDateDisplay() {
+  const date = parseLocalDate(currentDateStr);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const dow = DOW_JP[date.getDay()];
+  document.getElementById('dateMain').textContent = `${month}月${day}日（${dow}）`;
+
+  const todayBadge = document.getElementById('todayBadge');
+  if (currentDateStr === todayStr()) {
+    todayBadge.classList.remove('hidden');
+  } else {
+    todayBadge.classList.add('hidden');
+  }
+}
+
+function changeDate(delta) {
+  const date = parseLocalDate(currentDateStr);
+  date.setDate(date.getDate() + delta);
+  currentDateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  updateDateDisplay();
+  loadSchedule();
+  setupRealtime();
+}
+
+// ============================================================
+//  利用者キャッシュ読み込み
+// ============================================================
+async function loadUsers() {
+  try {
+    const { data, error } = await supabase
+      .from('transfer_users')
+      .select('id, name, address, note');
+    if (error) throw error;
+    usersCache = {};
+    (data || []).forEach(u => {
+      usersCache[u.id] = { name: u.name || '', address: u.address || '', note: u.note || '' };
+    });
+  } catch (e) {
+    console.error('利用者読み込みエラー:', e);
+  }
+}
+
+// ============================================================
+//  スケジュール読み込み・描画
+// ============================================================
+async function loadSchedule() {
+  showLoading();
+  try {
+    // スケジュール取得（欠席以外）
+    const { data: schedules, error: schedErr } = await supabase
+      .from('transfer_schedules')
+      .select('id, user_id, status, pickup_time, dropoff_time, pickup_order, dropoff_order, pickup_group')
+      .eq('schedule_date', currentDateStr)
+      .neq('status', '欠席');
+
+    if (schedErr) throw schedErr;
+
+    // ドライバー情報取得
+    const { data: drivers, error: drvErr } = await supabase
+      .from('transfer_daily_drivers')
+      .select('car, pickup_driver, pickup_driver_2, dropoff_driver_15, dropoff_driver_16')
+      .eq('drive_date', currentDateStr);
+
+    if (drvErr) throw drvErr;
+
+    renderSchedule(schedules || [], drivers || []);
+  } catch (e) {
+    console.error('スケジュール読み込みエラー:', e);
+    showError();
+  }
+}
+
+function showLoading() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-text">読み込み中...</div>
+    </div>
+  `;
+}
+
+function showError() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="no-data-card">
+      <div class="no-data-icon">⚠️</div>
+      <div class="no-data-text">データの読み込みに失敗しました</div>
+    </div>
+  `;
+}
+
+function renderSchedule(schedules, drivers) {
+  // ドライバー情報を整理（car問わずまとめて取得）
+  const driverInfo = {
+    pickup_driver: '',
+    pickup_driver_2: '',
+    dropoff_driver_15: '',
+    dropoff_driver_16: ''
+  };
+  drivers.forEach(d => {
+    if (d.pickup_driver)   driverInfo.pickup_driver   = d.pickup_driver;
+    if (d.pickup_driver_2) driverInfo.pickup_driver_2 = d.pickup_driver_2;
+    if (d.dropoff_driver_15) driverInfo.dropoff_driver_15 = d.dropoff_driver_15;
+    if (d.dropoff_driver_16) driverInfo.dropoff_driver_16 = d.dropoff_driver_16;
+  });
+
+  // グループ分け
+  const go10_1 = schedules
+    .filter(s => s.pickup_time && s.pickup_time < '10:30' && (s.pickup_group || 1) === 1)
+    .sort((a, b) => (a.pickup_order ?? 99) - (b.pickup_order ?? 99));
+  const go10_2 = schedules
+    .filter(s => s.pickup_time && s.pickup_time < '10:30' && (s.pickup_group || 1) === 2)
+    .sort((a, b) => (a.pickup_order ?? 99) - (b.pickup_order ?? 99));
+  const go11 = schedules
+    .filter(s => s.pickup_time && s.pickup_time >= '10:30' && s.pickup_time < '13:00')
+    .sort((a, b) => (a.pickup_order ?? 99) - (b.pickup_order ?? 99));
+
+  const ret15List = schedules
+    .filter(s => s.dropoff_time && s.dropoff_time >= '14:30' && s.dropoff_time < '15:30')
+    .sort((a, b) => (a.dropoff_order ?? 99) - (b.dropoff_order ?? 99));
+
+  const ret16List = schedules
+    .filter(s => s.dropoff_time && s.dropoff_time >= '15:30')
+    .sort((a, b) => (a.dropoff_order ?? 99) - (b.dropoff_order ?? 99));
+
+  const totalCount = go10_1.length + go10_2.length + go11.length + ret15List.length + ret16List.length;
+
+  if (totalCount === 0) {
+    document.getElementById('mainContent').innerHTML = `
+      <div class="no-data-card">
+        <div class="no-data-icon">🚐</div>
+        <div class="no-data-text">本日の送迎はありません</div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+
+  // 行き 10:00
+  html += renderSection('go', '行き 10:00 ①便', go10_1, driverInfo.pickup_driver, 'pickup_time');
+  html += renderSection('go', '行き 10:00 ②便', go10_2, driverInfo.pickup_driver_2, 'pickup_time');
+  // 行き 11:00
+  html += `<div class="time-section-divider">11:00</div>`;
+  html += renderSection('go11', '行き 11:00', go11, driverInfo.pickup_driver, 'pickup_time');
+  // 帰り
+  html += `<div class="time-section-divider">帰り</div>`;
+
+  // 帰り 15:00
+  html += renderSection('return15', '帰り 15:00', ret15List, driverInfo.dropoff_driver_15, 'dropoff_time');
+
+  // 帰り 16:00
+  html += renderSection('return16', '帰り 16:00', ret16List, driverInfo.dropoff_driver_16, 'dropoff_time');
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderSection(type, label, items, driverName, timeField) {
+  const icons = { go: '🌅', go11: '🌅', return15: '🌇', return16: '🌙' };
+  const icon = icons[type] || '';
+
+  let riderHtml = '';
+  if (items.length === 0) {
+    riderHtml = `<div class="empty-section">利用者なし</div>`;
+  } else {
+    riderHtml = `<div class="rider-list ${type}">`;
+    items.forEach((s, i) => {
+      const user = usersCache[s.user_id] || { name: '(不明)', address: '' };
+      const time = s[timeField] || '';
+      // 時刻表示をフォーマット
+      const timeDisplay = time ? formatTime(time) : '';
+      riderHtml += `
+        <div class="rider-item">
+          <div class="rider-order-badge">${i + 1}</div>
+          <div class="rider-info">
+            <div class="rider-name-text">${escapeHtml(user.name)} さん</div>
+            ${timeDisplay ? `<div class="rider-time-text">${timeDisplay}</div>` : ''}
+          </div>
+          <button class="note-btn" onclick="showNote('${escapeAttr(s.user_id)}')">詳細</button>
+          <button class="addr-btn" onclick="showAddress('${escapeAttr(s.user_id)}')">住所を見る</button>
+        </div>
+      `;
+    });
+    riderHtml += `</div>`;
+  }
+
+  const driverHtml = driverName
+    ? `<span class="driver-name">${escapeHtml(driverName)}</span>`
+    : `<span class="driver-name empty">未設定</span>`;
+
+  return `
+    <div class="section">
+      <div class="section-header ${type}">
+        <span class="section-icon">${icon}</span>
+        <span class="section-title-text">▶ ${label}</span>
+        <span class="section-count">${items.length}名</span>
+      </div>
+      <div class="driver-bar">
+        <span class="driver-label">ドライバー</span>
+        ${driverHtml}
+      </div>
+      ${riderHtml}
+    </div>
+  `;
+}
+
+function formatTime(timeStr) {
+  // "HH:MM:SS" または "HH:MM" → "HH:MM"
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  return `${parts[0]}:${parts[1]}`;
+}
+
+// ============================================================
+//  住所モーダル
+// ============================================================
+function showAddress(userId) {
+  const user = usersCache[userId] || { name: '(不明)', address: '' };
+
+  document.getElementById('modalUserName').textContent = user.name + ' さん';
+
+  const addrEl = document.getElementById('modalAddrText');
+  const mapBtn = document.getElementById('mapBtn');
+
+  if (user.address) {
+    addrEl.textContent = user.address;
+    addrEl.classList.remove('no-addr');
+    const encoded = encodeURIComponent(user.address);
+    mapBtn.href = `https://maps.google.com/?q=${encoded}`;
+    mapBtn.classList.remove('disabled');
+  } else {
+    addrEl.textContent = '住所が登録されていません';
+    addrEl.classList.add('no-addr');
+    mapBtn.href = '#';
+    mapBtn.classList.add('disabled');
+    mapBtn.onclick = e => e.preventDefault();
+  }
+
+  document.getElementById('addrModal').classList.add('active');
+}
+
+function closeAddrModal() {
+  document.getElementById('addrModal').classList.remove('active');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('addrModal')) {
+    closeAddrModal();
+  }
+}
+
+function showNote(userId) {
+  const user = usersCache[userId] || { name: '(不明)', note: '' };
+  document.getElementById('noteModalUserName').textContent = user.name + ' さん';
+  document.getElementById('noteModalContent').textContent = user.note || '（備考なし）';
+  document.getElementById('noteModal').classList.add('active');
+}
+
+function closeNoteModal() {
+  document.getElementById('noteModal').classList.remove('active');
+}
+
+function handleNoteOverlayClick(e) {
+  if (e.target === document.getElementById('noteModal')) {
+    closeNoteModal();
+  }
+}
+
+// ============================================================
+//  リアルタイム更新
+// ============================================================
+function setupRealtime() {
+  // 既存チャンネルを削除
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+
+  const dot = document.getElementById('realtimeDot');
+
+  realtimeChannel = supabase
+    .channel(`driver_view_${currentDateStr}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'transfer_schedules', filter: `schedule_date=eq.${currentDateStr}` },
+      () => {
+        showToast('送迎情報が更新されました');
+        loadSchedule();
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'transfer_daily_drivers', filter: `drive_date=eq.${currentDateStr}` },
+      () => {
+        showToast('ドライバー情報が更新されました');
+        loadSchedule();
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        dot.classList.remove('offline');
+      } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        dot.classList.add('offline');
+      }
+    });
+}
+
+// ============================================================
+//  ユーティリティ
+// ============================================================
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/'/g, "\\'");
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); }, 2500);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google口コミ集｜ANELLA CAFE 大分店</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #B8E4DC;
+    --surface: #FFFFFF;
+    --primary: #4D9E96;
+    --primary-light: #6DBFB7;
+    --primary-pale: rgba(255,255,255,0.82);
+    --accent: #3A7D76;
+    --accent-light: #5AA9A2;
+    --accent-pale: rgba(255,255,255,0.82);
+    --text: #3A2010;
+    --text-mid: #6B4F3A;
+    --text-soft: #7A6050;
+    --border: #7EC8C0;
+    --gold: #C9A84C;
+    --gold-pale: #FBF0D4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+  }
+
+  /* ===== ヘッダー ===== */
+  .page-header {
+    background: #B8E4DC;
+    position: relative;
+    overflow: hidden;
+    padding: 52px 40px 44px;
+    margin-bottom: 48px;
+  }
+  .page-header::before {
+    content: '🐾';
+    position: absolute;
+    right: 32px; top: 24px;
+    font-size: 120px;
+    opacity: 0.12;
+    transform: rotate(15deg);
+    line-height: 1;
+  }
+  .page-header::after {
+    content: '';
+    position: absolute;
+    left: -60px; bottom: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.28);
+  }
+  .header-inner { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+  .header-eyebrow {
+    font-size: 11px; letter-spacing: 0.18em; color: #5A4030;
+    text-transform: uppercase; margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .header-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 38px; color: #3A2010;
+    line-height: 1.1; margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .header-sub {
+    font-size: 13px; color: #5A4030;
+    margin-bottom: 28px;
+  }
+  .rating-row {
+    display: inline-flex; align-items: center;
+    background: rgba(255,255,255,0.60);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 50px;
+    padding: 10px 22px; gap: 14px;
+  }
+  .rating-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px; color: #3A2010; line-height: 1;
+  }
+  .rating-right { }
+  .stars { color: #C9A030; font-size: 16px; letter-spacing: 2px; }
+  .rating-cnt { font-size: 12px; color: #7A6050; margin-top: 2px; }
+
+  /* ===== コンテンツラッパー ===== */
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 72px; }
+
+  /* ===== セクション ===== */
+  .section { margin-bottom: 56px; }
+
+  .section-label {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px;
+  }
+  .section-paw {
+    width: 52px; height: 52px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+  }
+  .section-paw.cafe { background: var(--primary-pale); }
+  .section-paw.trim { background: var(--accent-pale); }
+  .section-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px; color: var(--text); line-height: 1.2;
+  }
+  .section-tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    margin-left: 8px; vertical-align: middle;
+    letter-spacing: 0.05em;
+  }
+  .tag-cafe { background: var(--primary-pale); color: var(--primary); }
+  .tag-trim { background: var(--accent-pale); color: var(--accent); }
+  .section-desc { font-size: 13px; color: var(--text-soft); margin-top: 3px; }
+
+  /* ===== 口コミグリッド ===== */
+  .review-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  /* ピックアップカード（横幅全体） */
+  .card-pickup {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 30px 32px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    display: flex; gap: 24px; align-items: flex-start;
+  }
+  .pickup-quote {
+    font-family: 'DM Serif Display', serif;
+    font-size: 72px; line-height: 0.8;
+    flex-shrink: 0; margin-top: 8px;
+  }
+  .pickup-quote.cafe { color: var(--primary-pale); }
+  .pickup-quote.trim { color: var(--accent-pale); }
+  .pickup-body { flex: 1; }
+  .pickup-text {
+    font-size: 16px; color: var(--text); line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .pickup-author {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .author-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-cafe { background: var(--primary); }
+  .dot-trim { background: var(--accent); }
+  .author-name { font-size: 13px; font-weight: 700; color: var(--text-mid); }
+  .author-stars { font-size: 13px; color: var(--gold); letter-spacing: 1px; margin-left: auto; }
+
+  /* 通常カード */
+  .review-card {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-name { font-size: 13px; font-weight: 700; color: var(--text-mid); }
+  .card-stars { font-size: 13px; color: var(--gold); letter-spacing: 1px; }
+  .card-divider {
+    height: 1px; background: var(--border);
+  }
+  .card-text { font-size: 14px; color: #3A4A48; line-height: 1.8; }
+
+  /* ===== セクション区切り ===== */
+  .section-divider {
+    display: flex; align-items: center; gap: 16px;
+    margin: 48px 0 48px;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .divider-paw { font-size: 18px; color: var(--text-soft); opacity: 0.5; }
+
+  /* ===== ヒーロー（LP最上部） ===== */
+  .hero {
+    background: #B8E4DC;
+    padding: 72px 40px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    left: -80px; top: -80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.30);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    right: -60px; bottom: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+  }
+  .hero-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    position: relative; z-index: 1;
+  }
+  .hero-text { flex: 1; }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 11px; letter-spacing: 0.16em;
+    color: #5A4030;
+    text-transform: uppercase; font-weight: 600;
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.80);
+    padding: 5px 16px; border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero-title {
+    font-size: 34px; font-weight: 900;
+    color: #3A2010; line-height: 1.5;
+    margin-bottom: 18px;
+    letter-spacing: 0.01em;
+  }
+  .hero-title .hl { color: #B8660A; }
+  .hero-desc {
+    font-size: 14px; color: #5A4030;
+    line-height: 1.85; margin-bottom: 36px;
+  }
+  .hero-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: #5C3317; color: #fff;
+    font-size: 16px; font-weight: 800;
+    padding: 18px 44px; border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 8px 28px rgba(60,25,5,0.28);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.03em;
+    position: relative; overflow: hidden;
+    animation: btn-pulse 2.4s ease-in-out infinite;
+  }
+  .hero-btn::after {
+    content: '';
+    position: absolute; top: 0; left: -110%;
+    width: 55%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+    transform: skewX(-18deg);
+    animation: btn-shimmer 3.2s ease-in-out infinite;
+  }
+  .hero-btn:hover {
+    transform: translateY(-3px);
+    animation-play-state: paused;
+  }
+  .hero-btn-icon { font-size: 18px; }
+
+  @keyframes btn-pulse {
+    0%, 100% { box-shadow: 0 8px 28px rgba(60,25,5,0.28), 0 0 0 0 rgba(92,51,23,0.40); }
+    60%       { box-shadow: 0 8px 28px rgba(60,25,5,0.28), 0 0 0 16px rgba(92,51,23,0); }
+  }
+  @keyframes btn-shimmer {
+    0%        { left: -110%; }
+    28%, 100% { left: 160%; }
+  }
+  .hero-note {
+    margin-top: 16px;
+    font-size: 12px; color: #7A6050;
+  }
+  .hero-illust {
+    flex-shrink: 0;
+    display: flex; gap: 8px; align-items: flex-end;
+  }
+  .hero-illust svg { width: 130px; height: 130px; filter: drop-shadow(0 6px 14px rgba(10,60,55,0.28)); }
+  @media (max-width: 680px) {
+    .hero { padding: 52px 24px 44px; }
+    .hero-inner { flex-direction: column-reverse; gap: 20px; text-align: center; }
+    .hero-title { font-size: 24px; }
+    .hero-illust { justify-content: center; }
+    .hero-illust svg { width: 90px; height: 90px; }
+    .hero-btn { padding: 16px 32px; font-size: 15px; }
+  }
+
+  /* ===== ヘッダーイラスト ===== */
+  .header-illust {
+    position: absolute;
+    right: 60px; bottom: 0;
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .header-illust svg {
+    width: 88px; height: 88px;
+    filter: drop-shadow(0 4px 10px rgba(20,80,75,0.22));
+  }
+  @media (max-width: 780px) { .header-illust { display: none; } }
+
+  .section-paw svg { width: 34px; height: 34px; }
+
+  /* ===== CTAセクション ===== */
+  .cta-section {
+    margin-top: 56px;
+    background: #B8E4DC;
+    border-radius: 24px;
+    padding: 48px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.70);
+  }
+  .cta-section::before {
+    content: '🐾';
+    position: absolute;
+    left: 24px; bottom: -10px;
+    font-size: 100px;
+    opacity: 0.08;
+    transform: rotate(-15deg);
+  }
+  .cta-section::after {
+    content: '🐾';
+    position: absolute;
+    right: 24px; top: -10px;
+    font-size: 100px;
+    opacity: 0.08;
+    transform: rotate(15deg);
+  }
+  .cta-illust {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+  }
+  .cta-illust svg { width: 76px; height: 76px; }
+  .cta-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #3A2010;
+    margin-bottom: 10px;
+    line-height: 1.5;
+    position: relative; z-index: 1;
+  }
+  .cta-desc {
+    font-size: 14px;
+    color: #5A4030;
+    margin-bottom: 32px;
+    line-height: 1.8;
+    position: relative; z-index: 1;
+  }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #5C3317;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 16px 36px;
+    border-radius: 50px;
+    text-decoration: none;
+    box-shadow: 0 6px 24px rgba(60,25,5,0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative; z-index: 1; overflow: hidden;
+    letter-spacing: 0.02em;
+    animation: btn-pulse 2.4s ease-in-out infinite 0.8s;
+  }
+  .cta-btn::after {
+    content: '';
+    position: absolute; top: 0; left: -110%;
+    width: 55%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+    transform: skewX(-18deg);
+    animation: btn-shimmer 3.2s ease-in-out infinite 0.8s;
+  }
+  .cta-btn:hover {
+    transform: translateY(-2px);
+    animation-play-state: paused;
+  }
+  .cta-btn-icon { font-size: 18px; }
+
+  @media (max-width: 600px) {
+    .page-header { padding: 40px 24px 36px; }
+    .header-logo { font-size: 28px; }
+    .review-grid { grid-template-columns: 1fr; }
+    .card-pickup { flex-direction: column; gap: 12px; }
+    .pickup-quote { font-size: 48px; }
+    .card-pickup { grid-column: auto; }
+    .cta-section { padding: 36px 24px; }
+    .cta-title { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ヒーロー（LP最上部） -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">ANELLA CAFE 大分店 · 保護犬猫ふれあいカフェ</div>
+      <h1 class="hero-title">あなたの口コミが、<br>この子たちの<span class="hl">未来の家族</span>を<br>見つける支援になります。</h1>
+      <p class="hero-desc">実際にご来店いただいた方のひとことが、<br>保護犬・保護猫たちの譲渡につながります。<br>ぜひ感想をGoogleに投稿して、この子たちを応援してください🙏</p>
+      <a class="hero-btn" href="https://g.page/r/CW2N82Q_zPpJEAE/review" target="_blank" rel="noopener">
+        <span class="hero-btn-icon">⭐</span>
+        Google口コミを書く
+      </a>
+      <div class="hero-note">📝 Googleアカウントがあれば誰でも投稿できます（無料）</div>
+    </div>
+    <div class="hero-illust">
+      <!-- 犬 -->
+      <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M62 72 Q76 57 70 44" stroke="#D4A055" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <ellipse cx="38" cy="74" rx="22" ry="17" fill="#ECC07A"/>
+        <ellipse cx="18" cy="21" rx="11" ry="14" fill="#D4A055" transform="rotate(-18,18,21)"/>
+        <ellipse cx="58" cy="21" rx="11" ry="14" fill="#D4A055" transform="rotate(18,58,21)"/>
+        <ellipse cx="18" cy="22" rx="6.5" ry="9.5" fill="#F5C5B0" transform="rotate(-18,18,22)"/>
+        <ellipse cx="58" cy="22" rx="6.5" ry="9.5" fill="#F5C5B0" transform="rotate(18,58,22)"/>
+        <circle cx="38" cy="35" r="22" fill="#ECC07A"/>
+        <circle cx="28.5" cy="31" r="3.5" fill="#2A1808"/>
+        <circle cx="47.5" cy="31" r="3.5" fill="#2A1808"/>
+        <circle cx="29.8" cy="29.8" r="1.4" fill="white"/>
+        <circle cx="48.8" cy="29.8" r="1.4" fill="white"/>
+        <ellipse cx="38" cy="38.5" rx="3.5" ry="2.8" fill="#2A1808"/>
+        <ellipse cx="38" cy="37.8" rx="1.5" ry="1" fill="white" opacity="0.4"/>
+        <path d="M33.5 43 Q38 47.5 42.5 43" stroke="#2A1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="21" cy="39" rx="5.5" ry="4.5" fill="#FF9999" opacity="0.38"/>
+        <ellipse cx="55" cy="39" rx="5.5" ry="4.5" fill="#FF9999" opacity="0.38"/>
+        <ellipse cx="26" cy="87" rx="8" ry="5" fill="#ECC07A"/>
+        <ellipse cx="50" cy="87" rx="8" ry="5" fill="#ECC07A"/>
+      </svg>
+      <!-- 猫 -->
+      <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M60 78 Q78 62 72 46" stroke="#C89070" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <ellipse cx="38" cy="74" rx="20" ry="17" fill="#E0B888"/>
+        <polygon points="18,22 10,4 30,20" fill="#C89070"/>
+        <polygon points="58,22 66,4 46,20" fill="#C89070"/>
+        <polygon points="19,21 13,8 27,20" fill="#F5A0B0"/>
+        <polygon points="57,21 63,8 49,20" fill="#F5A0B0"/>
+        <circle cx="38" cy="35" r="22" fill="#E0B888"/>
+        <ellipse cx="28.5" cy="31" rx="3.5" ry="4.5" fill="#4A8A50"/>
+        <ellipse cx="47.5" cy="31" rx="3.5" ry="4.5" fill="#4A8A50"/>
+        <ellipse cx="28.5" cy="31" rx="1.5" ry="4" fill="#1A2010"/>
+        <ellipse cx="47.5" cy="31" rx="1.5" ry="4" fill="#1A2010"/>
+        <circle cx="30" cy="29" r="1.3" fill="white"/>
+        <circle cx="49" cy="29" r="1.3" fill="white"/>
+        <path d="M35.5 38.5 L38 35 L40.5 38.5 Z" fill="#D47090"/>
+        <path d="M38 38.5 Q34.5 42.5 32 41" stroke="#3A2010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <path d="M38 38.5 Q41.5 42.5 44 41" stroke="#3A2010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <ellipse cx="21" cy="38" rx="5.5" ry="4" fill="#FF9999" opacity="0.30"/>
+        <ellipse cx="55" cy="38" rx="5.5" ry="4" fill="#FF9999" opacity="0.30"/>
+        <line x1="5" y1="34" x2="24" y2="37" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <line x1="5" y1="39" x2="24" y2="39" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <line x1="52" y1="37" x2="71" y2="34" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <line x1="52" y1="39" x2="71" y2="39" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <ellipse cx="27" cy="87" rx="7.5" ry="5" fill="#E0B888"/>
+        <ellipse cx="49" cy="87" rx="7.5" ry="5" fill="#E0B888"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ヘッダー -->
+<div class="page-header">
+  <div class="header-inner">
+    <div class="header-eyebrow">ANELLA CAFE 大分店</div>
+    <div class="header-logo">Google 口コミ集</div>
+    <div class="header-sub">保護犬猫ふれあいカフェ &amp; トリミングサロン</div>
+    <div class="rating-row">
+      <div class="rating-num">4.7</div>
+      <div class="rating-right">
+        <div class="stars">★★★★★</div>
+        <div class="rating-cnt">93件のクチコミ（Google）</div>
+      </div>
+    </div>
+  </div>
+  <!-- ヘッダーイラスト：犬と猫 -->
+  <div class="header-illust">
+    <!-- 犬 -->
+    <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+      <path d="M62 72 Q76 57 70 44" stroke="#D4A055" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <ellipse cx="38" cy="74" rx="22" ry="17" fill="#ECC07A"/>
+      <ellipse cx="18" cy="21" rx="11" ry="14" fill="#D4A055" transform="rotate(-18,18,21)"/>
+      <ellipse cx="58" cy="21" rx="11" ry="14" fill="#D4A055" transform="rotate(18,58,21)"/>
+      <ellipse cx="18" cy="22" rx="6.5" ry="9.5" fill="#F5C5B0" transform="rotate(-18,18,22)"/>
+      <ellipse cx="58" cy="22" rx="6.5" ry="9.5" fill="#F5C5B0" transform="rotate(18,58,22)"/>
+      <circle cx="38" cy="35" r="22" fill="#ECC07A"/>
+      <circle cx="28.5" cy="31" r="3.5" fill="#2A1808"/>
+      <circle cx="47.5" cy="31" r="3.5" fill="#2A1808"/>
+      <circle cx="29.8" cy="29.8" r="1.4" fill="white"/>
+      <circle cx="48.8" cy="29.8" r="1.4" fill="white"/>
+      <ellipse cx="38" cy="38.5" rx="3.5" ry="2.8" fill="#2A1808"/>
+      <ellipse cx="38" cy="37.8" rx="1.5" ry="1" fill="white" opacity="0.4"/>
+      <path d="M33.5 43 Q38 47.5 42.5 43" stroke="#2A1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="21" cy="39" rx="5.5" ry="4.5" fill="#FF9999" opacity="0.38"/>
+      <ellipse cx="55" cy="39" rx="5.5" ry="4.5" fill="#FF9999" opacity="0.38"/>
+      <ellipse cx="26" cy="87" rx="8" ry="5" fill="#ECC07A"/>
+      <ellipse cx="50" cy="87" rx="8" ry="5" fill="#ECC07A"/>
+    </svg>
+    <!-- 猫 -->
+    <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 78 Q78 62 72 46" stroke="#C89070" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <ellipse cx="38" cy="74" rx="20" ry="17" fill="#E0B888"/>
+      <polygon points="18,22 10,4 30,20" fill="#C89070"/>
+      <polygon points="58,22 66,4 46,20" fill="#C89070"/>
+      <polygon points="19,21 13,8 27,20" fill="#F5A0B0"/>
+      <polygon points="57,21 63,8 49,20" fill="#F5A0B0"/>
+      <circle cx="38" cy="35" r="22" fill="#E0B888"/>
+      <ellipse cx="28.5" cy="31" rx="3.5" ry="4.5" fill="#4A8A50"/>
+      <ellipse cx="47.5" cy="31" rx="3.5" ry="4.5" fill="#4A8A50"/>
+      <ellipse cx="28.5" cy="31" rx="1.5" ry="4" fill="#1A2010"/>
+      <ellipse cx="47.5" cy="31" rx="1.5" ry="4" fill="#1A2010"/>
+      <circle cx="30" cy="29" r="1.3" fill="white"/>
+      <circle cx="49" cy="29" r="1.3" fill="white"/>
+      <path d="M35.5 38.5 L38 35 L40.5 38.5 Z" fill="#D47090"/>
+      <path d="M38 38.5 Q34.5 42.5 32 41" stroke="#3A2010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+      <path d="M38 38.5 Q41.5 42.5 44 41" stroke="#3A2010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="21" cy="38" rx="5.5" ry="4" fill="#FF9999" opacity="0.30"/>
+      <ellipse cx="55" cy="38" rx="5.5" ry="4" fill="#FF9999" opacity="0.30"/>
+      <line x1="5" y1="34" x2="24" y2="37" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+      <line x1="5" y1="39" x2="24" y2="39" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+      <line x1="52" y1="37" x2="71" y2="34" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+      <line x1="52" y1="39" x2="71" y2="39" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+      <ellipse cx="27" cy="87" rx="7.5" ry="5" fill="#E0B888"/>
+      <ellipse cx="49" cy="87" rx="7.5" ry="5" fill="#E0B888"/>
+    </svg>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ふれあいカフェ部門 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-paw cafe">
+        <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="6" cy="9" rx="5" ry="7" fill="#D4A055" transform="rotate(-18,6,9)"/>
+          <ellipse cx="22" cy="9" rx="5" ry="7" fill="#D4A055" transform="rotate(18,22,9)"/>
+          <ellipse cx="6" cy="9.5" rx="3" ry="5" fill="#F5C5B0" transform="rotate(-18,6,9.5)"/>
+          <ellipse cx="22" cy="9.5" rx="3" ry="5" fill="#F5C5B0" transform="rotate(18,22,9.5)"/>
+          <circle cx="14" cy="15" r="11" fill="#ECC07A"/>
+          <circle cx="9.5" cy="13" r="2" fill="#2A1808"/>
+          <circle cx="18.5" cy="13" r="2" fill="#2A1808"/>
+          <circle cx="10.2" cy="12.3" r="0.8" fill="white"/>
+          <circle cx="19.2" cy="12.3" r="0.8" fill="white"/>
+          <ellipse cx="14" cy="16.5" rx="2.2" ry="1.7" fill="#2A1808"/>
+          <path d="M11.2 19.5 Q14 22 16.8 19.5" stroke="#2A1808" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+          <ellipse cx="7" cy="17" rx="3" ry="2.5" fill="#FF9999" opacity="0.38"/>
+          <ellipse cx="21" cy="17" rx="3" ry="2.5" fill="#FF9999" opacity="0.38"/>
+        </svg>
+      </div>
+      <div>
+        <div class="section-name">ふれあいカフェ部門<span class="section-tag tag-cafe">★ 4.7</span></div>
+        <div class="section-desc">保護犬猫カフェ・癒し・スタッフ対応</div>
+      </div>
+    </div>
+
+    <div class="review-grid">
+
+      <div class="card-pickup">
+        <div class="pickup-quote cafe">"</div>
+        <div class="pickup-body">
+          <div class="pickup-text">こんなに人馴れしていて触れあえる保護犬猫カフェは珍しいと思います。スタッフさん達が、愛情込めて大事にお世話しているんだなぁと感動しました。ペットを亡くしてからずっと飼えずにいましたが、ここに来て久しぶりに心から癒されました。</div>
+          <div class="pickup-author">
+            <span class="author-dot dot-cafe"></span>
+            <span class="author-name">和泉クイーン さん</span>
+            <span class="author-stars">★★★★★</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">七篠権兵衛 さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">ふれあいが難しい犬猫カフェが多い中で、ふれあいを重視しているのは市内でここくらいだと思います。ワンちゃんも猫ちゃんもすごく大人しくてかわいい！おもちゃやおやつを寄付という形で贈ることもできて最高です！</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">うらら さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">少しでも保護犬猫ちゃんの力になりたくてお邪魔しました。店員さんがわざわざおやつで近くに連れて来てくれたり、猫ちゃんのオモチャを貸して下さったりとても親切にしてくださいました。また是非お邪魔させて下さい♡</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">チカ さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">ワンチャン達は抱っこさせてくれて癒される、ニャンズ達はおしりポンポンすると「もっとして」アピールしてきて、とてつもなく癒されました✨</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">hiromi K さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">想像以上に落ち着いた雰囲気で、猫ちゃんたちも人に慣れていて、初めての私でも安心してふれあえました。店内も清潔感があって居心地が良く、つい長居してしまいました。</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">みーきゃん さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">スタッフの方々もお優しく、触れるようサポートしてくれたり人慣れしている子を抱っこさせてくれました。初めての来店でほとんどの犬猫ちゃん達に触ることができました。</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">megu さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">とても穏やかで癒しの時間がゆっくり流れていました！親子で癒されました。夕方が空いていたので、次回も人が少ない時間めがけて行きたいと思います。</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">豊東節子 さん</div>
+          <div class="card-stars">★★★★☆</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">大事な猫が亡くなり落ち込んでいたのですが、この子達が保護猫とは驚き！とても可愛くて美しい猫ちゃんばかりで癒されました。スタッフさん達も優しい人ばかりで素晴らしい所でした！また癒されに行きたいと思います！</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">Umi さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">保護犬ちゃん猫ちゃん達がみんなふわふわで可愛くて癒やされました💕 お店を出る際にいただいた「推しカード」もとても気に入っています☺</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 区切り -->
+  <div class="section-divider">
+    <span class="divider-paw">🐾</span>
+    <span class="divider-paw">✂️</span>
+    <span class="divider-paw">🐾</span>
+  </div>
+
+  <!-- トリミング部門 -->
+  <div class="section">
+    <div class="section-label">
+      <div class="section-paw trim">
+        <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="6,12 3,3 11,10" fill="#C89070"/>
+          <polygon points="22,12 25,3 17,10" fill="#C89070"/>
+          <polygon points="6.5,11.5 4.5,5.5 10,10.5" fill="#F5A0B0"/>
+          <polygon points="21.5,11.5 23.5,5.5 18,10.5" fill="#F5A0B0"/>
+          <circle cx="14" cy="15" r="11" fill="#E0B888"/>
+          <ellipse cx="9.5" cy="13" rx="2" ry="2.5" fill="#4A8A50"/>
+          <ellipse cx="18.5" cy="13" rx="2" ry="2.5" fill="#4A8A50"/>
+          <ellipse cx="9.5" cy="13" rx="0.9" ry="2.2" fill="#1A2010"/>
+          <ellipse cx="18.5" cy="13" rx="0.9" ry="2.2" fill="#1A2010"/>
+          <circle cx="10.3" cy="12" r="0.7" fill="white"/>
+          <circle cx="19.3" cy="12" r="0.7" fill="white"/>
+          <path d="M12.5 16.5 L14 14.5 L15.5 16.5 Z" fill="#D47090"/>
+          <path d="M14 16.5 Q11.8 19.5 10.5 18.5" stroke="#3A2010" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M14 16.5 Q16.2 19.5 17.5 18.5" stroke="#3A2010" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <ellipse cx="7" cy="16.5" rx="3" ry="2.2" fill="#FF9999" opacity="0.30"/>
+          <ellipse cx="21" cy="16.5" rx="3" ry="2.2" fill="#FF9999" opacity="0.30"/>
+          <line x1="1" y1="13.5" x2="8" y2="14.5" stroke="#5A3A20" stroke-width="0.7" opacity="0.35"/>
+          <line x1="1" y1="16.5" x2="8" y2="16.5" stroke="#5A3A20" stroke-width="0.7" opacity="0.35"/>
+          <line x1="20" y1="14.5" x2="27" y2="13.5" stroke="#5A3A20" stroke-width="0.7" opacity="0.35"/>
+          <line x1="20" y1="16.5" x2="27" y2="16.5" stroke="#5A3A20" stroke-width="0.7" opacity="0.35"/>
+        </svg>
+      </div>
+      <div>
+        <div class="section-name">トリミング部門<span class="section-tag tag-trim">★ 5.0</span></div>
+        <div class="section-desc">仕上がり・スタッフ対応・リーズナブル</div>
+      </div>
+    </div>
+
+    <div class="review-grid">
+
+      <div class="card-pickup">
+        <div class="pickup-quote trim">"</div>
+        <div class="pickup-body">
+          <div class="pickup-text">愛犬のトリミングで初めて利用しました✂️ 仕上がりもとても丁寧で、スタッフの方の対応もあたたかく、安心して預けられました。その後にカフェスペースで保護犬たちとふれあえるのも魅力で、特別な時間が過ごせました。次回もお願いしたいです。</div>
+          <div class="pickup-author">
+            <span class="author-dot dot-trim"></span>
+            <span class="author-name">北条紗和子 さん</span>
+            <span class="author-stars">★★★★★</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">ramu0304 さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">初めてトリミングを利用させていただきました。とても可愛くカットしていただき、ラムも私も満足しております🥰 また次回もよろしくお願いします。</div>
+      </div>
+
+      <div class="review-card">
+        <div class="card-header">
+          <div class="card-name">宗聡美 さん</div>
+          <div class="card-stars">★★★★★</div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-text">2回目ですが、雰囲気もよくてトリミングに出しやすいです。料金もリーズナブルだったので大満足でした。</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTAセクション -->
+  <div class="cta-section">
+    <div class="cta-illust">
+      <!-- 犬 -->
+      <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M62 72 Q76 57 70 44" stroke="#D4A055" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <ellipse cx="38" cy="74" rx="22" ry="17" fill="#ECC07A"/>
+        <ellipse cx="18" cy="21" rx="11" ry="14" fill="#D4A055" transform="rotate(-18,18,21)"/>
+        <ellipse cx="58" cy="21" rx="11" ry="14" fill="#D4A055" transform="rotate(18,58,21)"/>
+        <ellipse cx="18" cy="22" rx="6.5" ry="9.5" fill="#F5C5B0" transform="rotate(-18,18,22)"/>
+        <ellipse cx="58" cy="22" rx="6.5" ry="9.5" fill="#F5C5B0" transform="rotate(18,58,22)"/>
+        <circle cx="38" cy="35" r="22" fill="#ECC07A"/>
+        <circle cx="28.5" cy="31" r="3.5" fill="#2A1808"/>
+        <circle cx="47.5" cy="31" r="3.5" fill="#2A1808"/>
+        <circle cx="29.8" cy="29.8" r="1.4" fill="white"/>
+        <circle cx="48.8" cy="29.8" r="1.4" fill="white"/>
+        <ellipse cx="38" cy="38.5" rx="3.5" ry="2.8" fill="#2A1808"/>
+        <path d="M33.5 43 Q38 47.5 42.5 43" stroke="#2A1808" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="21" cy="39" rx="5.5" ry="4.5" fill="#FF9999" opacity="0.38"/>
+        <ellipse cx="55" cy="39" rx="5.5" ry="4.5" fill="#FF9999" opacity="0.38"/>
+        <ellipse cx="26" cy="87" rx="8" ry="5" fill="#ECC07A"/>
+        <ellipse cx="50" cy="87" rx="8" ry="5" fill="#ECC07A"/>
+      </svg>
+      <!-- 猫 -->
+      <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg">
+        <path d="M60 78 Q78 62 72 46" stroke="#C89070" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <ellipse cx="38" cy="74" rx="20" ry="17" fill="#E0B888"/>
+        <polygon points="18,22 10,4 30,20" fill="#C89070"/>
+        <polygon points="58,22 66,4 46,20" fill="#C89070"/>
+        <polygon points="19,21 13,8 27,20" fill="#F5A0B0"/>
+        <polygon points="57,21 63,8 49,20" fill="#F5A0B0"/>
+        <circle cx="38" cy="35" r="22" fill="#E0B888"/>
+        <ellipse cx="28.5" cy="31" rx="3.5" ry="4.5" fill="#4A8A50"/>
+        <ellipse cx="47.5" cy="31" rx="3.5" ry="4.5" fill="#4A8A50"/>
+        <ellipse cx="28.5" cy="31" rx="1.5" ry="4" fill="#1A2010"/>
+        <ellipse cx="47.5" cy="31" rx="1.5" ry="4" fill="#1A2010"/>
+        <circle cx="30" cy="29" r="1.3" fill="white"/>
+        <circle cx="49" cy="29" r="1.3" fill="white"/>
+        <path d="M35.5 38.5 L38 35 L40.5 38.5 Z" fill="#D47090"/>
+        <path d="M38 38.5 Q34.5 42.5 32 41" stroke="#3A2010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <path d="M38 38.5 Q41.5 42.5 44 41" stroke="#3A2010" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <ellipse cx="21" cy="38" rx="5.5" ry="4" fill="#FF9999" opacity="0.30"/>
+        <ellipse cx="55" cy="38" rx="5.5" ry="4" fill="#FF9999" opacity="0.30"/>
+        <line x1="5" y1="34" x2="24" y2="37" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <line x1="5" y1="39" x2="24" y2="39" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <line x1="52" y1="37" x2="71" y2="34" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <line x1="52" y1="39" x2="71" y2="39" stroke="#5A3A20" stroke-width="1" opacity="0.35"/>
+        <ellipse cx="27" cy="87" rx="7.5" ry="5" fill="#E0B888"/>
+        <ellipse cx="49" cy="87" rx="7.5" ry="5" fill="#E0B888"/>
+      </svg>
+    </div>
+    <div class="cta-title">あなたの口コミが、<br>この子たちの未来の家族を見つける支援になります。</div>
+    <div class="cta-desc">実際に来店された方のひとことが、保護犬猫たちの譲渡につながります。<br>ぜひ感想をGoogleに投稿してください🙏</div>
+    <a class="cta-btn" href="https://g.page/r/CW2N82Q_zPpJEAE/review" target="_blank" rel="noopener">
+      <span class="cta-btn-icon">⭐</span>
+      Google口コミを書く
+    </a>
+  </div>
+
+</div>
+</body>
+</html>

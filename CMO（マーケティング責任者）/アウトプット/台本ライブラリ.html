@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台本ライブラリ</title>
+<style>
+  :root {
+    --primary: #7c3aed;
+    --primary-dark: #6d28d9;
+    --primary-light: #ede9fe;
+    --primary-mid: #ddd6fe;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --bg: #f5f3ff;
+    --card-bg: #ffffff;
+    --text: #1e1b4b;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --shadow: 0 2px 8px rgba(124,58,237,0.08);
+    --shadow-md: 0 4px 16px rgba(124,58,237,0.15);
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ヘッダー */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, #5b21b6 100%);
+    color: white;
+    padding: 0 20px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(124,58,237,0.4);
+  }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+  header h1 span { font-size: 14px; opacity: 0.8; margin-left: 8px; font-weight: 400; }
+  .btn-add {
+    background: white;
+    color: var(--primary);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-add:hover { background: var(--primary-light); transform: translateY(-1px); }
+
+  /* メインレイアウト */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* 検索・フィルタバー */
+  .filter-bar {
+    background: white;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .search-wrap {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--primary); }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 16px;
+  }
+  .category-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  .tab-btn:hover:not(.active) {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* 件数表示 */
+  .result-count {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  /* カードグリッド */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  .script-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1.5px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .script-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+  }
+  .card-meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-reel   { background: #fce7f3; color: #be185d; }
+  .badge-live   { background: #fef3c7; color: #b45309; }
+  .badge-sales  { background: #d1fae5; color: #047857; }
+  .badge-line   { background: #dcfce7; color: #15803d; }
+  .badge-other  { background: #f3f4f6; color: #374151; }
+  .badge-shot   { background: #d1fae5; color: #047857; }
+  .badge-unshot { background: #f3f4f6; color: #6b7280; }
+  .status-btn {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .status-btn:hover { filter: brightness(0.92); }
+  .tag {
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 500;
+  }
+  .card-preview {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+  .card-date {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  .card-product {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 500;
+  }
+  .card-duration {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  /* 空状態 */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state p { font-size: 15px; }
+
+  /* モーダル共通 */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; color: var(--text); }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 20px 24px 24px; flex: 1; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    background: white;
+    position: sticky;
+    bottom: 0;
+  }
+
+  /* 詳細モーダル */
+  #detailModal .modal { max-width: 720px; }
+  .detail-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .detail-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .detail-info dt { color: var(--text-muted); font-weight: 500; }
+  .detail-info dd { color: var(--text); font-weight: 600; }
+  .script-content {
+    white-space: pre-wrap;
+    line-height: 1.8;
+    font-size: 14px;
+    color: var(--text);
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .detail-notes {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #78350f;
+  }
+
+  /* 追加モーダル */
+  #addModal .modal { max-width: 640px; }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .form-group label .required { color: var(--danger); margin-left: 2px; }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    color: var(--text);
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--primary); }
+  .form-group textarea { resize: vertical; min-height: 200px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ボタン */
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary {
+    background: #f3f4f6;
+    color: var(--text-muted);
+  }
+  .btn-secondary:hover { background: #e5e7eb; }
+  .btn-copy {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-copy:hover { background: var(--primary-mid); }
+  .btn-danger {
+    background: #fef2f2;
+    color: var(--danger);
+  }
+  .btn-danger:hover { background: #fee2e2; }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ローディング */
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-muted);
+  }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* トースト */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1f2937;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 600px) {
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .detail-info { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📝 台本ライブラリ <span>Script Library</span></h1>
+  <button class="btn-add" onclick="openAddModal()">＋ 台本を追加</button>
+</header>
+
+<div class="container">
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="タイトル・タグ・案件名で検索..." oninput="filterScripts()">
+    </div>
+    <div class="category-tabs" id="categoryTabs">
+      <button class="tab-btn active" data-cat="" onclick="setCategory(this, '')">すべて</button>
+      <button class="tab-btn" data-cat="reel" onclick="setCategory(this, 'reel')">🎬 リール</button>
+      <button class="tab-btn" data-cat="live" onclick="setCategory(this, 'live')">📡 ライブ</button>
+      <button class="tab-btn" data-cat="sales" onclick="setCategory(this, 'sales')">💬 セールス</button>
+      <button class="tab-btn" data-cat="line" onclick="setCategory(this, 'line')">💚 LINE</button>
+      <button class="tab-btn" data-cat="other" onclick="setCategory(this, 'other')">📄 その他</button>
+    </div>
+    <div class="category-tabs" id="statusTabs">
+      <button class="tab-btn active" data-status="" onclick="setStatus(this, '')">📋 全ステータス</button>
+      <button class="tab-btn" data-status="unshot" onclick="setStatus(this, 'unshot')">📷 未撮影</button>
+      <button class="tab-btn" data-status="shot" onclick="setStatus(this, 'shot')">✅ 撮影済み</button>
+    </div>
+  </div>
+
+  <div class="result-count" id="resultCount"></div>
+  <div id="cardContainer">
+    <div class="loading"><div class="spinner"></div>読み込み中...</div>
+  </div>
+</div>
+
+<!-- 詳細モーダル -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="detailTitle"></span>
+      <button class="modal-close" onclick="closeModal('detailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-meta" id="detailMeta"></div>
+      <div class="detail-info" id="detailInfo"></div>
+      <div class="script-content" id="detailContent"></div>
+      <div class="detail-notes" id="detailNotes" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btnDelete" onclick="deleteScript()">🗑 削除</button>
+      <button class="btn btn-copy" onclick="copyScript()">📋 台本をコピー</button>
+      <button class="btn btn-primary" onclick="openEditModal()">✏️ 編集</button>
+      <button class="btn btn-secondary" onclick="closeModal('detailModal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- 追加・編集モーダル -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="addModalTitle">台本を追加</span>
+      <button class="modal-close" onclick="closeModal('addModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>タイトル<span class="required">*</span></label>
+        <input type="text" id="fTitle" placeholder="例：保護犬カフェ リール台本 Vol.3">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>カテゴリ<span class="required">*</span></label>
+          <select id="fCategory">
+            <option value="reel">🎬 リール</option>
+            <option value="live">📡 ライブ</option>
+            <option value="sales">💬 セールス</option>
+            <option value="line">💚 LINE</option>
+            <option value="other">📄 その他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>案件名</label>
+          <input type="text" id="fProduct" placeholder="例：アネラカフェ、着物リメイク">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>タグ</label>
+          <input type="text" id="fTags" placeholder="例：保護犬, 譲渡会, 感動">
+          <div class="form-hint">カンマ区切りで複数入力可</div>
+        </div>
+        <div class="form-group">
+          <label>想定時間（秒）</label>
+          <input type="number" id="fDuration" placeholder="例：60" min="1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>台本本文<span class="required">*</span></label>
+        <textarea id="fContent" placeholder="台本の内容をここに入力..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>メモ・ポイント</label>
+        <textarea id="fNotes" placeholder="撮影時のポイント、使用楽曲、注意事項など..." style="min-height: 80px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addModal')">キャンセル</button>
+      <button class="btn btn-primary" id="btnSave" onclick="saveScript()">💾 保存する</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+
+async function sbFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(options.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+const CATEGORY_LABELS = {
+  reel:  { label: 'リール',   badge: 'badge-reel',  icon: '🎬' },
+  live:  { label: 'ライブ',   badge: 'badge-live',  icon: '📡' },
+  sales: { label: 'セールス', badge: 'badge-sales', icon: '💬' },
+  line:  { label: 'LINE',     badge: 'badge-line',  icon: '💚' },
+  other: { label: 'その他',   badge: 'badge-other', icon: '📄' },
+};
+
+let allScripts = [];
+let currentFilter = '';
+let currentStatusFilter = '';
+let currentScript = null;
+let editMode = false;
+
+async function loadScripts() {
+  try {
+    const data = await sbFetch('scripts?order=created_at.desc&select=*');
+    allScripts = data || [];
+    renderCards(allScripts);
+  } catch(e) {
+    document.getElementById('cardContainer').innerHTML =
+      `<div class="empty-state"><div class="icon">⚠️</div><p>読み込みに失敗しました：${e.message}</p></div>`;
+  }
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  return allScripts.filter(s => {
+    const catOk = !currentFilter || s.category === currentFilter;
+    const statusOk = !currentStatusFilter || (s.shooting_status || 'unshot') === currentStatusFilter;
+    if (!catOk || !statusOk) return false;
+    if (!q) return true;
+    return (
+      s.title.toLowerCase().includes(q) ||
+      (s.product || '').toLowerCase().includes(q) ||
+      (s.content || '').toLowerCase().includes(q) ||
+      (s.tags || []).some(t => t.toLowerCase().includes(q)) ||
+      (s.notes || '').toLowerCase().includes(q)
+    );
+  });
+}
+
+function setStatus(btn, status) {
+  document.querySelectorAll('#statusTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentStatusFilter = status;
+  filterScripts();
+}
+
+function filterScripts() { renderCards(getFiltered()); }
+
+function setCategory(btn, cat) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = cat;
+  filterScripts();
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDuration(sec) {
+  if (!sec) return '';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m > 0 ? `${m}分${s > 0 ? s+'秒' : ''}` : `${s}秒`;
+}
+
+function renderCards(scripts) {
+  const container = document.getElementById('cardContainer');
+  const countEl = document.getElementById('resultCount');
+  countEl.textContent = `${scripts.length} 件`;
+
+  if (scripts.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>台本が見つかりませんでした<br>「＋ 台本を追加」から登録してみてください</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = scripts.map(s => {
+    const cat = CATEGORY_LABELS[s.category] || CATEGORY_LABELS.other;
+    const tags = (s.tags || []).map(t => `<span class="tag">#${t}</span>`).join('');
+    const preview = (s.content || '').replace(/\s+/g, ' ').slice(0, 120);
+    const isShot = (s.shooting_status || 'unshot') === 'shot';
+    const statusLabel = isShot ? '✅ 撮影済み' : '📷 未撮影';
+    const statusClass = isShot ? 'badge-shot' : 'badge-unshot';
+    const nextStatus = isShot ? 'unshot' : 'shot';
+    return `
+    <div class="script-card" onclick="openDetail(${s.id ? `'${s.id}'` : 'null'})">
+      <div class="card-header">
+        <span class="card-title">${escHtml(s.title)}</span>
+        <span class="badge ${cat.badge}">${cat.icon} ${cat.label}</span>
+      </div>
+      <div class="card-meta">
+        ${tags}
+        <button class="status-btn badge ${statusClass}" onclick="event.stopPropagation(); toggleStatus('${s.id}', '${nextStatus}')">${statusLabel}</button>
+      </div>
+      <div class="card-preview">${escHtml(preview)}${s.content && s.content.length > 120 ? '…' : ''}</div>
+      <div class="card-footer">
+        <span class="card-date">${formatDate(s.created_at)}</span>
+        <span class="card-product">${s.product ? '📦 ' + escHtml(s.product) : ''}</span>
+        <span class="card-duration">${s.duration_sec ? '⏱ ' + formatDuration(s.duration_sec) : ''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function openDetail(id) {
+  const s = allScripts.find(x => x.id === id);
+  if (!s) return;
+  currentScript = s;
+
+  const cat = CATEGORY_LABELS[s.category] || CATEGORY_LABELS.other;
+  const tags = (s.tags || []).map(t => `<span class="tag">#${t}</span>`).join('');
+
+  document.getElementById('detailTitle').textContent = s.title;
+  document.getElementById('detailMeta').innerHTML =
+    `<span class="badge ${cat.badge}">${cat.icon} ${cat.label}</span>${tags}`;
+
+  let infoHtml = `<dt>登録日</dt><dd>${formatDate(s.created_at)}</dd>`;
+  if (s.product) infoHtml += `<dt>案件名</dt><dd>${escHtml(s.product)}</dd>`;
+  if (s.duration_sec) infoHtml += `<dt>想定時間</dt><dd>${formatDuration(s.duration_sec)}</dd>`;
+  document.getElementById('detailInfo').innerHTML = infoHtml;
+  if (!s.product && !s.duration_sec) document.getElementById('detailInfo').style.display = 'none';
+  else document.getElementById('detailInfo').style.display = '';
+
+  document.getElementById('detailContent').textContent = s.content;
+
+  const notesEl = document.getElementById('detailNotes');
+  if (s.notes) {
+    notesEl.style.display = '';
+    notesEl.textContent = '📌 ' + s.notes;
+  } else {
+    notesEl.style.display = 'none';
+  }
+
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function copyScript() {
+  if (!currentScript) return;
+  navigator.clipboard.writeText(currentScript.content).then(() => {
+    showToast('台本をコピーしました！');
+  }).catch(() => {
+    showToast('コピーに失敗しました');
+  });
+}
+
+async function deleteScript() {
+  if (!currentScript) return;
+  if (!confirm(`「${currentScript.title}」を削除しますか？`)) return;
+  try {
+    await sbFetch(`scripts?id=eq.${currentScript.id}`, { method: 'DELETE' });
+    allScripts = allScripts.filter(s => s.id !== currentScript.id);
+    closeModal('detailModal');
+    renderCards(getFiltered());
+    showToast('削除しました');
+  } catch(e) {
+    showToast('削除に失敗しました: ' + e.message);
+  }
+}
+
+async function toggleStatus(id, newStatus) {
+  try {
+    await sbFetch(`scripts?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ shooting_status: newStatus })
+    });
+    const s = allScripts.find(x => x.id === id);
+    if (s) s.shooting_status = newStatus;
+    renderCards(getFiltered());
+    showToast(newStatus === 'shot' ? '✅ 撮影済みにしました！' : '📷 未撮影に戻しました');
+  } catch(e) {
+    showToast('更新に失敗しました: ' + e.message);
+  }
+}
+
+function openAddModal() {
+  editMode = false;
+  document.getElementById('addModalTitle').textContent = '台本を追加';
+  document.getElementById('fTitle').value = '';
+  document.getElementById('fCategory').value = 'reel';
+  document.getElementById('fProduct').value = '';
+  document.getElementById('fTags').value = '';
+  document.getElementById('fDuration').value = '';
+  document.getElementById('fContent').value = '';
+  document.getElementById('fNotes').value = '';
+  document.getElementById('btnSave').textContent = '💾 保存する';
+  document.getElementById('addModal').classList.add('open');
+}
+
+function openEditModal() {
+  if (!currentScript) return;
+  editMode = true;
+  const s = currentScript;
+  document.getElementById('addModalTitle').textContent = '台本を編集';
+  document.getElementById('fTitle').value = s.title || '';
+  document.getElementById('fCategory').value = s.category || 'reel';
+  document.getElementById('fProduct').value = s.product || '';
+  document.getElementById('fTags').value = (s.tags || []).join(', ');
+  document.getElementById('fDuration').value = s.duration_sec || '';
+  document.getElementById('fContent').value = s.content || '';
+  document.getElementById('fNotes').value = s.notes || '';
+  document.getElementById('btnSave').textContent = '💾 更新する';
+  closeModal('detailModal');
+  document.getElementById('addModal').classList.add('open');
+}
+
+async function saveScript() {
+  const title = document.getElementById('fTitle').value.trim();
+  const content = document.getElementById('fContent').value.trim();
+  if (!title) { showToast('タイトルを入力してください'); return; }
+  if (!content) { showToast('台本本文を入力してください'); return; }
+
+  const tagsRaw = document.getElementById('fTags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const duration = parseInt(document.getElementById('fDuration').value) || null;
+
+  const payload = {
+    title,
+    category: document.getElementById('fCategory').value,
+    product: document.getElementById('fProduct').value.trim() || null,
+    tags,
+    content,
+    notes: document.getElementById('fNotes').value.trim() || null,
+    duration_sec: duration,
+  };
+
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+
+  try {
+    if (editMode && currentScript) {
+      // 編集モード：PATCH
+      const result = await sbFetch(`scripts?id=eq.${currentScript.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+      const updated = result && result[0] ? result[0] : { ...currentScript, ...payload };
+      const idx = allScripts.findIndex(s => s.id === currentScript.id);
+      if (idx !== -1) allScripts[idx] = updated;
+      currentScript = updated;
+      closeModal('addModal');
+      renderCards(getFiltered());
+      showToast('台本を更新しました！');
+    } else {
+      // 新規追加モード：POST
+      const result = await sbFetch('scripts', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      if (result && result[0]) allScripts.unshift(result[0]);
+      closeModal('addModal');
+      renderCards(getFiltered());
+      showToast('台本を保存しました！');
+    }
+  } catch(e) {
+    showToast('保存に失敗しました: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = editMode ? '💾 更新する' : '💾 保存する';
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+loadScripts();
+</script>
+</body>
+</html>

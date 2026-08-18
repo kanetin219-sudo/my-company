@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐾 アネラカフェ 議事録</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/docx@8/build/index.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --text: #2C1F14;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(44,31,20,0.08);
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ヘッダー */
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px 0;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .header h1 { font-family: 'DM Serif Display', serif; font-size: 1.05rem; }
+    .header-actions { display: flex; gap: 6px; }
+    .btn-header {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 5px 12px;
+      border-radius: 7px; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+      transition: background 0.2s;
+    }
+    .btn-header:hover { background: rgba(255,255,255,0.35); }
+    .btn-header.add { background: var(--accent); border-color: var(--accent); }
+    .btn-header.add:hover { background: #3d6b5f; }
+
+    /* タブ */
+    .tabs { display: flex; gap: 2px; }
+    .tab-btn {
+      background: rgba(255,255,255,0.15);
+      border: none; color: rgba(255,255,255,0.8);
+      padding: 8px 18px; border-radius: 8px 8px 0 0;
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { background: var(--bg); color: var(--primary); }
+
+    /* フィルターバー */
+    .filter-bar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 12px 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
+    .filter-bar input, .filter-bar select {
+      border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 11px;
+      font-size: 0.83rem; font-family: 'Noto Sans JP', sans-serif;
+      background: white; color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: var(--primary); }
+    .filter-bar input { flex: 1; min-width: 140px; }
+    .filter-count { margin-left: auto; font-size: 0.75rem; color: var(--text-soft); white-space: nowrap; }
+
+    /* タブコンテンツ */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* アーカイブリスト */
+    .list-container { max-width: 800px; margin: 0 auto; padding: 16px 14px 80px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .loading { text-align: center; padding: 60px 20px; color: var(--text-soft); font-size: 0.9rem; }
+
+    .minutes-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
+      box-shadow: var(--shadow); transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .minutes-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(44,31,20,0.12); }
+    .card-top { display: flex; align-items: flex-start; gap: 10px; }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 3px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .badge.委員会 { background: #FFF0E6; color: var(--primary); border: 1px solid var(--primary-light); }
+    .badge.訓練 { background: #E8F5F2; color: var(--accent); border: 1px solid #7BBCB1; }
+    .badge.その他 { background: #F0F0F0; color: #666; border: 1px solid #CCC; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-date { font-size: 0.73rem; color: var(--text-soft); margin-bottom: 2px; }
+    .card-title { font-size: 0.95rem; font-weight: 700; line-height: 1.4; word-break: break-all; }
+    .card-desc { font-size: 0.78rem; color: var(--text-soft); margin-top: 5px; line-height: 1.5; }
+    .card-actions {
+      display: flex; gap: 6px; margin-top: 10px; padding-top: 8px;
+      border-top: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .btn-drive {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #4285F4; color: white; border: none;
+      padding: 6px 12px; border-radius: 6px; font-size: 0.77rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .btn-drive:hover { background: #2a75f3; }
+    .btn-drive.disabled { background: #CCC; cursor: default; pointer-events: none; }
+    .btn-edit {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: white; color: var(--accent); border: 1.5px solid #7BBCB1;
+      padding: 6px 12px; border-radius: 6px; font-size: 0.77rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: background 0.2s;
+    }
+    .btn-edit:hover { background: #E8F5F2; }
+    .btn-print-card {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: white; color: var(--text); border: 1.5px solid var(--border);
+      padding: 6px 12px; border-radius: 6px; font-size: 0.77rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
+    }
+    .btn-print-card:hover { border-color: var(--primary); background: #FFF5EE; }
+    .btn-delete {
+      margin-left: auto; background: none; border: none; color: #CC4444;
+      font-size: 0.75rem; cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+      padding: 6px 8px; border-radius: 6px; transition: background 0.2s;
+    }
+    .btn-delete:hover { background: #FFF0F0; }
+
+    /* ===== AI作成タブ ===== */
+    .ai-container { max-width: 720px; margin: 0 auto; padding: 20px 14px 80px; }
+    .ai-section-title {
+      font-size: 0.72rem; font-weight: 700; color: var(--accent);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border-bottom: 2px solid var(--accent); padding-bottom: 3px; margin: 20px 0 12px;
+    }
+    .ai-form-group { margin-bottom: 13px; }
+    .ai-form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; }
+    .ai-form-group input, .ai-form-group select, .ai-form-group textarea {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 9px 11px; font-size: 0.88rem; font-family: 'Noto Sans JP', sans-serif;
+      background: white; color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .ai-form-group input:focus, .ai-form-group select:focus, .ai-form-group textarea:focus { border-color: var(--primary); }
+    .ai-form-group textarea { resize: vertical; }
+    .ai-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 480px) { .ai-form-row { grid-template-columns: 1fr; } }
+
+    .memo-area { min-height: 160px; font-size: 0.88rem; line-height: 1.7; }
+    .memo-hint { font-size: 0.73rem; color: var(--text-soft); margin-top: 4px; line-height: 1.5; }
+
+    .btn-ai-generate {
+      width: 100%; margin-top: 16px; padding: 14px;
+      background: linear-gradient(135deg, var(--primary), #E8946A);
+      color: white; border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif; transition: opacity 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-ai-generate:hover { opacity: 0.9; }
+    .btn-ai-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* 生成結果 */
+    .result-box {
+      background: var(--surface); border: 2px solid var(--accent);
+      border-radius: var(--radius); padding: 18px; margin-top: 20px;
+      display: none;
+    }
+    .result-box.show { display: block; }
+    .result-label { font-size: 0.7rem; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 6px; }
+    .result-field { margin-bottom: 12px; }
+    .result-field-label { font-size: 0.73rem; color: var(--text-soft); font-weight: 600; margin-bottom: 3px; }
+    .result-field-value {
+      font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap;
+      background: white; border: 1px solid var(--border);
+      border-radius: 7px; padding: 8px 10px; min-height: 36px;
+    }
+    .result-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .btn-word {
+      flex: 1; padding: 12px; background: var(--primary); color: white;
+      border: none; border-radius: 9px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: background 0.2s;
+    }
+    .btn-word:hover { background: var(--primary-light); }
+    .btn-copy-text {
+      padding: 12px 18px; background: white; color: var(--text);
+      border: 1.5px solid var(--border); border-radius: 9px;
+      font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: all 0.2s;
+    }
+    .btn-copy-text:hover { border-color: var(--accent); background: #E8F5F2; }
+
+    /* APIキー設定 */
+    .api-key-notice {
+      background: #FFF8E6; border: 1.5px solid #F4C842;
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
+      font-size: 0.82rem; line-height: 1.6; display: none;
+    }
+    .api-key-notice.show { display: block; }
+    .btn-set-key {
+      display: inline-block; margin-top: 6px; background: var(--primary);
+      color: white; border: none; border-radius: 6px; padding: 6px 14px;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    /* ローディングアニメ */
+    .generating { display: none; text-align: center; padding: 30px; color: var(--text-soft); }
+    .generating.show { display: block; }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* モーダル（アーカイブ追加・編集） */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 200;
+      justify-content: center; align-items: flex-end;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 16px 16px 0 0;
+      padding: 22px 18px 40px; width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto; animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 18px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 9px 11px; font-size: 0.87rem; font-family: 'Noto Sans JP', sans-serif;
+      background: white; color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-submit {
+      flex: 1; background: var(--primary); color: white; border: none;
+      padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif; transition: background 0.2s;
+    }
+    .btn-submit:hover { background: var(--primary-light); }
+    .btn-cancel {
+      background: white; color: var(--text); border: 1.5px solid var(--border);
+      padding: 12px 18px; border-radius: 10px; font-size: 0.87rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    /* APIキー設定モーダル */
+    .api-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 300;
+      justify-content: center; align-items: center; padding: 20px;
+    }
+    .api-modal-overlay.open { display: flex; }
+    .api-modal {
+      background: var(--surface); border-radius: 14px;
+      padding: 24px 20px; width: 100%; max-width: 460px; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    .api-modal h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+    .api-modal p { font-size: 0.82rem; color: var(--text-soft); line-height: 1.6; margin-bottom: 14px; }
+    .api-modal input {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; font-size: 0.87rem; font-family: 'Noto Sans JP', sans-serif;
+      background: white; outline: none; transition: border-color 0.2s;
+    }
+    .api-modal input:focus { border-color: var(--primary); }
+    .api-modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+    /* 印刷 */
+    @media print {
+      .header, .filter-bar, .card-actions, .modal-overlay, .api-modal-overlay { display: none !important; }
+      body { background: white; }
+      .list-container { padding: 0; max-width: 100%; }
+      .minutes-card { border: 1px solid #CCC; box-shadow: none; page-break-inside: avoid; margin-bottom: 8px; }
+      .print-title { display: block !important; font-size: 1.2rem; font-weight: bold; text-align: center; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid #333; }
+      .print-meta { display: block !important; font-size: 0.78rem; color: #666; text-align: right; margin-bottom: 10px; }
+    }
+    .print-title, .print-meta { display: none; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px);
+      background: var(--accent); color: white; padding: 9px 20px; border-radius: 20px;
+      font-size: 0.82rem; opacity: 0; transition: all 0.3s; z-index: 500; pointer-events: none; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ヘッダー -->
+<div class="header">
+  <div class="header-top">
+    <h1>📋 議事録</h1>
+    <div class="header-actions">
+      <button class="btn-header" onclick="openApiModal()" title="API設定">⚙️</button>
+      <button class="btn-header" id="btn-print-all" onclick="printAll()">🖨 印刷</button>
+      <button class="btn-header add" id="btn-add" onclick="openModal()">＋ 追加</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('archive')">📂 アーカイブ</button>
+    <button class="tab-btn" onclick="switchTab('ai')">✨ AI作成</button>
+  </div>
+</div>
+
+<!-- アーカイブ タブ -->
+<div class="tab-content active" id="tab-archive">
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 タイトル・メモで検索..." oninput="applyFilter()">
+    <select id="typeFilter" onchange="applyFilter()">
+      <option value="">すべての種別</option>
+      <option value="委員会">委員会</option>
+      <option value="訓練">訓練</option>
+      <option value="その他">その他</option>
+    </select>
+    <input type="month" id="monthFilter" onchange="applyFilter()" style="width:auto;min-width:0;">
+    <span class="filter-count" id="filterCount"></span>
+  </div>
+  <div class="list-container">
+    <div class="print-title" id="printTitle">アネラカフェ 議事録一覧</div>
+    <div class="print-meta" id="printMeta"></div>
+    <div id="listArea"><div class="loading">読み込み中...</div></div>
+  </div>
+</div>
+
+<!-- AI作成 タブ -->
+<div class="tab-content" id="tab-ai">
+  <div class="ai-container">
+
+    <div class="api-key-notice" id="apiNotice">
+      ⚠️ Anthropic API キーが未設定っちゃ。AI生成を使うには右上の ⚙️ から設定してくれるっちゃ！
+    </div>
+
+    <div class="ai-section-title">基本情報</div>
+    <div class="ai-form-row">
+      <div class="ai-form-group">
+        <label>種別</label>
+        <select id="ai-type">
+          <option value="委員会">委員会</option>
+          <option value="訓練">訓練</option>
+        </select>
+      </div>
+      <div class="ai-form-group">
+        <label>開催日</label>
+        <input type="date" id="ai-date">
+      </div>
+    </div>
+    <div class="ai-form-group">
+      <label>出席者（スペース区切り）</label>
+      <input type="text" id="ai-attendees" placeholder="例：田中 鈴木 佐藤">
+    </div>
+    <div class="ai-form-row">
+      <div class="ai-form-group">
+        <label>司会</label>
+        <input type="text" id="ai-chair" placeholder="氏名（任意）">
+      </div>
+      <div class="ai-form-group">
+        <label>書記</label>
+        <input type="text" id="ai-secretary" placeholder="氏名（任意）">
+      </div>
+    </div>
+
+    <div class="ai-section-title">メモ入力</div>
+    <div class="ai-form-group">
+      <textarea class="memo-area" id="ai-memo" placeholder="箇条書きでもOKっちゃ！&#10;&#10;例：&#10;・虐待防止マニュアルの手順を確認した&#10;・ヒヤリハット1件を共有（転倒リスク）&#10;・対応策：廊下のマットを固定する→田中が担当&#10;・次回は来月予定"></textarea>
+      <div class="memo-hint">💡 話し合った内容・決まったこと・担当者などをざっくり書くだけでOKっちゃ</div>
+    </div>
+
+    <button class="btn-ai-generate" id="btnGenerate" onclick="generateMinutes()">
+      ✨ AI で議事録を生成する
+    </button>
+
+    <div class="generating" id="generating">
+      <div class="spinner"></div>
+      <p>AIが議事録を生成中っちゃ…</p>
+    </div>
+
+    <div class="result-box" id="resultBox">
+      <div class="result-label">✅ 生成完了っちゃ！内容を確認して Word をダウンロードするっちゃ</div>
+
+      <div class="result-field">
+        <div class="result-field-label">タイトル</div>
+        <div class="result-field-value" id="r-title" contenteditable="true"></div>
+      </div>
+      <div class="result-field">
+        <div class="result-field-label">出席者</div>
+        <div class="result-field-value" id="r-attendees" contenteditable="true"></div>
+      </div>
+      <div class="result-field">
+        <div class="result-field-label">決定事項・協議内容</div>
+        <div class="result-field-value" id="r-decisions" contenteditable="true" style="min-height:80px"></div>
+      </div>
+      <div class="result-field" id="r-tasks-field">
+        <div class="result-field-label">課題・行動目標</div>
+        <div class="result-field-value" id="r-tasks" contenteditable="true"></div>
+      </div>
+      <div class="result-field">
+        <div class="result-field-label">次回開催</div>
+        <div class="result-field-value" id="r-next" contenteditable="true"></div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-word" onclick="downloadWord()">📄 Word でダウンロード</button>
+        <button class="btn-copy-text" onclick="copyText()">📋 テキストコピー</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- アーカイブ 追加・編集モーダル -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">📝 議事録を追加</div>
+    <div class="form-group">
+      <label>種別</label>
+      <select id="f_type">
+        <option value="委員会">委員会</option>
+        <option value="訓練">訓練</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>開催日</label>
+      <input type="date" id="f_date">
+    </div>
+    <div class="form-group">
+      <label>タイトル <span style="color:var(--primary)">*</span></label>
+      <input type="text" id="f_title" placeholder="例：第3回 感染症対策委員会">
+    </div>
+    <div class="form-group">
+      <label>Googleドライブ URL</label>
+      <input type="url" id="f_url" placeholder="https://drive.google.com/...">
+    </div>
+    <div class="form-group">
+      <label>メモ・概要</label>
+      <textarea id="f_desc" placeholder="議事内容の概要など（任意）"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+      <button class="btn-submit" onclick="saveMinutes()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- API設定モーダル -->
+<div class="api-modal-overlay" id="apiModalOverlay" onclick="closeApiModalOutside(event)">
+  <div class="api-modal">
+    <h3>⚙️ Anthropic API キー設定</h3>
+    <p>AI作成機能を使うにはAnthropicのAPIキーが必要っちゃ。設定はこの端末のブラウザにのみ保存されるっちゃ。</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    <div class="api-modal-actions">
+      <button class="btn-cancel" onclick="closeApiModal()">キャンセル</button>
+      <button class="btn-submit" onclick="saveApiKey()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+
+  let allRecords = [];
+  let editId = null;
+  let currentTab = 'archive';
+  let generatedData = null;
+
+  // ===== タブ切り替え =====
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0 && tab === 'archive') || (i === 1 && tab === 'ai'));
+    });
+    document.getElementById('tab-archive').classList.toggle('active', tab === 'archive');
+    document.getElementById('tab-ai').classList.toggle('active', tab === 'ai');
+    document.getElementById('btn-print-all').style.display = tab === 'archive' ? '' : 'none';
+    document.getElementById('btn-add').style.display = tab === 'archive' ? '' : 'none';
+    if (tab === 'ai') checkApiKey();
+  }
+
+  // ===== Supabase =====
+  async function sbFetch(method, path, body) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      method,
+      headers: {
+        'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': (method === 'POST' || method === 'PATCH') ? 'return=representation' : ''
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.status === 204 ? null : res.json();
+  }
+
+  async function loadMinutes() {
+    try {
+      const data = await sbFetch('GET', 'minutes?order=meeting_date.desc,created_at.desc&select=*');
+      allRecords = data || [];
+      applyFilter();
+    } catch (e) {
+      document.getElementById('listArea').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>読み込みに失敗しました</p></div>`;
+    }
+  }
+
+  function formatDate(d) {
+    if (!d) return '日付未設定';
+    const dt = new Date(d);
+    return `${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日`;
+  }
+
+  function applyFilter() {
+    const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+    const type = document.getElementById('typeFilter').value;
+    const month = document.getElementById('monthFilter').value;
+    const filtered = allRecords.filter(r => {
+      if (type && r.meeting_type !== type) return false;
+      if (month && (!r.meeting_date || !r.meeting_date.startsWith(month))) return false;
+      if (kw) {
+        if (!(r.title + ' ' + (r.description || '')).toLowerCase().includes(kw)) return false;
+      }
+      return true;
+    });
+    document.getElementById('filterCount').textContent = `${filtered.length} 件`;
+    renderList(filtered);
+  }
+
+  function renderList(records) {
+    const area = document.getElementById('listArea');
+    if (!records.length) {
+      area.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>議事録がありません</p></div>`;
+      return;
+    }
+    area.innerHTML = records.map(r => `
+      <div class="minutes-card">
+        <div class="card-top">
+          <span class="badge ${r.meeting_type}">${r.meeting_type}</span>
+          <div class="card-info">
+            <div class="card-date">${formatDate(r.meeting_date)}</div>
+            <div class="card-title">${escHtml(r.title)}</div>
+            ${r.description ? `<div class="card-desc">${escHtml(r.description)}</div>` : ''}
+          </div>
+        </div>
+        <div class="card-actions">
+          <a class="btn-drive ${r.drive_url ? '' : 'disabled'}" href="${r.drive_url || '#'}" target="_blank" rel="noopener">📄 ドライブで開く</a>
+          <button class="btn-edit" onclick="openEditModal('${r.id}')">✏️ 編集</button>
+          <button class="btn-print-card" onclick="printCard('${r.id}')">🖨 印刷</button>
+          <button class="btn-delete" onclick="deleteMinutes('${r.id}', '${escHtml(r.title)}')">🗑 削除</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function deleteMinutes(id, title) {
+    if (!confirm(`「${title}」を削除してよいですか？`)) return;
+    try {
+      await sbFetch('DELETE', `minutes?id=eq.${id}`);
+      allRecords = allRecords.filter(r => r.id !== id);
+      applyFilter();
+    } catch (e) { alert('削除に失敗しました'); }
+  }
+
+  function openModal() {
+    editId = null;
+    document.getElementById('modalTitle').textContent = '📝 議事録を追加';
+    document.getElementById('f_date').value = '';
+    document.getElementById('f_title').value = '';
+    document.getElementById('f_url').value = '';
+    document.getElementById('f_desc').value = '';
+    document.getElementById('f_type').value = '委員会';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function openEditModal(id) {
+    const r = allRecords.find(r => r.id === id);
+    if (!r) return;
+    editId = id;
+    document.getElementById('modalTitle').textContent = '✏️ 議事録を編集';
+    document.getElementById('f_type').value = r.meeting_type;
+    document.getElementById('f_date').content = r.meeting_date || '';
+    document.getElementById('f_date').value = r.meeting_date || '';
+    document.getElementById('f_title').value = r.title;
+    document.getElementById('f_url').value = r.drive_url || '';
+    document.getElementById('f_desc').value = r.description || '';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    editId = null;
+  }
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  async function saveMinutes() {
+    const title = document.getElementById('f_title').value.trim();
+    if (!title) { alert('タイトルは必須っちゃ'); return; }
+    const payload = {
+      title, meeting_date: document.getElementById('f_date').value || null,
+      meeting_type: document.getElementById('f_type').value,
+      drive_url: document.getElementById('f_url').value.trim() || null,
+      description: document.getElementById('f_desc').value.trim() || null
+    };
+    try {
+      if (editId) {
+        await sbFetch('PATCH', `minutes?id=eq.${editId}`, payload);
+        const idx = allRecords.findIndex(r => r.id === editId);
+        if (idx !== -1) allRecords[idx] = { ...allRecords[idx], ...payload };
+      } else {
+        const saved = await sbFetch('POST', 'minutes', payload);
+        allRecords.unshift(saved[0]);
+      }
+      allRecords.sort((a, b) => {
+        if (!a.meeting_date && !b.meeting_date) return 0;
+        if (!a.meeting_date) return 1; if (!b.meeting_date) return -1;
+        return b.meeting_date.localeCompare(a.meeting_date);
+      });
+      applyFilter(); closeModal();
+    } catch (e) { alert('保存に失敗しました: ' + e.message); }
+  }
+
+  function printAll() {
+    const type = document.getElementById('typeFilter').value;
+    const month = document.getElementById('monthFilter').value;
+    const label = [type || '全種別', month ? month.replace('-','年')+'月' : '全期間'].join(' / ');
+    document.getElementById('printTitle').textContent = `アネラカフェ 議事録一覧（${label}）`;
+    document.getElementById('printMeta').textContent = `印刷日：${new Date().toLocaleDateString('ja-JP')}　件数：${document.getElementById('filterCount').textContent}`;
+    window.print();
+  }
+
+  function printCard(id) {
+    const rec = allRecords.find(r => r.id === id);
+    if (!rec) return;
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${rec.title}</title>
+    <style>body{font-family:sans-serif;padding:32px;color:#2C1F14}h1{font-size:1.2rem;border-bottom:2px solid #C96A3B;padding-bottom:8px;margin-bottom:14px}table{border-collapse:collapse;width:100%}td{padding:8px 10px;border:1px solid #CCC;vertical-align:top;font-size:0.88rem}td:first-child{background:#FDF6EE;font-weight:bold;width:110px}.url{word-break:break-all}@media print{@page{margin:20mm}}</style>
+    </head><body><h1>📋 議事録</h1><table>
+    <tr><td>種別</td><td>${rec.meeting_type}</td></tr>
+    <tr><td>開催日</td><td>${formatDate(rec.meeting_date)}</td></tr>
+    <tr><td>タイトル</td><td>${escHtml(rec.title)}</td></tr>
+    <tr><td>Googleドライブ</td><td class="url">${rec.drive_url?`<a href="${rec.drive_url}">${rec.drive_url}</a>`:'（未設定）'}</td></tr>
+    <tr><td>メモ・概要</td><td>${escHtml(rec.description||'（なし）')}</td></tr>
+    </table><p style="margin-top:16px;font-size:0.78rem;color:#888">印刷日：${new Date().toLocaleDateString('ja-JP')}</p>
+    <script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+    win.document.close();
+  }
+
+  // ===== API キー管理 =====
+  const ANTHROPIC_KEY = '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';
+
+  function getApiKey() {
+    return localStorage.getItem('anthropic_api_key') || ANTHROPIC_KEY;
+  }
+
+  function checkApiKey() {
+    document.getElementById('apiNotice').classList.remove('show');
+  }
+
+  function openApiModal() {
+    const key = localStorage.getItem('anthropic_api_key') || '';
+    document.getElementById('apiKeyInput').value = key;
+    document.getElementById('apiModalOverlay').classList.add('open');
+  }
+  function closeApiModal() { document.getElementById('apiModalOverlay').classList.remove('open'); }
+  function closeApiModalOutside(e) {
+    if (e.target === document.getElementById('apiModalOverlay')) closeApiModal();
+  }
+  function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) { alert('APIキーを入力してくれるっちゃ'); return; }
+    localStorage.setItem('anthropic_api_key', key);
+    closeApiModal();
+    showToast('APIキーを保存したっちゃ！');
+  }
+
+  // ===== AI 生成 =====
+  async function generateMinutes() {
+    const apiKey = getApiKey();
+    if (!apiKey) { openApiModal(); return; }
+
+    const type = document.getElementById('ai-type').value;
+    const date = document.getElementById('ai-date').value;
+    const attendees = document.getElementById('ai-attendees').value.trim();
+    const chair = document.getElementById('ai-chair').value.trim();
+    const secretary = document.getElementById('ai-secretary').value.trim();
+    const memo = document.getElementById('ai-memo').value.trim();
+
+    if (!memo) { alert('メモを入力してくれるっちゃ！'); return; }
+
+    document.getElementById('btnGenerate').disabled = true;
+    document.getElementById('generating').classList.add('show');
+    document.getElementById('resultBox').classList.remove('show');
+
+    const prompt = `あなたは福祉施設の議事録作成の専門家です。以下の情報とメモから、議事録の各項目を生成してください。
+
+【種別】${type}
+【開催日】${date || '未記載'}
+【出席者】${attendees || '未記載'}
+【司会】${chair || '未記載'}
+【書記】${secretary || '未記載'}
+【メモ】
+${memo}
+
+以下のJSON形式だけを出力してください（説明文・マークダウン記号は一切不要）：
+{
+  "title": "議事録のタイトル（例：第〇回 虐待防止委員会）",
+  "decisions": "決定事項・協議内容を改行区切りで整理した文章",
+  "tasks": "課題と行動目標を箇条書きで（担当者・期日があれば含める）",
+  "nextDate": "次回開催に関する情報（なければ空文字）"
+}`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-calls': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || res.statusText);
+      }
+
+      const data = await res.json();
+      const text = data.content[0].text.trim();
+      const json = JSON.parse(text.replace(/^```json\s*/,'').replace(/\s*```$/,''));
+
+      generatedData = { ...json, type, date, attendees: attendees || '', chair, secretary };
+
+      document.getElementById('r-title').textContent = json.title || '';
+      document.getElementById('r-attendees').textContent = attendees || '';
+      document.getElementById('r-decisions').textContent = json.decisions || '';
+      document.getElementById('r-tasks').textContent = json.tasks || '';
+      document.getElementById('r-next').textContent = json.nextDate || '';
+
+      document.getElementById('resultBox').classList.add('show');
+      showToast('生成完了っちゃ！✨');
+    } catch (e) {
+      alert('生成に失敗したっちゃ：' + e.message);
+    } finally {
+      document.getElementById('btnGenerate').disabled = false;
+      document.getElementById('generating').classList.remove('show');
+    }
+  }
+
+  // ===== Word 生成 =====
+  function toWareki(dateStr) {
+    if (!dateStr) return null;
+    const d = new Date(dateStr + 'T00:00:00');
+    const y = d.getFullYear(), mo = d.getMonth()+1, da = d.getDate();
+    const dows = ['日','月','火','水','木','金','土'];
+    const dow = dows[d.getDay()];
+    let era, ey;
+    if (y >= 2019 && (y > 2019 || mo > 4)) { era='令和'; ey=y-2018; }
+    else if (y >= 1989) { era='平成'; ey=y-1988; }
+    else { era=String(y); ey=''; }
+    return `${era}${ey===1?'元':String(ey)}年${mo}月${da}日（${dow}）`;
+  }
+
+  async function downloadWord() {
+    if (!generatedData) return;
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+            AlignmentType, WidthType, BorderStyle, VerticalAlign, convertMillimetersToTwip } = docx;
+
+    const d = generatedData;
+    const title = document.getElementById('r-title').textContent;
+    const attendees = document.getElementById('r-attendees').textContent;
+    const decisions = document.getElementById('r-decisions').textContent;
+    const tasks = document.getElementById('r-tasks').textContent;
+    const nextDate = document.getElementById('r-next').textContent;
+    const dateStr = toWareki(d.date) || (d.date || '');
+
+    const JP = 'MS Mincho';
+    const sz = 20;
+    const mm = convertMillimetersToTwip;
+    const bAll = () => ({
+      top: { style: BorderStyle.SINGLE, size: 4, color: '000000' },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: '000000' },
+      left: { style: BorderStyle.SINGLE, size: 4, color: '000000' },
+      right: { style: BorderStyle.SINGLE, size: 4, color: '000000' },
+    });
+    const mkLabel = (text) => new TableCell({
+      children: [new Paragraph({ children: [new TextRun({ text, bold: true, size: sz, font: JP })], alignment: AlignmentType.CENTER })],
+      borders: bAll(), width: { size: 2200, type: WidthType.DXA },
+      verticalAlign: VerticalAlign.CENTER, shading: { fill: 'EEEEEE' },
+    });
+    const mkVal = (text, multi=false) => {
+      const lines = multi ? (text||'').split('\n') : [text||''];
+      return new TableCell({
+        children: lines.map(l => new Paragraph({ children: [new TextRun({ text: l, size: sz, font: JP })] })),
+        borders: bAll(), width: { size: 7200, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
+      });
+    };
+
+    const infoRows = [
+      new TableRow({ children: [mkLabel('種　別'), mkVal(d.type)] }),
+      new TableRow({ children: [mkLabel('日　時'), mkVal(dateStr)] }),
+      new TableRow({ children: [mkLabel('出席者'), mkVal(attendees)] }),
+    ];
+    if (d.chair) infoRows.push(new TableRow({ children: [mkLabel('司　会'), mkVal(d.chair)] }));
+    if (d.secretary) infoRows.push(new TableRow({ children: [mkLabel('書　記'), mkVal(d.secretary)] }));
+
+    const decisionLines = (decisions || '').split('\n');
+    const taskLines = (tasks || '').split('\n');
+    const nextLines = nextDate ? (nextDate || '').split('\n') : [];
+
+    const docChildren = [
+      new Paragraph({
+        children: [new TextRun({ text: title || '議事録', bold: true, size: 28, font: JP })],
+        alignment: AlignmentType.CENTER, spacing: { after: 200 },
+      }),
+      new Table({ width: { size: 9400, type: WidthType.DXA }, rows: infoRows }),
+      new Paragraph({
+        children: [new TextRun({ text: '◆ 決定事項及び協議', bold: true, size: 22, font: JP })],
+        spacing: { before: 200, after: 80 },
+      }),
+      ...decisionLines.map(l => new Paragraph({ children: [new TextRun({ text: l, size: sz, font: JP })] })),
+    ];
+
+    if (tasks) {
+      docChildren.push(new Paragraph({
+        children: [new TextRun({ text: '◆ 課題・行動目標', bold: true, size: 22, font: JP })],
+        spacing: { before: 200, after: 80 },
+      }));
+      taskLines.forEach(l => docChildren.push(new Paragraph({ children: [new TextRun({ text: l, size: sz, font: JP })] })));
+    }
+
+    if (nextDate) {
+      docChildren.push(new Paragraph({
+        children: [new TextRun({ text: `次回開催：${nextDate}`, size: sz, font: JP })],
+        spacing: { before: 200 },
+      }));
+    }
+
+    docChildren.push(new Paragraph({
+      children: [new TextRun({ text: `作成日：${new Date().toLocaleDateString('ja-JP')}`, size: sz, font: JP })],
+      spacing: { before: 100 },
+    }));
+
+    const doc = new Document({
+      sections: [{
+        properties: { page: { margin: { top: mm(20), right: mm(18), bottom: mm(20), left: mm(25) } } },
+        children: docChildren,
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const ds = d.date ? d.date.replace(/-/g,'') : 'nodate';
+    const fname = `${title || '議事録'}_${ds}.docx`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`「${fname}」を生成したっちゃ！`);
+  }
+
+  function copyText() {
+    const title = document.getElementById('r-title').textContent;
+    const attendees = document.getElementById('r-attendees').textContent;
+    const decisions = document.getElementById('r-decisions').textContent;
+    const tasks = document.getElementById('r-tasks').textContent;
+    const nextDate = document.getElementById('r-next').textContent;
+    const text = [
+      `【${title}】`,
+      `出席者：${attendees}`,
+      '', '■ 決定事項・協議内容', decisions,
+      tasks ? `\n■ 課題・行動目標\n${tasks}` : '',
+      nextDate ? `\n次回開催：${nextDate}` : ''
+    ].join('\n');
+    navigator.clipboard.writeText(text).then(() => showToast('コピーしたっちゃ！'));
+  }
+
+  // ===== Toast =====
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ===== 初期化 =====
+  document.getElementById('ai-date').value = new Date().toISOString().slice(0,10);
+  loadMinutes();
+</script>
+</body>
+</html>

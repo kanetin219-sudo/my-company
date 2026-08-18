@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>匠のGEN｜夢をかなえる家づくり。宮崎の注文住宅工務店</title>
+  <meta name="description" content="宮崎市の注文住宅工務店「匠のGEN」。LINEから無料相談・資料請求できます。">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: #FAFAFA; color: #3D2E1F; line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+      margin: 0; padding: 0;
+    }
+    img { max-width: 100%; display: block; margin: 0; padding: 0; }
+    a { color: inherit; text-decoration: none; }
+    :root {
+      --brown: #3D2E1F;
+      --brown-mid: #6B4F3A;
+      --gold: #C8952A;
+      --gold-light: #FDF3E0;
+      --beige: #F3EDE5;
+      --white: #FAFAFA;
+      --line-green: #06C755;
+    }
+    .hd {
+      background: var(--white); border-bottom: 1px solid #E8DFD3;
+      padding: 12px 20px; position: sticky; top: 0; z-index: 100;
+    }
+    .hd__inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .hd__logo { font-size: 16px; font-weight: 700; color: var(--brown); }
+    .hd__logo small { font-size: 10px; font-weight: 400; color: var(--brown-mid); margin-left: 6px; }
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: var(--line-green); color: #fff; font-size: 17px; font-weight: 700;
+      padding: 18px 24px; border-radius: 8px; max-width: 480px; margin: 0 auto;
+      transition: filter 0.2s; letter-spacing: 0.02em; cursor: pointer;
+    }
+    .btn:hover { filter: brightness(0.92); }
+    .btn__sub { font-size: 11px; font-weight: 400; display: block; margin-top: 3px; opacity: 0.9; }
+    @keyframes linePulse {
+      0%   { box-shadow: 0 4px 15px rgba(6,199,85,.5), 0 0 0 0 rgba(6,199,85,.45); }
+      70%  { box-shadow: 0 4px 15px rgba(6,199,85,.2), 0 0 0 14px rgba(6,199,85,0); }
+      100% { box-shadow: 0 4px 15px rgba(6,199,85,.5), 0 0 0 0 rgba(6,199,85,0); }
+    }
+    .btn { animation: linePulse 2s ease-out infinite; }
+    .line-btn-pulse { animation: linePulse 2s ease-out infinite; }
+    .btn svg { flex-shrink: 0; }
+    .sec { padding: 56px 20px; }
+    .sec--beige { background: var(--beige); }
+    .sec--dark { background: var(--brown); }
+    .sec--white { background: var(--white); }
+    .inner { max-width: 640px; margin: 0 auto; }
+    .tag {
+      display: inline-block; font-size: 10px; letter-spacing: 0.18em;
+      color: var(--gold); border-bottom: 1px solid var(--gold);
+      padding-bottom: 2px; margin-bottom: 12px; font-weight: 700;
+    }
+    .ttl { font-size: clamp(22px, 5vw, 30px); font-weight: 700; line-height: 1.5; color: var(--brown); }
+    .ttl--white { color: #fff; }
+    .bar { width: 36px; height: 2px; background: var(--gold); margin: 14px auto 0; }
+    .bar--left { margin-left: 0; }
+    .sub { font-size: 14px; color: var(--brown-mid); line-height: 1.9; margin-top: 12px; }
+    .hero { position: relative; height: clamp(460px, 80vh, 680px); overflow: hidden; }
+    .hero__img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(20,12,4,.04) 0%, rgba(20,12,4,.28) 38%, rgba(20,12,4,.78) 65%, rgba(20,12,4,.90) 100%);
+    }
+    .hero__body {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 0 24px 44px; max-width: 680px; margin: 0 auto;
+    }
+    .hero__label { font-size: 10px; letter-spacing: .2em; color: rgba(255,255,255,.7); margin-bottom: 10px; }
+    .hero__ttl { font-size: clamp(28px, 7vw, 46px); font-weight: 700; color: #fff; line-height: 1.42; margin-bottom: 14px; text-shadow: 0 2px 14px rgba(0,0,0,.3); }
+    .hero__ttl em { font-style: normal; border-bottom: 3px solid var(--gold); }
+    .hero__catch { font-size: 14px; color: rgba(255,255,255,.88); line-height: 1.9; margin-bottom: 28px; }
+    .line-block { background: var(--gold-light); padding: 40px 20px; text-align: center; }
+    .line-block__lead { font-size: 18px; font-weight: 700; color: var(--brown); margin-bottom: 6px; }
+    .line-block__sub { font-size: 13px; color: var(--brown-mid); margin-bottom: 24px; }
+    .works__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; }
+    .work-card { border-radius: 8px; overflow: hidden; background: var(--white); box-shadow: 0 2px 10px rgba(61,46,31,.08); }
+    .work-card__body { padding: 12px 14px; }
+    .work-card__style { font-size: 10px; color: var(--gold); font-weight: 700; letter-spacing: .1em; margin-bottom: 3px; }
+    .work-card__title { font-size: 13px; font-weight: 700; color: var(--brown); margin-bottom: 4px; line-height: 1.4; }
+    .work-card__desc { font-size: 11px; color: var(--brown-mid); line-height: 1.6; }
+    .works__link { text-align: center; margin-top: 20px; font-size: 13px; }
+    .works__link a { color: var(--gold); font-weight: 700; text-decoration: underline; }
+    .worries__list { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+    .worry {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: var(--white); border-radius: 8px; padding: 18px;
+      border-left: 3px solid var(--gold);
+    }
+    .worry__icon { width:28px;height:28px;border-radius:50%;background:var(--gold);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:0; }
+    .worry__text { font-size: 15px; font-weight: 700; color: var(--brown); line-height: 1.55; }
+    .worry__sub { font-size: 12px; color: var(--brown-mid); margin-top: 3px; }
+    .features { display: flex; flex-direction: column; gap: 20px; margin-top: 28px; }
+    .feature { display: flex; align-items: flex-start; gap: 18px; }
+    .feature__num {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--gold);
+      color: #fff; font-size: 18px; font-weight: 700; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feature__title { font-size: 16px; font-weight: 700; color: var(--brown); margin-bottom: 4px; }
+    .feature__desc { font-size: 13px; color: var(--brown-mid); line-height: 1.75; }
+    .delivers { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+    .deliver {
+      display: flex; align-items: center; gap: 16px;
+      background: rgba(255,255,255,.10); border-radius: 8px; padding: 18px;
+      border-left: 3px solid var(--gold);
+    }
+    .deliver__icon { width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:0;border:1.5px solid rgba(255,255,255,.5); }
+    .deliver__title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+    .deliver__desc { font-size: 12px; color: rgba(255,255,255,.75); line-height: 1.65; }
+    .faqs { display: flex; flex-direction: column; gap: 0; margin-top: 24px; }
+    .faq { border-bottom: 1px solid #E8DFD3; padding: 20px 0; }
+    .faq:first-child { border-top: 1px solid #E8DFD3; }
+    .faq__q { display: flex; gap: 12px; font-size: 15px; font-weight: 700; color: var(--brown); align-items: flex-start; }
+    .faq__q-badge { background: var(--gold); color: #fff; font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+    .faq__a { display: flex; gap: 12px; font-size: 14px; color: var(--brown-mid); margin-top: 10px; align-items: flex-start; line-height: 1.8; }
+    .faq__a-badge { background: var(--beige); color: var(--brown); font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+    .ft { background: #2A1E14; padding: 28px 20px; text-align: center; }
+    .ft__logo { font-size: 16px; font-weight: 700; color: #E8DFD3; margin-bottom: 4px; }
+    .ft__tel { font-size: 18px; font-weight: 700; color: var(--gold); margin: 6px 0; }
+    .ft__addr { font-size: 12px; color: #7a6a5a; }
+    .ft__copy { font-size: 11px; color: #4a3a2a; margin-top: 14px; }
+    @media(max-width: 480px) {
+      .works__grid { grid-template-columns: 1fr 1fr; }
+    }
+    .voice-card {
+      background: #F3EDE5; border-radius: 10px;
+      border-left: 4px solid #C8952A; overflow: hidden; margin-top: 20px;
+    }
+    .voice-card__photo { width: 100%; height: auto; display: block; }
+    .voice-card__meta { padding: 14px 16px 4px; }
+    .voice-card__name { font-size: 14px; font-weight: 700; color: #3D2E1F; }
+    .voice-card__loc { font-size: 11px; color: #6B4F3A; margin-top: 2px; }
+    .voice-card__stars { font-size: 13px; color: #C8952A; margin-top: 4px; }
+    .voice-card__text { font-size: 13px; color: #3D2E1F; line-height: 1.8; padding: 8px 16px 12px; }
+  </style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="hd__inner">
+    <div class="hd__logo">匠のGEN<small>宮崎市の注文住宅</small></div>
+    <a href="https://s.lmes.jp/landing-qr/2009064781-EFpxqEE3?uLand=LowFqb" target="_blank" rel="noopener" class="line-btn-pulse" style="display:inline-flex;align-items:center;gap:6px;background:#06C755;color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;white-space:nowrap;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 5.92 2 10.74c0 2.7 1.34 5.12 3.44 6.75L4.5 21l3.68-1.72C9.36 19.73 10.65 20 12 20c5.52 0 10-3.92 10-8.74S17.52 2 12 2z" fill="white"/></svg>
+      今すぐ特典をもらう
+    </a>
+  </div>
+</header>
+
+<section style="padding:0;margin:0;display:block;width:100%;">
+  <img src="https://utagesystem.s3.ap-northeast-1.amazonaws.com/0YTjY2x4YJmb/0GpxM7wVn29DMcifMXCUe2DfqADG2tmZfSBlG7g7.png" alt="間取り集イメージ" style="width:100%;height:auto;display:block;margin:0;padding:0;">
+  <div style="padding:28px 20px;text-align:center;">
+    <a href="https://s.lmes.jp/landing-qr/2009064781-EFpxqEE3?uLand=LowFqb" class="btn" target="_blank" rel="noopener">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 5.92 2 10.74c0 2.7 1.34 5.12 3.44 6.75L4.5 21l3.68-1.72C9.36 19.73 10.65 20 12 20c5.52 0 10-3.92 10-8.74S17.52 2 12 2z" fill="white"/></svg>
+      <span>今すぐ特典をもらう<span class="btn__sub">登録無料・いつでも解除OK</span></span>
+    </a>
+  </div>
+</section>
+
+<section style="background:#FFF8F0;padding:40px 20px;text-align:center;">
+  <p style="font-size:11px;letter-spacing:.18em;color:#C8952A;border-bottom:1px solid #C8952A;display:inline-block;padding-bottom:2px;margin-bottom:14px;font-weight:700;">VIDEO MESSAGE</p>
+  <h2 style="font-size:clamp(19px,4.5vw,26px);font-weight:700;color:#3D2E1F;line-height:1.6;margin-bottom:20px;">家づくりを始める前に、<br>18秒だけ見てください。</h2>
+  <div style="max-width:640px;margin:0 auto 12px;border-radius:8px;overflow:hidden;position:relative;padding-bottom:56.25%;height:0;">
+    <iframe src="https://www.youtube.com/embed/xgxSH1t4a6g?rel=0&modestbranding=1"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+  </div>
+  <p style="font-size:11px;color:#6B4F3A;">※ 音声ありでご覧ください</p>
+</section>
+
+<section class="line-block">
+  <p style="font-size:11px;letter-spacing:.18em;color:#6B4F3A;margin-bottom:10px;font-weight:700;">FRIEND ADD</p>
+  <p class="line-block__lead" style="font-size:clamp(18px,4.5vw,24px);line-height:1.55;">登録した日から、<br>あなたの家づくりが動き出す。</p>
+  <p class="line-block__sub">宮崎で家を建てた家族のリアルな声・現場の今・見学会情報が届きます</p>
+  <div style="display:flex;flex-direction:column;gap:14px;max-width:480px;margin:0 auto 28px;text-align:left;">
+    <div style="background:linear-gradient(145deg,#FFFBF0 0%,#FDF3E0 100%);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(200,149,42,.22);border:1.5px solid #E8C97A;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/08/I様邸.jpg" alt="" style="width:100%;height:100px;object-fit:cover;display:block;">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2021/06/work_img01.png" alt="" style="width:100%;height:100px;object-fit:cover;display:block;">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/03/K001.jpg" alt="" style="width:100%;height:100px;object-fit:cover;display:block;">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/08/LDK-1.jpg" alt="" style="width:100%;height:100px;object-fit:cover;display:block;">
+      </div>
+      <div style="padding:16px 16px 14px;">
+        <p style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#C8952A;margin-bottom:6px;">✦ PHOTO &amp; VOICE</p>
+        <p style="font-size:14px;font-weight:700;color:#3D2E1F;line-height:1.55;margin-bottom:8px;">完成した家の写真と<br>施主さんの声がLINEで届く</p>
+        <p style="font-size:12px;color:#6B4F3A;line-height:1.75;">和モダン・シンプルモダン・洋風など、実際に完成した家の写真を毎週お届け。建てた家族の「建てる前と後の暮らしの変化」もリアルに見られます。</p>
+      </div>
+    </div>
+    <div style="background:linear-gradient(145deg,#FFFBF0 0%,#FDF3E0 100%);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(200,149,42,.22);border:1.5px solid #E8C97A;">
+      <div style="padding:16px 16px 14px;display:flex;gap:14px;align-items:flex-start;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#C8952A;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">02</div>
+        <div>
+          <p style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#C8952A;margin-bottom:6px;">✦ EVENT</p>
+          <p style="font-size:14px;font-weight:700;color:#3D2E1F;line-height:1.55;margin-bottom:8px;">完成見学会に<br>誰より早く行ける</p>
+          <p style="font-size:12px;color:#6B4F3A;line-height:1.75;">LINE友だち限定で先行案内をお届け。実際に歩いて、触れて、木の香りを感じてください。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a href="https://s.lmes.jp/landing-qr/2009064781-EFpxqEE3?uLand=LowFqb" class="btn" target="_blank" rel="noopener">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 5.92 2 10.74c0 2.7 1.34 5.12 3.44 6.75L4.5 21l3.68-1.72C9.36 19.73 10.65 20 12 20c5.52 0 10-3.92 10-8.74S17.52 2 12 2z" fill="white"/></svg>
+    <span>今すぐ特典をもらう<span class="btn__sub">登録無料・いつでも解除OK</span></span>
+  </a>
+</section>
+
+<section class="sec sec--white">
+  <div class="inner">
+    <span class="tag">WORKS</span>
+    <h2 class="ttl">施工事例</h2>
+    <div class="bar bar--left"></div>
+    <p class="sub">和モダン・シンプルモダン・洋風など、<br>お客様の「好き」に合わせた家を創ります。</p>
+    <div class="works__grid">
+      <div class="work-card">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2021/06/work_img05.png" alt="和モダン" style="width:100%;height:auto;display:block;">
+        <div class="work-card__body">
+          <p class="work-card__style">和モダン｜I様邸</p>
+          <p class="work-card__title">伝統をふまえた和を現代風にアレンジ</p>
+          <p class="work-card__desc">古民家風の穏やかで懐かしい雰囲気のくつろぎの家。</p>
+        </div>
+      </div>
+      <div class="work-card">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2021/06/work_img04.png" alt="シンプルモダン" style="width:100%;height:auto;display:block;">
+        <div class="work-card__body">
+          <p class="work-card__style">シンプルモダン</p>
+          <p class="work-card__title">直線的でスタイリッシュな現代風の家</p>
+          <p class="work-card__desc">格子を配置した独創的な外観が目を引く。</p>
+        </div>
+      </div>
+      <div class="work-card">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2021/06/work_img02.png" alt="和風" style="width:100%;height:auto;display:block;">
+        <div class="work-card__body">
+          <p class="work-card__style">和風</p>
+          <p class="work-card__title">日本の伝統美を現代に活かした家</p>
+          <p class="work-card__desc">厳選された素材と職人の技で、本物の和の空間を実現。</p>
+        </div>
+      </div>
+      <div class="work-card">
+        <img src="https://takumi-gen.jp/wp/wp-content/uploads/2021/06/work_img01.png" alt="洋風" style="width:100%;height:auto;display:block;">
+        <div class="work-card__body">
+          <p class="work-card__style">洋風</p>
+          <p class="work-card__title">光あふれる開放的な空間</p>
+          <p class="work-card__desc">吹抜けから自然光が差し込む、ワンランク上の暮らし。</p>
+        </div>
+      </div>
+    </div>
+    <p class="works__link"><a href="https://takumi-gen.jp/work/" target="_blank" rel="noopener">▶ その他の施工事例はこちら（公式サイト）</a></p>
+  </div>
+</section>
+
+<section class="sec sec--white" style="padding-top:0;">
+  <div class="inner">
+    <span class="tag">OWNER'S VOICE</span>
+    <h2 class="ttl">お客様の声</h2>
+    <div class="bar bar--left"></div>
+    <div class="voice-card">
+      <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/08/I様邸.jpg" alt="I様邸" class="voice-card__photo">
+      <div class="voice-card__meta">
+        <p class="voice-card__name">I 様（和モダン｜木造平屋建・4SLDK）</p>
+        <p class="voice-card__loc">宮崎市 ｜ 2026年完成</p>
+        <p class="voice-card__stars">★★★★★</p>
+      </div>
+      <p class="voice-card__text">「パンフレットに掲載されていた施工事例を見た時に、私達の理想としていた和モダンのイメージにぴったりだ！と思いました。担当してくださった設計担当さんの説明がとても分かりやすく、私達の要望を細かく汲み取って頂けると思い御社に決めました。」</p>
+      <p class="voice-card__text">「私達の頭の中で想像していたとおりの家を具現化して頂き、感無量です。いつでも帰って来たいと思える、帰る場所があるからこそ頑張れる―そう思ってくれるような家になりました。本当に私達の理想を詰め込んだ家が完成して<strong>大満足</strong>です。」</p>
+    </div>
+    <div class="voice-card">
+      <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/03/H001.jpg" alt="H様邸" class="voice-card__photo">
+      <div class="voice-card__meta">
+        <p class="voice-card__name">H 様（和モダン｜木造平屋・3SLDK）</p>
+        <p class="voice-card__loc">宮崎市 ｜ 2025年完成</p>
+        <p class="voice-card__stars">★★★★★</p>
+      </div>
+      <p class="voice-card__text">「匠のGENさんが創り上げた家を拝見し、心惹かれました。家づくりをする上でこだわりたいと考えていた項目が全てマッチしていたので依頼させていただきました。」</p>
+      <p class="voice-card__text">「<strong>毎日、家に帰るのが楽しみです。</strong>家の玄関を開けると木の香りがします。まさに理想としていた瞬間です。玄関ホールからLDK全体のシラス壁、開放的な梁見せ天井、リビングに入った時のキッチンからの景色が最高に気に入っています。」</p>
+    </div>
+    <div class="voice-card">
+      <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/03/K001.jpg" alt="K様邸" class="voice-card__photo">
+      <div class="voice-card__meta">
+        <p class="voice-card__name">K 様（木造2階建・2世帯住宅）</p>
+        <p class="voice-card__loc">宮崎市 ｜ 2025年完成</p>
+        <p class="voice-card__stars">★★★★★</p>
+      </div>
+      <p class="voice-card__text">「木造の実績を見て、ひと目ぼれしました。何件か会社を見てまわりましたが、理想の家が造れるのは匠のGENさんだと思いました。」</p>
+      <p class="voice-card__text">「社長さんを始め、社員さんもとても温かく、アットホームな会社で安心感がありました。<strong>納得のいく家が完成してうれしさでいっぱいです。</strong>"ゆとりの家"のコンセプト通りの家を造っていただきました。」</p>
+    </div>
+    <div class="voice-card">
+      <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/03/YMG001.jpg" alt="Y様邸" class="voice-card__photo">
+      <div class="voice-card__meta">
+        <p class="voice-card__name">Y 様（木造平屋・4SLDK）</p>
+        <p class="voice-card__loc">宮崎市 ｜ 2025年完成</p>
+        <p class="voice-card__stars">★★★★★</p>
+      </div>
+      <p class="voice-card__text">「天井高く「木」の素材の良さを感じられるような家にこだわりました。子どもがのびのびと生活でき、家事をしながらでも遊んでる様子を見守ることが出来るように考えました。実際住んでみてとても心地よいです。」</p>
+      <p class="voice-card__text">「<strong>自分たちが想い描いた家になりました。</strong>過ごしていると凄く落ち着きます。子供たちも毎日元気に走り回ってます（笑）これからの毎日の生活が楽しみです。」</p>
+    </div>
+    <div class="voice-card">
+      <img src="https://takumi-gen.jp/wp/wp-content/uploads/2024/03/YMSsama001.jpg" alt="Y様邸" class="voice-card__photo">
+      <div class="voice-card__meta">
+        <p class="voice-card__name">Y 様（木造2階建・4SLDK）</p>
+        <p class="voice-card__loc">宮崎市 ｜ 2025年完成</p>
+        <p class="voice-card__stars">★★★★★</p>
+      </div>
+      <p class="voice-card__text">「天井は木をたくさん使って、他の人と被らないようにこだわりました。LINEで分からないことがあればすぐ連絡がとれ、安心して進めることが出来ました。」</p>
+      <p class="voice-card__text">「<strong>本当に私たちの家？という感情です（笑）</strong>仕事が終わって帰るのが楽しみ！子供たちも広いお家に帰るのをワクワクしています。」</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec--beige">
+  <div class="inner">
+    <span class="tag">WORRIES</span>
+    <h2 class="ttl">こんなお悩み、<br>ありませんか？</h2>
+    <div class="bar bar--left"></div>
+    <div class="worries__list">
+      <div class="worry"><div class="worry__icon">01</div><div><p class="worry__text">家づくり、何から始めればいいかわからない</p><p class="worry__sub">土地・資金・プランすべてが不明で不安…</p></div></div>
+      <div class="worry"><div class="worry__icon">02</div><div><p class="worry__text">注文住宅って、高いんじゃないの？</p><p class="worry__sub">予算内に収まるか心配で、相談しにくい…</p></div></div>
+      <div class="worry"><div class="worry__icon">03</div><div><p class="worry__text">大手と地元工務店、どっちがいいの？</p><p class="worry__sub">違いがわからず、比較の仕方もわからない…</p></div></div>
+      <div class="worry"><div class="worry__icon">04</div><div><p class="worry__text">どの会社に頼めばいいか、信頼できるか不安</p><p class="worry__sub">後悔したくないから、慎重になりすぎている…</p></div></div>
+    </div>
+    <p style="text-align:center;font-size:15px;font-weight:700;color:var(--brown);margin-top:28px;line-height:1.7;">そのお悩み、まずLINEで<br>気軽に相談してください。</p>
+  </div>
+</section>
+
+<section class="sec sec--white">
+  <div class="inner">
+    <span class="tag">FEATURES</span>
+    <h2 class="ttl">匠のGENが<br>選ばれる理由</h2>
+    <div class="bar bar--left"></div>
+    <div class="features">
+      <div class="feature"><div class="feature__num">1</div><div><p class="feature__title">設計から施工まで、一貫対応</p><p class="feature__desc">打ち合わせ・設計・施工・アフターフォローまで、すべて自社で一貫して対応。伝言ゲームによるズレがありません。</p></div></div>
+      <div class="feature"><div class="feature__num">2</div><div><p class="feature__title">年月を重ねるほど美しくなる本物の素材</p><p class="feature__desc">無垢材・漆喰・珪藻土など、時間をかけて育つ本物の素材を使用。10年後も「好きでいられる家」を目指しています。</p></div></div>
+      <div class="feature"><div class="feature__num">3</div><div><p class="feature__title">熟練した職人による確かな技術</p><p class="feature__desc">豊富な知識と経験をもつスタッフと熟練職人が、丈夫で長持ちする真心のこもった家創りをお約束します。</p></div></div>
+      <div class="feature"><div class="feature__num">4</div><div><p class="feature__title">建てた後も続く、地元の信頼関係</p><p class="feature__desc">宮崎に根ざした地元工務店だから、引き渡し後もすぐに駆けつけられます。子や孫に受け継がれる家づくりを。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec--dark">
+  <div class="inner">
+    <span class="tag" style="color:#F5E6C8;border-color:#F5E6C8;">LINE CONTENTS</span>
+    <h2 class="ttl ttl--white">LINEで配信すること</h2>
+    <div class="bar"></div>
+    <p class="sub" style="color:rgba(255,255,255,.75);text-align:center;margin-top:14px;">登録するとこんな情報が届きます</p>
+    <div class="delivers">
+      <div class="deliver"><div class="deliver__icon">01</div><div><p class="deliver__title">完成見学会の先行ご案内</p><p class="deliver__desc">一般公開より先に、LINE登録者だけにご案内します。人気の見学会は早めに埋まります。</p></div></div>
+      <div class="deliver"><div class="deliver__icon">02</div><div><p class="deliver__title">施主さんの暮らしビフォーアフター</p><p class="deliver__desc">実際に建てた方の、建てる前と後の暮らしの変化を動画でお届けします。</p></div></div>
+      <div class="deliver"><div class="deliver__icon">03</div><div><p class="deliver__title">家づくりお役立ち情報</p><p class="deliver__desc">資金計画・土地選び・間取りのコツなど、家づくりで役立つ情報を定期配信します。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="line-block">
+  <p class="line-block__lead">まずは気軽に登録してください</p>
+  <p class="line-block__sub">しつこい営業は一切しません・いつでも解除OK</p>
+  <a href="https://s.lmes.jp/landing-qr/2009064781-EFpxqEE3?uLand=LowFqb" class="btn" style="margin-bottom:0;" target="_blank" rel="noopener">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 5.92 2 10.74c0 2.7 1.34 5.12 3.44 6.75L4.5 21l3.68-1.72C9.36 19.73 10.65 20 12 20c5.52 0 10-3.92 10-8.74S17.52 2 12 2z" fill="white"/></svg>
+    <span>今すぐ特典をもらう<span class="btn__sub">登録無料・いつでも解除OK</span></span>
+  </a>
+</section>
+
+<section class="sec sec--beige">
+  <div class="inner">
+    <span class="tag">FAQ</span>
+    <h2 class="ttl">よくある質問</h2>
+    <div class="bar bar--left"></div>
+    <div class="faqs">
+      <div class="faq"><p class="faq__q"><span class="faq__q-badge">Q</span>LINEに登録したら、すぐに営業されますか？</p><p class="faq__a"><span class="faq__a-badge">A</span>しつこい営業は一切しておりません。お役立ち情報や見学会の案内など、有益な情報のみをお届けします。いつでも解除いただけます。</p></div>
+      <div class="faq"><p class="faq__q"><span class="faq__q-badge">Q</span>まだ家を建てるか決めていないのですが大丈夫ですか？</p><p class="faq__a"><span class="faq__a-badge">A</span>もちろんです。「なんとなく気になっている」という段階でのご相談が一番多いです。情報収集から始められる方も大歓迎です。</p></div>
+      <div class="faq"><p class="faq__q"><span class="faq__q-badge">Q</span>予算が少ないのですが相談できますか？</p><p class="faq__a"><span class="faq__a-badge">A</span>はい。予算に応じたプランをご提案します。まずはご希望とご予算をお聞かせください。無理なご提案はしません。</p></div>
+      <div class="faq"><p class="faq__q"><span class="faq__q-badge">Q</span>土地がまだない場合でも相談できますか？</p><p class="faq__a"><span class="faq__a-badge">A</span>はい。土地探しからのサポートも承っています。不動産情報のご提供も可能ですので、まずはご相談ください。</p></div>
+      <div class="faq"><p class="faq__q"><span class="faq__q-badge">Q</span>完成見学会はどこで確認できますか？</p><p class="faq__a"><span class="faq__a-badge">A</span>LINE登録者に先行でご案内しています。公式サイトのイベント情報でも随時更新しています。</p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="ft">
+  <p class="ft__logo">匠のGEN</p>
+  <a href="tel:0120-201-296" class="ft__tel">0120-201-296</a>
+  <p class="ft__addr">〒880-2102 宮崎県宮崎市有田１１８−３<br>8:30〜17:30（年中無休・年末年始・GW・お盆除く）</p>
+  <p class="ft__copy">Copyright© 2021 takumi-gen All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kaimonロードマップ作成会 予約カレンダー</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #fff; display: flex; align-items: flex-start; justify-content: center; padding: 16px; font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; }
+#kbk-wrap { width: 100%; max-width: 420px; }
+#kbk-steps { display: flex; flex-direction: row; margin-bottom: 24px; }
+.kbk-step { flex: 1; text-align: center; padding: 8px 4px; font-size: 11px; color: #bbb; font-weight: 600; border-bottom: 2px solid #e8e8e8; }
+.kbk-step.active { color: #06C755; border-bottom-color: #06C755; }
+.kbk-step.done { color: #06C755; border-bottom-color: #06C755; opacity: 0.6; }
+.kbk-snum { width: 22px; height: 22px; border-radius: 50%; background: #e8e8e8; color: #aaa; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 4px; }
+.kbk-step.active .kbk-snum, .kbk-step.done .kbk-snum { background: #06C755; color: #fff; }
+#kbk-month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+#kbk-month-nav button { width: 34px; height: 34px; border: 1px solid #e0e0e0; border-radius: 50%; background: #fff; font-size: 18px; color: #555; cursor: pointer; padding: 0; }
+#kbk-month-title { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+#kbk-day-hdrs { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }
+#kbk-day-hdrs div { text-align: center; font-size: 11px; font-weight: 700; color: #aaa; padding: 6px 0; }
+#kbk-day-hdrs div.sun { color: #ef4444; }
+#kbk-day-hdrs div.sat { color: #3b82f6; }
+#kbk-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.kc { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #ddd; cursor: default; margin: 2px auto; }
+.kc.today { border: 2px solid #06C755; color: #06C755; }
+.kc.avail { background: #f0fdf4; color: #166534; cursor: pointer; }
+.kc.avail:hover, .kc.sel { background: #06C755; color: #fff; }
+#kbk-legend { display: flex; gap: 14px; margin-top: 12px; justify-content: center; font-size: 11px; color: #888; }
+.kbk-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+#kbk-status { text-align: center; font-size: 11px; color: #aaa; margin-top: 8px; min-height: 16px; }
+#kbk-slots { display: none; padding-top: 4px; }
+#kbk-slots-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; text-align: center; padding: 12px; background: #f0fdf4; border-radius: 10px; color: #166534; }
+#kbk-slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.kbk-slot { padding: 14px 8px; border: 2px solid #bbf7d0; border-radius: 10px; background: #f0fdf4; color: #166534; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; width: 100%; }
+.kbk-slot:hover, .kbk-slot.sel { border-color: #06C755; background: #06C755; color: #fff; }
+.kbk-slot.full { border-color: #eee; background: #f5f5f5; color: #ccc; cursor: not-allowed; text-decoration: line-through; }
+.kbk-back { width: 100%; padding: 9px; background: none; border: 1px solid #ddd; border-radius: 8px; color: #999; font-size: 12px; cursor: pointer; margin-top: 8px; }
+#kbk-confirm { display: none; padding-top: 4px; text-align: center; }
+#kbk-confirm-box { background: #f0fdf4; border-radius: 14px; padding: 20px; margin-bottom: 20px; border: 2px solid #bbf7d0; }
+#kbk-confirm-date { font-size: 16px; font-weight: 800; color: #166534; line-height: 1.6; }
+#kbk-book-btn { display: block; padding: 18px; background: linear-gradient(135deg, #06C755, #04a844); color: #fff; font-size: 16px; font-weight: 800; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 20px rgba(6,199,85,0.4); margin-bottom: 10px; }
+#kbk-book-note { font-size: 11px; color: #999; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div id="kbk-wrap">
+
+  <div id="kbk-steps">
+    <div id="kbk-s1" class="kbk-step active"><div class="kbk-snum">①</div>日程を選ぶ</div>
+    <div id="kbk-s2" class="kbk-step"><div class="kbk-snum">②</div>時間を選ぶ</div>
+    <div id="kbk-s3" class="kbk-step"><div class="kbk-snum">③</div>予約する</div>
+  </div>
+
+  <div id="kbk-cal">
+    <div id="kbk-month-nav">
+      <button onclick="kbkChangeMonth(-1)">&#8249;</button>
+      <div id="kbk-month-title"></div>
+      <button onclick="kbkChangeMonth(1)">&#8250;</button>
+    </div>
+    <div id="kbk-day-hdrs"></div>
+    <div id="kbk-grid"></div>
+    <div id="kbk-legend">
+      <span><span class="kbk-dot" style="background:#06C755;"></span>予約可能</span>
+      <span><span class="kbk-dot" style="background:#eee;"></span>満員・休業</span>
+    </div>
+    <div id="kbk-status">空き状況を読み込み中...</div>
+  </div>
+
+  <div id="kbk-slots">
+    <div id="kbk-slots-title"></div>
+    <div id="kbk-slots-grid"></div>
+    <button class="kbk-back" onclick="kbkShow('cal')">← 日程を選び直す</button>
+  </div>
+
+  <div id="kbk-confirm">
+    <div id="kbk-confirm-box">
+      <div id="kbk-confirm-date"></div>
+    </div>
+    <a id="kbk-book-btn" href="https://step.lme.jp/mobile/calendar-salon/O3nqdJjVW2Z8" target="_blank">
+      📅 この日時でL Message予約ページへ
+    </a>
+    <p id="kbk-book-note">タップするとL Messageの予約ページが開きます</p>
+    <button class="kbk-back" onclick="kbkShow('slots')">← 時間を選び直す</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var GAS_URL='/api/bookings';
+  var BOOKED={},ALL_SLOTS=['09:00','11:00','13:00','15:00','17:00','19:00'],SLOT_HOURS=2;
+  var today=new Date();today.setHours(0,0,0,0);
+  var cy=today.getFullYear(),cm=today.getMonth(),selDate=null;
+  function ds(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+  function p(n){return String(n).padStart(2,'0');}
+  function avail(s){var b=BOOKED[s]||[];return ALL_SLOTS.filter(function(t){return b.indexOf(t)===-1;});}
+
+  var dh=document.getElementById('kbk-day-hdrs');
+  ['日','月','火','水','木','金','土'].forEach(function(d,i){
+    var el=document.createElement('div');
+    el.textContent=d;
+    if(i===0)el.className='sun';
+    if(i===6)el.className='sat';
+    dh.appendChild(el);
+  });
+
+  function build(){
+    document.getElementById('kbk-month-title').textContent=cy+'年'+(cm+1)+'月';
+    var fd=new Date(cy,cm,1).getDay(),ld=new Date(cy,cm+1,0).getDate(),pl=new Date(cy,cm,0).getDate();
+    var g=document.getElementById('kbk-grid');g.innerHTML='';
+    var cells=[];
+    for(var i=fd-1;i>=0;i--)cells.push({d:pl-i,m:cm-1,o:true});
+    for(var d=1;d<=ld;d++)cells.push({d:d,m:cm,o:false});
+    while(cells.length%7)cells.push({d:cells.length-ld-fd+1,m:cm+1,o:true});
+    cells.forEach(function(c){
+      var cd=new Date(cy,c.m,c.d),dStr=ds(cd);
+      var past=cd<today,isToday=cd.getTime()===today.getTime();
+      var hasAv=!c.o&&!past&&avail(dStr).length>0,isSel=dStr===selDate;
+      var el=document.createElement('div');
+      el.className='kc'+(isToday?' today':'')+(hasAv?' avail':'')+(isSel?' sel':'');
+      if(c.o||past)el.style.color='#ddd';
+      el.textContent=c.d;
+      if(hasAv)(function(ds2,cd2){el.onclick=function(){selDate=ds2;build();showSlots(ds2,cd2);};})(dStr,cd);
+      g.appendChild(el);
+    });
+  }
+
+  build();
+
+  fetch(GAS_URL,{mode:'cors'}).then(function(r){return r.json();}).then(function(data){
+    if(data.success){
+      BOOKED=data.booked||{};
+      if(data.all_slots)ALL_SLOTS=data.all_slots;
+      if(data.slot_hours)SLOT_HOURS=data.slot_hours;
+      document.getElementById('kbk-status').textContent='更新日時：'+data.updated_at;
+    } else {
+      document.getElementById('kbk-status').textContent='';
+    }
+    build();
+  }).catch(function(){document.getElementById('kbk-status').textContent='';});
+
+  function showSlots(dateStr,cd){
+    var dow=['日','月','火','水','木','金','土'][cd.getDay()];
+    var label=(cd.getMonth()+1)+'月'+cd.getDate()+'日（'+dow+'）';
+    document.getElementById('kbk-slots-title').textContent='📅 '+label+' の時間帯を選んでください';
+    var booked=BOOKED[dateStr]||[];
+    var sg=document.getElementById('kbk-slots-grid');sg.innerHTML='';
+    ALL_SLOTS.forEach(function(s){
+      var eh=parseInt(s)+SLOT_HOURS,end=p(eh)+':00',isB=booked.indexOf(s)!==-1;
+      var btn=document.createElement('button');
+      btn.className='kbk-slot'+(isB?' full':'');
+      btn.textContent=s+'〜'+end;btn.disabled=isB;
+      if(!isB)(function(s2,e2,lbl){btn.onclick=function(){
+        document.querySelectorAll('.kbk-slot').forEach(function(b){b.classList.remove('sel');});
+        btn.classList.add('sel');
+        showConfirm(lbl,s2,e2);
+      };})(s,end,label);
+      sg.appendChild(btn);
+    });
+    kbkStep(2);kbkShow('slots');
+  }
+
+  function showConfirm(label,s,e){
+    document.getElementById('kbk-confirm-date').innerHTML=label+'<br>'+s+'〜'+e;
+    kbkStep(3);kbkShow('confirm');
+  }
+
+  window.kbkChangeMonth=function(d){cm+=d;if(cm<0){cm=11;cy--;}if(cm>11){cm=0;cy++;}build();};
+  window.kbkShow=function(name){
+    ['cal','slots','confirm'].forEach(function(n){
+      document.getElementById('kbk-'+n).style.display=n===name?'block':'none';
+    });
+    if(name==='cal'){selDate=null;kbkStep(1);build();}
+  };
+  function kbkStep(n){
+    ['kbk-s1','kbk-s2','kbk-s3'].forEach(function(id,i){
+      var el=document.getElementById(id);
+      el.className='kbk-step'+(i+1<n?' done':i+1===n?' active':'');
+    });
+  }
+})();
+</script>
+</body>
+</html>

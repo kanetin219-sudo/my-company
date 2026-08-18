@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kaimonロードマップ作成会｜予約カレンダー</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f0f4f8; color: #333; }
+
+  .header {
+    background: linear-gradient(135deg, #06C755 0%, #04a844 100%);
+    color: #fff;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 12px rgba(6,199,85,0.3);
+  }
+  .header-icon { font-size: 28px; }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* ── 月ナビ ── */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .month-nav button {
+    width: 36px; height: 36px;
+    border: none; border-radius: 50%;
+    background: #f0f4f8;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background .2s;
+    color: #555;
+  }
+  .month-nav button:hover { background: #e2f0e8; color: #06C755; }
+  .month-title { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+
+  /* ── カレンダーグリッド ── */
+  .calendar-wrap { background: #fff; border-radius: 14px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); overflow: hidden; margin-bottom: 20px; }
+  .day-labels {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background: #f7faf8;
+    border-bottom: 1px solid #e8ece9;
+  }
+  .day-label {
+    text-align: center; padding: 10px 0;
+    font-size: 12px; font-weight: 700; color: #888; letter-spacing: 0.05em;
+  }
+  .day-label.sun { color: #e53e3e; }
+  .day-label.sat { color: #3182ce; }
+
+  .calendar-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+  }
+  .day-cell {
+    min-height: 80px;
+    border-right: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 6px 8px;
+    position: relative;
+    transition: background .15s;
+    cursor: default;
+  }
+  .day-cell:nth-child(7n) { border-right: none; }
+  .day-cell.other-month { background: #fafafa; }
+  .day-cell.today { background: #f0fff4; }
+  .day-cell.has-booking { cursor: pointer; }
+  .day-cell.has-booking:hover { background: #f0fff4; }
+
+  .day-num {
+    font-size: 13px; font-weight: 600; color: #444;
+    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 4px;
+  }
+  .day-cell.today .day-num { background: #06C755; color: #fff; }
+  .day-cell.other-month .day-num { color: #ccc; }
+  .day-num.sun { color: #e53e3e; }
+  .day-num.sat { color: #3182ce; }
+  .day-cell.today .day-num { color: #fff !important; }
+
+  .booking-chip {
+    background: #dcfce7;
+    color: #166534;
+    font-size: 10px;
+    font-weight: 600;
+    border-left: 3px solid #06C755;
+    border-radius: 0 4px 4px 0;
+    padding: 2px 5px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+  .booking-chip.staff-naoya { background: #dbeafe; color: #1e40af; border-color: #3b82f6; }
+  .booking-chip.status-cancel { background: #fee2e2; color: #991b1b; border-color: #ef4444; text-decoration: line-through; }
+  .more-badge {
+    font-size: 10px; color: #06C755; font-weight: 700; padding-left: 4px;
+  }
+
+  /* ── 予約一覧 ── */
+  .list-section { background: #fff; border-radius: 14px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); overflow: hidden; }
+  .list-header {
+    background: #f7faf8;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e8ece9;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .list-header h2 { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+  .booking-count { background: #06C755; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+
+  .booking-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 12px;
+    transition: background .15s;
+  }
+  .booking-row:last-child { border-bottom: none; }
+  .booking-row:hover { background: #f9fffe; }
+
+  .date-block {
+    min-width: 72px;
+    text-align: center;
+  }
+  .date-md { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+  .date-dow { font-size: 11px; color: #888; }
+  .date-dow.sun { color: #e53e3e; }
+  .date-dow.sat { color: #3182ce; }
+
+  .time-block { min-width: 110px; }
+  .time-text { font-size: 13px; font-weight: 600; color: #333; }
+  .course-text { font-size: 11px; color: #888; margin-top: 1px; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    min-width: 72px; justify-content: center;
+  }
+  .status-badge.confirmed { background: #dcfce7; color: #166534; }
+  .status-badge.cancelled { background: #fee2e2; color: #991b1b; }
+
+  .name-block { flex: 1; }
+  .name-main { font-size: 14px; font-weight: 600; color: #222; }
+  .name-kana { font-size: 11px; color: #888; }
+
+  .staff-badge {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    background: #e0f2fe; color: #0369a1;
+    min-width: 50px; text-align: center;
+  }
+  .staff-badge.naoya { background: #ede9fe; color: #5b21b6; }
+
+  /* ── 凡例 ── */
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-top: 12px; margin-bottom: 20px;
+    font-size: 12px; color: #555;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* ── モーダル ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px;
+    width: min(480px, 94vw);
+    max-height: 80vh; overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-head {
+    background: linear-gradient(135deg, #06C755, #04a844);
+    color: #fff; padding: 18px 20px;
+    border-radius: 16px 16px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-head h3 { font-size: 16px; font-weight: 700; }
+  .modal-close { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 20px; }
+  .modal-booking {
+    padding: 12px; border-radius: 10px; background: #f9fffe;
+    border: 1px solid #dcfce7; margin-bottom: 10px;
+  }
+  .modal-booking:last-child { margin-bottom: 0; }
+  .modal-booking .mb-time { font-size: 14px; font-weight: 700; color: #166534; margin-bottom: 6px; }
+  .modal-booking .mb-name { font-size: 14px; color: #222; }
+  .modal-booking .mb-meta { font-size: 12px; color: #888; margin-top: 4px; }
+
+  @media (max-width: 600px) {
+    .day-cell { min-height: 60px; padding: 4px; }
+    .booking-chip { display: none; }
+    .day-cell.has-booking::after {
+      content: '';
+      width: 6px; height: 6px;
+      background: #06C755;
+      border-radius: 50%;
+      display: block;
+      margin: 0 auto;
+    }
+    .booking-row { flex-wrap: wrap; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">📅</div>
+  <div>
+    <h1>kaimonロードマップ作成会</h1>
+    <p>予約カレンダー｜kaimon 好きを仕事にするスクール</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 月ナビ -->
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">‹</button>
+    <div class="month-title" id="monthTitle"></div>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+
+  <!-- 凡例 -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#06C755"></div> ふう担当</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> なおや担当</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0fff4; border:2px solid #06C755"></div> 今日</div>
+  </div>
+
+  <!-- カレンダー -->
+  <div class="calendar-wrap">
+    <div class="day-labels">
+      <div class="day-label sun">日</div>
+      <div class="day-label">月</div>
+      <div class="day-label">火</div>
+      <div class="day-label">水</div>
+      <div class="day-label">木</div>
+      <div class="day-label">金</div>
+      <div class="day-label sat">土</div>
+    </div>
+    <div class="calendar-grid" id="calGrid"></div>
+  </div>
+
+  <!-- 予約一覧 -->
+  <div class="list-section">
+    <div class="list-header">
+      <h2>📋 予約一覧</h2>
+      <span class="booking-count" id="bookingCount">0件</span>
+    </div>
+    <div id="bookingList"></div>
+  </div>
+</div>
+
+<!-- モーダル -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalDate"></h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const BOOKINGS = [
+  { date: '2026-05-20', start: '19:00', end: '21:00', name: '長野直美', kana: 'naomi', course: 'ロードマップ作成会', staff: 'ふう', status: 'confirmed' },
+  { date: '2026-05-21', start: '09:00', end: '11:00', name: '中山脩麻', kana: 'しゅうま', course: 'ロードマップ作成会', staff: 'ふう', status: 'confirmed' },
+  { date: '2026-05-21', start: '20:00', end: '22:00', name: 'るり', kana: '瑞季', course: 'ロードマップ作成会', staff: 'ふう', status: 'confirmed' },
+  { date: '2026-05-23', start: '18:00', end: '20:00', name: '田代達也', kana: '田代 達也', course: 'ロードマップ作成会', staff: 'なおや', status: 'confirmed' },
+  { date: '2026-05-30', start: '19:00', end: '21:00', name: 'ほんだまい', kana: 'ほんだ まい', course: 'ロードマップ作成会', staff: 'ふう', status: 'confirmed' },
+];
+
+const DOW_JA = ['日','月','火','水','木','金','土'];
+const today = new Date();
+today.setHours(0,0,0,0);
+
+let currentYear = today.getFullYear();
+let currentMonth = today.getMonth();
+
+function bookingsByDate(dateStr) {
+  return BOOKINGS.filter(b => b.date === dateStr);
+}
+
+function buildCalendar() {
+  const year = currentYear, month = currentMonth;
+  document.getElementById('monthTitle').textContent = year + '年' + (month + 1) + '月';
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const prevLastDate = new Date(year, month, 0).getDate();
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  let cells = [];
+  for (let i = firstDay - 1; i >= 0; i--) cells.push({ d: prevLastDate - i, month: month - 1, otherMonth: true });
+  for (let d = 1; d <= lastDate; d++) cells.push({ d, month, otherMonth: false });
+  while (cells.length % 7 !== 0) cells.push({ d: cells.length - lastDate - firstDay + 1, month: month + 1, otherMonth: true });
+
+  cells.forEach(({ d, month: m, otherMonth }) => {
+    const cellDate = new Date(year, m, d);
+    const dateStr = cellDate.toISOString().split('T')[0];
+    const dow = cellDate.getDay();
+    const isToday = cellDate.getTime() === today.getTime();
+    const bookings = otherMonth ? [] : bookingsByDate(dateStr);
+
+    const cell = document.createElement('div');
+    cell.className = 'day-cell' + (otherMonth ? ' other-month' : '') + (isToday ? ' today' : '') + (bookings.length ? ' has-booking' : '');
+
+    const numDiv = document.createElement('div');
+    numDiv.className = 'day-num' + (dow === 0 ? ' sun' : dow === 6 ? ' sat' : '');
+    numDiv.textContent = d;
+    cell.appendChild(numDiv);
+
+    if (!otherMonth) {
+      const shown = bookings.slice(0, 2);
+      shown.forEach(b => {
+        const chip = document.createElement('div');
+        chip.className = 'booking-chip' + (b.staff === 'なおや' ? ' staff-naoya' : '') + (b.status === 'cancelled' ? ' status-cancel' : '');
+        chip.textContent = b.start + ' ' + b.name;
+        cell.appendChild(chip);
+      });
+      if (bookings.length > 2) {
+        const more = document.createElement('div');
+        more.className = 'more-badge';
+        more.textContent = '+' + (bookings.length - 2) + '件';
+        cell.appendChild(more);
+      }
+      if (bookings.length) {
+        cell.onclick = () => openModal(dateStr, bookings, cellDate);
+      }
+    }
+
+    grid.appendChild(cell);
+  });
+
+  buildList();
+}
+
+function buildList() {
+  const year = currentYear, month = currentMonth;
+  const monthBookings = BOOKINGS.filter(b => {
+    const d = new Date(b.date);
+    return d.getFullYear() === year && d.getMonth() === month;
+  }).sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+
+  document.getElementById('bookingCount').textContent = monthBookings.length + '件';
+  const list = document.getElementById('bookingList');
+  list.innerHTML = '';
+
+  if (!monthBookings.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:#aaa;font-size:14px;">この月の予約はありません</div>';
+    return;
+  }
+
+  monthBookings.forEach(b => {
+    const d = new Date(b.date);
+    const dow = d.getDay();
+    const dowLabel = DOW_JA[dow];
+    const dowClass = dow === 0 ? 'sun' : dow === 6 ? 'sat' : '';
+
+    const row = document.createElement('div');
+    row.className = 'booking-row';
+    row.innerHTML = `
+      <div class="date-block">
+        <div class="date-md">${(d.getMonth()+1)}/${d.getDate()}</div>
+        <div class="date-dow ${dowClass}">${dowLabel}曜日</div>
+      </div>
+      <div class="time-block">
+        <div class="time-text">${b.start}〜${b.end}</div>
+        <div class="course-text">${b.course}</div>
+      </div>
+      <div>
+        <span class="status-badge ${b.status === 'confirmed' ? 'confirmed' : 'cancelled'}">
+          ${b.status === 'confirmed' ? '✓ 予約確定' : '✗ キャンセル'}
+        </span>
+      </div>
+      <div class="name-block">
+        <div class="name-main">${b.name}</div>
+        <div class="name-kana">${b.kana}</div>
+      </div>
+      <div class="staff-badge ${b.staff === 'なおや' ? 'naoya' : ''}">${b.staff}</div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function openModal(dateStr, bookings, cellDate) {
+  const dow = cellDate.getDay();
+  document.getElementById('modalDate').textContent =
+    (cellDate.getMonth()+1) + '月' + cellDate.getDate() + '日（' + DOW_JA[dow] + '）';
+  const body = document.getElementById('modalBody');
+  body.innerHTML = bookings.map(b => `
+    <div class="modal-booking">
+      <div class="mb-time">${b.start}〜${b.end}</div>
+      <div class="mb-name">${b.kana} / ${b.name}</div>
+      <div class="mb-meta">コース：${b.course}　スタッフ：${b.staff}</div>
+    </div>
+  `).join('');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+function changeMonth(delta) {
+  currentMonth += delta;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  buildCalendar();
+}
+
+buildCalendar();
+</script>
+</body>
+</html>

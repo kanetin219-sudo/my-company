@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ミヤトレ ブランドCM 制作完全指示書</title>
+<style>
+  :root {
+    --primary: #FF6B35;
+    --secondary: #1A1A2E;
+    --accent: #F7C59F;
+    --gold: #FFD700;
+    --dark: #0F0F1A;
+    --text: #2D2D2D;
+    --light: #FFF8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    line-height: 1.8;
+  }
+  .hero {
+    background: linear-gradient(135deg, var(--dark) 0%, #1A1A4E 50%, #2D0B00 100%);
+    color: white;
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '✨';
+    position: absolute;
+    font-size: 200px;
+    opacity: 0.05;
+    top: -40px;
+    right: -20px;
+  }
+  .hero h1 {
+    font-size: 2.8em;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(255,215,0,0.5);
+    margin-bottom: 10px;
+  }
+  .hero .subtitle {
+    font-size: 1.2em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .hero .tagline {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: white;
+    letter-spacing: 0.2em;
+  }
+  .toc {
+    background: var(--secondary);
+    color: white;
+    padding: 30px 40px;
+  }
+  .toc h2 { color: var(--gold); margin-bottom: 15px; font-size: 1.1em; letter-spacing: 0.1em; }
+  .toc ol { padding-left: 20px; }
+  .toc li { padding: 4px 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { color: white; }
+  .container { max-width: 1000px; margin: 0 auto; padding: 40px 30px; }
+  .section {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-left: 6px solid var(--primary);
+  }
+  .section.dark {
+    background: var(--secondary);
+    color: white;
+    border-left: 6px solid var(--gold);
+  }
+  .section h2 {
+    font-size: 1.6em;
+    color: var(--primary);
+    margin-bottom: 25px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section.dark h2 { color: var(--gold); border-bottom-color: rgba(255,215,0,0.3); }
+  .section h3 {
+    font-size: 1.2em;
+    color: var(--secondary);
+    margin: 25px 0 12px;
+    padding: 8px 15px;
+    background: var(--light);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+  }
+  .section.dark h3 { background: rgba(255,255,255,0.1); color: var(--accent); border-left-color: var(--gold); }
+  .section h4 {
+    font-size: 1.05em;
+    color: var(--primary);
+    margin: 18px 0 8px;
+  }
+  .section.dark h4 { color: var(--gold); }
+  p { margin-bottom: 12px; }
+  .script-box {
+    background: #1A1A2E;
+    color: #E8E8E8;
+    padding: 25px 30px;
+    border-radius: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.92em;
+    line-height: 2;
+    margin: 15px 0;
+    border: 1px solid rgba(255,215,0,0.2);
+  }
+  .script-box .time { color: var(--gold); font-weight: bold; }
+  .script-box .scene { color: #7EC8E3; }
+  .script-box .action { color: #98FB98; }
+  .script-box .narration { color: #FFD700; font-style: italic; font-size: 1.05em; }
+  .script-box .sound { color: #DDA0DD; }
+  .narration-box {
+    background: linear-gradient(135deg, #1A1A2E, #2D0B40);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    border: 2px solid var(--gold);
+    font-size: 1.15em;
+    line-height: 2.2;
+    margin: 15px 0;
+  }
+  .narration-box p { color: var(--gold); font-weight: bold; font-size: 1.1em; margin-bottom: 8px; }
+  .narration-box .direction { color: #aaa; font-size: 0.85em; font-style: italic; display: block; margin-bottom: 15px; }
+  .prompt-box {
+    background: #0D1117;
+    color: #58A6FF;
+    padding: 20px 25px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.88em;
+    line-height: 1.7;
+    margin: 10px 0;
+    border: 1px solid #30363D;
+    white-space: pre-wrap;
+  }
+  .tool-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.78em;
+    font-weight: bold;
+    margin: 2px;
+  }
+  .badge-veo { background: #4285F4; color: white; }
+  .badge-runway { background: #FF4444; color: white; }
+  .badge-kling { background: #9B59B6; color: white; }
+  .badge-pika { background: #2ECC71; color: white; }
+  .badge-sora { background: #1DA1F2; color: white; }
+  .storyboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .storyboard-card {
+    background: #1A1A2E;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,215,0,0.2);
+  }
+  .storyboard-header {
+    background: linear-gradient(135deg, var(--primary), #FF8C00);
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .storyboard-header .scene-num { color: white; font-weight: bold; font-size: 0.9em; }
+  .storyboard-header .time-code { color: rgba(255,255,255,0.8); font-size: 0.82em; }
+  .storyboard-screen {
+    background: #0A0A1A;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    border-bottom: 1px solid rgba(255,215,0,0.1);
+  }
+  .storyboard-body { padding: 12px 15px; color: #ccc; font-size: 0.85em; }
+  .storyboard-body .label { color: var(--gold); font-size: 0.78em; font-weight: bold; margin-top: 8px; display: block; }
+  .cut-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    font-size: 0.88em;
+  }
+  .cut-table th {
+    background: var(--primary);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: bold;
+  }
+  .cut-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+  .cut-table tr:nth-child(even) { background: #fafafa; }
+  .cut-table tr:hover { background: #fff5f0; }
+  .dark .cut-table td { border-bottom-color: rgba(255,255,255,0.1); color: #ddd; }
+  .dark .cut-table tr:nth-child(even) { background: rgba(255,255,255,0.05); }
+  .bgm-card {
+    background: linear-gradient(135deg, #1A1A2E 0%, #2D1B4E 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 12px 0;
+    border: 1px solid rgba(255,215,0,0.3);
+    color: white;
+  }
+  .bgm-card h4 { color: var(--gold); margin-bottom: 10px; }
+  .bgm-card ul { padding-left: 20px; color: #ccc; }
+  .bgm-card li { margin-bottom: 6px; }
+  .tip-box {
+    background: #FFF8E7;
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin: 12px 0;
+    font-size: 0.9em;
+  }
+  .tip-box::before { content: '💡 '; }
+  .warn-box {
+    background: #FFF0F0;
+    border: 1px solid #FF6B35;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin: 12px 0;
+    font-size: 0.9em;
+  }
+  .warn-box::before { content: '⚡ '; }
+  .capcut-step {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin: 10px 0;
+    border-left: 4px solid #00C4CC;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .capcut-step .step-num {
+    display: inline-block;
+    background: #00C4CC;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-weight: bold;
+    font-size: 0.85em;
+    margin-right: 8px;
+  }
+  .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78em;
+    font-weight: bold;
+    margin: 2px;
+  }
+  .brand-message {
+    text-align: center;
+    background: linear-gradient(135deg, var(--dark), #1A1A4E);
+    color: white;
+    padding: 50px 40px;
+    border-radius: 16px;
+    margin: 20px 0;
+  }
+  .brand-message .miyatore {
+    font-size: 3em;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-shadow: 0 0 30px rgba(255,215,0,0.6);
+    display: block;
+  }
+  .brand-message .tagline1 { font-size: 1.2em; color: var(--accent); margin: 10px 0; }
+  .brand-message .tagline2 { font-size: 1em; color: #aaa; }
+  .checklist li {
+    list-style: none;
+    padding: 6px 0;
+    padding-left: 25px;
+    position: relative;
+  }
+  .checklist li::before { content: '✅'; position: absolute; left: 0; }
+  footer {
+    text-align: center;
+    padding: 30px;
+    background: var(--dark);
+    color: #666;
+    font-size: 0.85em;
+  }
+  @media print {
+    .section { break-inside: avoid; }
+    body { font-size: 90%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🏴‍☠️ ミヤトレ</h1>
+  <div class="subtitle">BRAND CM 制作完全指示書</div>
+  <div class="tagline">日常にワクワクを。宮崎をもっと面白く。</div>
+  <div style="margin-top: 20px; color: #888; font-size: 0.85em;">制作日：2026年5月 ／ Ver. 1.0</div>
+</div>
+
+<!-- 目次 -->
+<div class="toc">
+  <h2>📋 目次</h2>
+  <ol>
+    <li><a href="#script">CM台本（30秒版・60秒版）</a></li>
+    <li><a href="#narration">ナレーション全文</a></li>
+    <li><a href="#storyboard">絵コンテ</a></li>
+    <li><a href="#cuts">カット割り（秒数単位）</a></li>
+    <li><a href="#bgm">BGM指示</a></li>
+    <li><a href="#shooting">撮影指示（スマホ版・本格版）</a></li>
+    <li><a href="#aiprompts">AI動画生成プロンプト（全シーン）</a></li>
+    <li><a href="#editing">動画編集指示（CapCut完全版）</a></li>
+    <li><a href="#checklist">最終成果物チェックリスト</a></li>
+  </ol>
+</div>
+
+<div class="container">
+
+<!-- ①CM台本 -->
+<div class="section" id="script">
+  <h2>🎬 ① CM台本</h2>
+
+  <h3>▶ 30秒版（SNS広告・Instagramリール・TikTok・YouTubeショート）</h3>
+
+  <div class="script-box">
+<span class="scene">【シーン1】 0:00〜0:04</span>
+<span class="action">朝。宮崎市内の住宅街。主人公（20代女性）がため息をついてスマホを見ている。モノクロ調。</span>
+<span class="sound">SE：街の環境音（遠くの車、鳥の声）</span>
+BGM：静かなピアノ…少しくすんだ音色
+
+<span class="scene">【シーン2】 0:04〜0:07</span>
+<span class="action">スマホの画面に映る「#ミヤトレ 宮崎に宝を隠した」という投稿。目が輝く。</span>
+<span class="sound">SE：スマホ通知音 ポン</span>
+
+<span class="scene">【シーン3】 0:07〜0:12</span>
+<span class="action">駆け出す足元→宮崎の街並み（橘通り・海沿い・山の麓）を走るカット集。カラーが鮮やかになる。</span>
+<span class="narration">ナレーション「あなたの街にも、宝はある。」</span>
+BGM：壮大なオーケストラがIN
+
+<span class="scene">【シーン4】 0:12〜0:20</span>
+<span class="action">家族連れ・学生グループ・カップルが地図を片手に宮崎の街を歩く。笑顔。発見の顔。ドローン俯瞰。</span>
+<span class="narration">ナレーション「遊びが人を動かす。人が動けば、街も動く。」</span>
+
+<span class="scene">【シーン5】 0:20〜0:25</span>
+<span class="action">宝箱（アイテム）を発見！子供が飛び跳ねる。親が笑う。SNSに投稿するスマホ画面。#ミヤトレ 拡散。</span>
+<span class="narration">ナレーション「日常にワクワクを。」</span>
+<span class="sound">SE：宝発見チャイム ✨キラーン</span>
+
+<span class="scene">【シーン6】 0:25〜0:30</span>
+<span class="action">エンディング。宮崎の夕焼けをバックにシルエット群像。ロゴドン。</span>
+<span class="narration">ナレーション「宮崎でワクワクできる日常を。」</span>
+<span class="time">LOGO：ミヤトレ ／ 日常にワクワクを。</span>
+BGM：クライマックス → 余韻でFADE OUT
+  </div>
+
+  <h3>▶ 60秒版（ブランドムービー・YouTube広告・YouTube）</h3>
+
+  <div class="script-box">
+<span class="scene">【シーン1 — 日常】 0:00〜0:08</span>
+<span class="action">早朝。霧がかかる宮崎市内。複数の人物がそれぞれの「当たり前の朝」を過ごしている。</span>
+→ 小学生：ランドセルを背負う
+→ 主婦：洗濯物を干す
+→ 会社員：バスを待つ
+→ 老夫婦：公園を散歩
+<span class="sound">SE：静かな環境音。鳥のさえずり。</span>
+BGM：ほんの少し、寂しいようなシネマティックBGM（弦楽器）
+
+<span class="scene">【シーン2 — きっかけ】 0:08〜0:15</span>
+<span class="action">会社員の男性がスマホを見ていると「ミヤトレ：本日、宮崎市に宝を隠しました」という通知が届く。</span>
+<span class="action">画面を食い入るように見る。コメント欄が賑わっている。「え、どこ！？」「見つけた！！」「リベンジする！」</span>
+<span class="narration">ナレーション（静かに）「あなたの街に、宝が隠された。」</span>
+<span class="sound">SE：通知音→ざわめき</span>
+
+<span class="scene">【シーン3 — 出発】 0:15〜0:25</span>
+<span class="action">動き始める人たち。ランニングシューズを履く。子供の手を引く。友人に電話する「ちょっと面白いの見つけたんだけど！」</span>
+<span class="action">宮崎の街へ出ていく—橘通り・宮崎神宮・一ツ葉海岸・綾の照葉樹林—それぞれの場所へ向かう。</span>
+<span class="narration">ナレーション「遊びが、人を動かす。」</span>
+BGM：徐々に壮大に。ドラムが加わる。
+
+<span class="scene">【シーン4 — 探索】 0:25〜0:38</span>
+<span class="action">街の中を歩き回る様子をシネマティックに。普段は通り過ぎていた場所に目を向ける。</span>
+→ 路地の花壇　→ 神社の鳥居の足元　→ 海岸の岩陰　→ 商店街の看板裏
+<span class="action">宮崎の「知らなかった美しさ」が次々に映し出される。</span>
+<span class="narration">ナレーション「人が動けば、街も動く。」</span>
+<span class="action">商店のおばちゃんが「こっちじゃないの？」と声をかけてくれる。笑い声。</span>
+
+<span class="scene">【シーン5 — 発見・感動】 0:38〜0:48</span>
+<span class="action">子供が宝を発見！「あった！！！！」</span>
+<span class="action">家族全員が抱き合う。知らないもの同士がハイタッチする。スマホで写真を撮る。SNSに投稿。</span>
+<span class="action">#ミヤトレ のタグが画面を埋め尽くしていく（CGエフェクト）。投稿が全国に広がる。</span>
+<span class="narration">ナレーション「日常にワクワクを。」</span>
+<span class="sound">SE：宝発見チャイム → 歓声</span>
+BGM：クライマックス 全力
+
+<span class="scene">【シーン6 — 宮崎活性化】 0:48〜0:54</span>
+<span class="action">俯瞰ドローン映像。宮崎の街に人が溢れている。お店に賑わい。子供たちの笑顔。地元の人の笑顔。</span>
+<span class="narration">ナレーション「宮崎をもっと、面白く。」</span>
+
+<span class="scene">【シーン7 — エンディング】 0:54〜1:00</span>
+<span class="action">夕焼けの宮崎。海と山と街。シルエットになった家族が手をつないでいる。</span>
+<span class="action">ゆっくりとロゴが現れる。</span>
+<span class="narration">ナレーション（深く、静かに）「宮崎でワクワクできる日常を、つくる。」</span>
+<span class="time">LOGO：ミヤトレ ／ 日常にワクワクを。 ／ 宮崎でワクワクできる日常を。</span>
+BGM：余韻 → FADE OUT
+  </div>
+</div>
+
+<!-- ②ナレーション全文 -->
+<div class="section" id="narration">
+  <h2>🎙️ ② ナレーション全文（プロCMナレーター向け）</h2>
+
+  <div class="tip-box">
+    声優・ナレーターへの発注時にそのままお渡しください。ディレクション指示込みです。
+  </div>
+
+  <h3>▶ 30秒版 ナレーション</h3>
+  <div class="narration-box">
+    <p>全体ディレクション：</p>
+    <span class="direction">温かく、希望に満ちた声で。押しつけがましくなく、まるで親友が耳元でささやくような雰囲気。</span>
+
+    <p>「あなたの街にも、宝はある。」</p>
+    <span class="direction">（穏やかに、発見するような声のトーンで。「宝は」にわずかな強調を）</span>
+
+    <p>「遊びが人を動かす。人が動けば、街も動く。」</p>
+    <span class="direction">（少し力強く。前半と後半で間をとる。「人が動けば」のあとに0.5秒の"ため"）</span>
+
+    <p>「日常にワクワクを。」</p>
+    <span class="direction">（笑顔になるような、弾んだ声で。メインコピーなので記憶に残る読み方で）</span>
+
+    <p>「宮崎でワクワクできる日常を。」</p>
+    <span class="direction">（最後。深く、未来への希望を込めて。余韻を残して終わる）</span>
+  </div>
+
+  <h3>▶ 60秒版 ナレーション</h3>
+  <div class="narration-box">
+    <p>全体ディレクション：</p>
+    <span class="direction">ドキュメンタリー映画のナレーションを意識。静かな入りから、徐々に感情が乗っていき、最後は深い余韻で終わる。性別：男性低音または女性中音どちらでも可。</span>
+
+    <p>（0:12〜）「あなたの街に、宝が隠された。」</p>
+    <span class="direction">（小さく、秘密を打ち明けるように。「隠された」は少し神秘的に）</span>
+
+    <p>（0:22〜）「遊びが、人を動かす。」</p>
+    <span class="direction">（確信に満ちた、静かな力強さで。「人を」のあとに間）</span>
+
+    <p>（0:35〜）「人が動けば、街も動く。」</p>
+    <span class="direction">（少しテンポを上げて。希望が広がる感じ）</span>
+
+    <p>（0:43〜）「日常にワクワクを。」</p>
+    <span class="direction">（感情が乗るピーク。笑顔の声。喜びとワクワク感を全力で）</span>
+
+    <p>（0:50〜）「宮崎をもっと、面白く。」</p>
+    <span class="direction">（呼びかけるように。「もっと」に強意。地元愛を込めて）</span>
+
+    <p>（0:55〜）「宮崎でワクワクできる日常を、つくる。」</p>
+    <span class="direction">（最後の言葉。ゆっくり、深く、決意と希望と優しさを込めて。「つくる」を力強く締める）</span>
+  </div>
+
+  <h3>▶ 読み上げ時間の目安</h3>
+  <table class="cut-table">
+    <tr><th>コピー</th><th>推奨秒数</th><th>読み方</th></tr>
+    <tr><td>あなたの街にも、宝はある。</td><td>2.0〜2.5秒</td><td>ゆったり</td></tr>
+    <tr><td>遊びが人を動かす。人が動けば、街も動く。</td><td>3.5〜4.0秒</td><td>前半ゆっくり、後半はやや早め</td></tr>
+    <tr><td>日常にワクワクを。</td><td>1.5〜2.0秒</td><td>弾む感じ</td></tr>
+    <tr><td>宮崎をもっと、面白く。</td><td>2.0秒</td><td>呼びかけ</td></tr>
+    <tr><td>宮崎でワクワクできる日常を、つくる。</td><td>3.0〜3.5秒</td><td>深く余韻</td></tr>
+  </table>
+</div>
+
+<!-- ③絵コンテ -->
+<div class="section dark" id="storyboard">
+  <h2>🎨 ③ 絵コンテ（60秒版・シーン別）</h2>
+
+  <div class="storyboard">
+
+    <div class="storyboard-card">
+      <div class="storyboard-header">
+        <span class="scene-num">シーン1 ／ 日常</span>
+        <span class="time-code">0:00〜0:08</span>
+      </div>
+      <div class="storyboard-screen">🌅</div>
+      <div class="storyboard-body">
+        <span class="label">アングル</span>
+        ローアングル・スローモーション
+        <span class="label">被写体</span>
+        宮崎の朝の街並み。ランドセルの足元、洗濯物、バス停
+        <span class="label">カラートーン</span>
+        モノクロ〜セピア（くすんだ色）
+        <span class="label">カメラ動作</span>
+        ゆっくりPAN・静的
+      </div>
+    </div>
+
+    <div class="storyboard-card">
+      <div class="storyboard-header">
+        <span class="scene-num">シーン2 ／ きっかけ</span>
+        <span class="time-code">0:08〜0:15</span>
+      </div>
+      <div class="storyboard-screen">📱</div>
+      <div class="storyboard-body">
+        <span class="label">アングル</span>
+        スマホ画面のクローズアップ・手元
+        <span class="label">被写体</span>
+        SNS通知「ミヤトレ：宮崎に宝を隠しました」。コメント欄が流れる
+        <span class="label">カラートーン</span>
+        スマホ画面だけ発光するように鮮やか
+        <span class="label">特殊効果</span>
+        スマホ画面がズームして画面全体に広がるトランジション
+      </div>
+    </div>
+
+    <div class="storyboard-card">
+      <div class="storyboard-header">
+        <span class="scene-num">シーン3 ／ 出発</span>
+        <span class="time-code">0:15〜0:25</span>
+      </div>
+      <div class="storyboard-screen">🏃</div>
+      <div class="storyboard-body">
+        <span class="label">アングル</span>
+        足元クローズアップ→引いてフルショット
+        <span class="label">被写体</span>
+        走り出す人たち。橘通り・一ツ葉海岸・神宮周辺
+        <span class="label">カラートーン</span>
+        急速にカラーが戻る（モノクロ→フルカラー）
+        <span class="label">カメラ動作</span>
+        ハンドヘルド気味でエネルギッシュに
+      </div>
+    </div>
+
+    <div class="storyboard-card">
+      <div class="storyboard-header">
+        <span class="scene-num">シーン4 ／ 探索</span>
+        <span class="time-code">0:25〜0:38</span>
+      </div>
+      <div class="storyboard-screen">🗺️</div>
+      <div class="storyboard-body">
+        <span class="label">アングル</span>
+        バリエーション豊富（広角・望遠・ドローン）
+        <span class="label">被写体</span>
+        宮崎の名所・路地・商店街。地図を見る手元。横を向く目線
+        <span class="label">カラートーン</span>
+        Teal & Orange（映画的カラーグレード）
+        <span class="label">ポイント</span>
+        商店のおばあちゃんとの交流シーンを必ず入れる
+      </div>
+    </div>
+
+    <div class="storyboard-card">
+      <div class="storyboard-header">
+        <span class="scene-num">シーン5 ／ 発見</span>
+        <span class="time-code">0:38〜0:48</span>
+      </div>
+      <div class="storyboard-screen">🏆</div>
+      <div class="storyboard-body">
+        <span class="label">アングル</span>
+        子供の目線→引いてリアクション
+        <span class="label">被写体</span>
+        宝を発見する子供。家族・知らない人同士のハイタッチ
+        <span class="label">特殊効果</span>
+        発見の瞬間：光のエフェクト＋スローモーション
+        <span class="label">SNS演出</span>
+        #ミヤトレ タグが画面に溢れるCG
+      </div>
+    </div>
+
+    <div class="storyboard-card">
+      <div class="storyboard-header">
+        <span class="scene-num">シーン6 ／ 活性化</span>
+        <span class="time-code">0:48〜0:54</span>
+      </div>
+      <div class="storyboard-screen">🏙️</div>
+      <div class="storyboard-body">
+        <span class="label">アングル</span>
+        ドローン俯瞰（高度100m〜）
+        <span class="label">被写体</span>
+        人で賑わう橘通り・宮崎の街全景
+        <span class="label">カラートーン</span>
+        黄金色（ゴールデンアワー）
+        <span class="label">カメラ動作</span>
+        ゆっくりと引いていく荘厳な動き
+      </div>
+    </div>
+
+    <div class="storyboard-card">
+      <div class="storyboard-header">
+        <span class="scene-num">シーン7 ／ エンディング</span>
+        <span class="time-code">0:54〜1:00</span>
+      </div>
+      <div class="storyboard-screen">🌇</div>
+      <div class="storyboard-body">
+        <span class="label">アングル</span>
+        シルエット・夕焼けバック
+        <span class="label">被写体</span>
+        家族のシルエット＋ミヤトレロゴ
+        <span class="label">カラートーン</span>
+        オレンジ〜パープルのグラデーション空
+        <span class="label">テロップ</span>
+        「ミヤトレ」「日常にワクワクを。」フェードイン
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ④カット割り -->
+<div class="section" id="cuts">
+  <h2>⏱️ ④ カット割り（秒数単位）</h2>
+
+  <h3>▶ 30秒版 カット割り</h3>
+  <table class="cut-table">
+    <tr>
+      <th>カット</th><th>時間</th><th>秒数</th><th>映像</th><th>音声・ナレ</th>
+    </tr>
+    <tr>
+      <td>C1</td><td>0:00〜0:04</td><td>4秒</td>
+      <td>モノクロ。朝の宮崎の街。スマホ見る女性。ため息。</td>
+      <td>BGM弦楽器 in / 街SE</td>
+    </tr>
+    <tr>
+      <td>C2</td><td>0:04〜0:07</td><td>3秒</td>
+      <td>スマホ画面クローズアップ。ミヤトレ通知。目が輝く。</td>
+      <td>通知音「ポン」</td>
+    </tr>
+    <tr>
+      <td>C3</td><td>0:07〜0:09</td><td>2秒</td>
+      <td>走り出す足元。カラー急速に鮮やかに。</td>
+      <td>BGMオーケストラ IN 「あなたの街にも—」</td>
+    </tr>
+    <tr>
+      <td>C4</td><td>0:09〜0:12</td><td>3秒</td>
+      <td>宮崎の街（橘通り）をかける。青空。</td>
+      <td>「宝はある。」</td>
+    </tr>
+    <tr>
+      <td>C5</td><td>0:12〜0:16</td><td>4秒</td>
+      <td>家族連れが地図片手に歩く。笑顔。</td>
+      <td>「遊びが人を動かす。」</td>
+    </tr>
+    <tr>
+      <td>C6</td><td>0:16〜0:20</td><td>4秒</td>
+      <td>ドローン俯瞰。人が街に溢れる。</td>
+      <td>「人が動けば、街も動く。」</td>
+    </tr>
+    <tr>
+      <td>C7</td><td>0:20〜0:23</td><td>3秒</td>
+      <td>子供が宝発見！飛び跳ねる。光のエフェクト。</td>
+      <td>宝発見チャイム「日常にワクワクを。」</td>
+    </tr>
+    <tr>
+      <td>C8</td><td>0:23〜0:25</td><td>2秒</td>
+      <td>#ミヤトレ タグ飛び散るCG演出。</td>
+      <td>BGMクライマックス</td>
+    </tr>
+    <tr>
+      <td>C9</td><td>0:25〜0:30</td><td>5秒</td>
+      <td>夕焼け宮崎。シルエット。ロゴ。</td>
+      <td>「宮崎でワクワクできる日常を。」BGM余韻</td>
+    </tr>
+  </table>
+
+  <h3>▶ 60秒版 カット割り</h3>
+  <table class="cut-table">
+    <tr>
+      <th>カット</th><th>時間</th><th>秒数</th><th>映像</th><th>音声・ナレ</th>
+    </tr>
+    <tr><td>C1</td><td>0:00〜0:03</td><td>3秒</td><td>霧の宮崎市内。夜明けの空。</td><td>BGM弦楽器（静か）</td></tr>
+    <tr><td>C2</td><td>0:03〜0:05</td><td>2秒</td><td>ランドセルの足元→小学生の顔</td><td>SE：鳥の声</td></tr>
+    <tr><td>C3</td><td>0:05〜0:07</td><td>2秒</td><td>洗濯物を干す主婦の手元</td><td>SE：風の音</td></tr>
+    <tr><td>C4</td><td>0:07〜0:08</td><td>1秒</td><td>バス停で待つ会社員（横顔）</td><td>SE：バス音</td></tr>
+    <tr><td>C5</td><td>0:08〜0:12</td><td>4秒</td><td>会社員がスマホを見る。通知。目が変わる。</td><td>通知音「あなたの街に—」</td></tr>
+    <tr><td>C6</td><td>0:12〜0:15</td><td>3秒</td><td>スマホ画面（コメント欄賑わう）のクローズアップ</td><td>「宝が隠された。」</td></tr>
+    <tr><td>C7</td><td>0:15〜0:18</td><td>3秒</td><td>靴紐を結ぶ手元→立ち上がる</td><td>BGMドラムIN</td></tr>
+    <tr><td>C8</td><td>0:18〜0:20</td><td>2秒</td><td>子供の手を引いて出発する親</td><td>「遊びが、人を動かす。」</td></tr>
+    <tr><td>C9</td><td>0:20〜0:22</td><td>2秒</td><td>友人に電話しながら歩く学生</td><td>SE：「ちょっと面白いの！」</td></tr>
+    <tr><td>C10</td><td>0:22〜0:25</td><td>3秒</td><td>橘通りを歩く人たち（広角）</td><td>BGM盛り上がり</td></tr>
+    <tr><td>C11</td><td>0:25〜0:28</td><td>3秒</td><td>宮崎神宮の参道を歩く家族</td><td>「人が動けば、街も動く。」</td></tr>
+    <tr><td>C12</td><td>0:28〜0:30</td><td>2秒</td><td>一ツ葉海岸を走る子供</td><td>SE：波の音</td></tr>
+    <tr><td>C13</td><td>0:30〜0:33</td><td>3秒</td><td>路地で地図を見る。上を向く。</td><td>BGM期待感</td></tr>
+    <tr><td>C14</td><td>0:33〜0:36</td><td>3秒</td><td>商店のおばちゃんとの会話。笑顔。</td><td>SE：笑い声</td></tr>
+    <tr><td>C15</td><td>0:36〜0:38</td><td>2秒</td><td>神社の境内の隅、岩の陰を覗き込む</td><td>BGM緊張感（静まる）</td></tr>
+    <tr><td>C16</td><td>0:38〜0:41</td><td>3秒</td><td>子供が宝発見！「あった！！！」スロー</td><td>SE：歓声 チャイム「日常にワクワクを。」</td></tr>
+    <tr><td>C17</td><td>0:41〜0:44</td><td>3秒</td><td>家族抱擁。知らない人同士ハイタッチ。</td><td>BGMクライマックス全力</td></tr>
+    <tr><td>C18</td><td>0:44〜0:48</td><td>4秒</td><td>#ミヤトレ タグが全国に広がるCG演出。地図上に光が広がる。</td><td>SE：拡散音</td></tr>
+    <tr><td>C19</td><td>0:48〜0:51</td><td>3秒</td><td>ドローン俯瞰。賑わう宮崎の街。</td><td>「宮崎をもっと、面白く。」</td></tr>
+    <tr><td>C20</td><td>0:51〜0:54</td><td>3秒</td><td>お店に入る人たち。笑顔の店主。</td><td>BGM余韻へ</td></tr>
+    <tr><td>C21</td><td>0:54〜0:57</td><td>3秒</td><td>夕焼けの宮崎海岸。シルエット家族。</td><td>「宮崎でワクワクできる日常を、つくる。」</td></tr>
+    <tr><td>C22</td><td>0:57〜1:00</td><td>3秒</td><td>ミヤトレロゴ フェードイン。ブラックアウト。</td><td>BGM最後の音 → 静寂</td></tr>
+  </table>
+</div>
+
+<!-- ⑤BGM指示 -->
+<div class="section dark" id="bgm">
+  <h2>🎵 ⑤ BGM指示</h2>
+
+  <h3>▶ 感動系（メインBGM）</h3>
+  <div class="bgm-card">
+    <h4>🎻 オーケストラ感動系</h4>
+    <ul>
+      <li>弦楽器スタートで入り、徐々にオーケストラ全体に広がる構成</li>
+      <li>参考：Hans Zimmer / John Williams スタイル</li>
+      <li>キーワード：「Inspirational Cinematic Orchestra」「Emotional Rise」</li>
+      <li>テンポ：75〜85BPM（スローから中盤でアップ）</li>
+      <li>発見シーンで一気に盛り上がるBUILD UP必須</li>
+      <li>エンディングは徐々にFADE OUTではなく「余韻で締める」</li>
+    </ul>
+  </div>
+
+  <h3>▶ 冒険系（探索シーン）</h3>
+  <div class="bgm-card">
+    <h4>🏔️ アドベンチャー系</h4>
+    <ul>
+      <li>ドラムとブラスが中心。ワクワク・前向きな冒険感</li>
+      <li>参考：ONE PIECE 映画BGM / ポケモンGO テーマ</li>
+      <li>キーワード：「Adventure Epic Brass」「Quest Theme」</li>
+      <li>テンポ：100〜120BPM（歩くシーンに合わせる）</li>
+      <li>探索→発見の流れで緊張→解放のサウンドデザイン</li>
+    </ul>
+  </div>
+
+  <h3>▶ 映画予告編系（オープニング・エンディング）</h3>
+  <div class="bgm-card">
+    <h4>🎬 シネマティック系</h4>
+    <ul>
+      <li>BOOM（ドン）系の重厚な音から始まる</li>
+      <li>参考：ディズニー映画予告 / 地方創生ドキュメンタリー</li>
+      <li>キーワード：「Cinematic Trailer Music」「Epic Emotional Trailer」</li>
+      <li>テンポ：ゆっくり開始→中盤で急速に展開</li>
+      <li>最後は余白のある静かな着地</li>
+    </ul>
+  </div>
+
+  <h3>▶ 無料・商用利用可能なBGMリソース</h3>
+  <table class="cut-table">
+    <tr><th>サービス名</th><th>特徴</th><th>URL</th></tr>
+    <tr><td>Pixabay Music</td><td>完全無料・商用OK</td><td>pixabay.com/music</td></tr>
+    <tr><td>Epidemic Sound</td><td>月額・高品質</td><td>epidemicsound.com</td></tr>
+    <tr><td>Artlist</td><td>年額・映画品質</td><td>artlist.io</td></tr>
+    <tr><td>YouTube Audio Library</td><td>無料・YouTube用</td><td>studio.youtube.com</td></tr>
+    <tr><td>Uppbeat</td><td>無料プランあり</td><td>uppbeat.io</td></tr>
+  </table>
+
+  <h3>▶ SE（効果音）リスト</h3>
+  <table class="cut-table">
+    <tr><th>シーン</th><th>SE内容</th><th>説明</th></tr>
+    <tr><td>通知音</td><td>スマホ通知「ポン」</td><td>1音、高め、清涼感のある音</td></tr>
+    <tr><td>宝発見</td><td>チャイム＋キラキラ音</td><td>「ジャラン✨」宝が光る感じ</td></tr>
+    <tr><td>拡散演出</td><td>ウィン音→広がる</td><td>SNS拡散のCGに合わせる</td></tr>
+    <tr><td>環境音</td><td>海・鳥・街</td><td>ロケ地ごとに変える</td></tr>
+    <tr><td>歓声</td><td>子供の歓声・笑い声</td><td>ナチュラルに収録</td></tr>
+  </table>
+</div>
+
+<!-- ⑥撮影指示 -->
+<div class="section" id="shooting">
+  <h2>📷 ⑥ 撮影指示</h2>
+
+  <h3>▶ スマホ撮影版（iPhone / Androidで制作する場合）</h3>
+
+  <h4>📱 機材セット</h4>
+  <table class="cut-table">
+    <tr><th>アイテム</th><th>詳細</th><th>目安金額</th></tr>
+    <tr><td>スマホ</td><td>iPhone 14以上 / Android Pixel 7以上推奨</td><td>—</td></tr>
+    <tr><td>スタビライザー</td><td>DJI OM 6 / Hohem iSteady M6</td><td>1〜2万円</td></tr>
+    <tr><td>外付けマイク</td><td>Rode VideoMicro II</td><td>1万円前後</td></tr>
+    <tr><td>ND フィルター</td><td>屋外撮影の露出調整に必須</td><td>3千〜1万円</td></tr>
+    <tr><td>三脚</td><td>JOBY GorillaPod</td><td>3千円〜</td></tr>
+    <tr><td>モバイルバッテリー</td><td>大容量（20000mAh）</td><td>3千円〜</td></tr>
+  </table>
+
+  <h4>📱 スマホ撮影設定</h4>
+  <ul style="padding-left: 20px; margin: 10px 0;">
+    <li>解像度：4K 30fps（スローモーション部分は1080p 120fps）</li>
+    <li>露出：マニュアル固定（Filmic ProまたはBlackmagic Camera推奨）</li>
+    <li>シャッタースピード：フレームレートの2倍（30fps→1/60）</li>
+    <li>ホワイトバランス：5600K固定（晴天屋外）</li>
+    <li>Log撮影：LOG C使用可能なら使う（編集の余地が増える）</li>
+  </ul>
+
+  <h4>📱 シーンごとの撮影ポイント（スマホ版）</h4>
+  <table class="cut-table">
+    <tr><th>シーン</th><th>撮り方</th><th>注意点</th></tr>
+    <tr><td>日常シーン</td><td>望遠で圧縮感。被写体から5〜10m離れて撮影</td><td>逆光NG・朝7時前後が黄金時間</td></tr>
+    <tr><td>スマホ画面</td><td>スマホをもう1台使って画面録画→実写合成</td><td>反射しないようにND使用</td></tr>
+    <tr><td>走り出し</td><td>スタビライザーで追いかけ撮影</td><td>カメラマンも走る必要あり</td></tr>
+    <tr><td>街並み</td><td>ローアングル（地面すれすれ）から見上げる</td><td>人通りの少ない早朝に撮影</td></tr>
+    <tr><td>宝発見</td><td>子供の顔にフォーカス。発見の瞬間をスロー</td><td>2カメラ以上で同時撮影推奨</td></tr>
+    <tr><td>俯瞰</td><td>DJI Mini 4 Pro等のドローン</td><td>飛行許可要確認（宮崎市内）</td></tr>
+    <tr><td>夕焼けシルエット</td><td>露出を空に合わせる＝人物はシルエットに</td><td>日没15分前がベスト</td></tr>
+  </table>
+
+  <h3>▶ 本格撮影版（映像制作会社・プロカメラマンへの依頼）</h3>
+
+  <h4>🎥 推奨機材</h4>
+  <table class="cut-table">
+    <tr><th>機材</th><th>推奨モデル</th><th>用途</th></tr>
+    <tr><td>メインカメラ</td><td>Sony FX6 / Blackmagic Cinema 6K</td><td>主要カット全般</td></tr>
+    <tr><td>ジンバル</td><td>DJI RS 3 Pro</td><td>移動しながらの撮影</td></tr>
+    <tr><td>ドローン</td><td>DJI Inspire 3 / Air 3</td><td>俯瞰・街並み</td></tr>
+    <tr><td>レンズ</td><td>24-70mm f/2.8 / 85mm f/1.4</td><td>広角〜ポートレート</td></tr>
+    <tr><td>スライダー</td><td>Edelkrone SliderONE Pro</td><td>ゆっくりした水平移動</td></tr>
+    <tr><td>照明</td><td>Aputure 300X / 60D（屋外補光）</td><td>曇り日の補光</td></tr>
+  </table>
+
+  <h4>🎥 撮影スケジュール案（1日ロケ想定）</h4>
+  <table class="cut-table">
+    <tr><th>時間</th><th>撮影内容</th><th>ロケ地</th></tr>
+    <tr><td>05:30〜07:00</td><td>日常シーン（朝の街）・俯瞰ドローン</td><td>橘通り・宮崎駅周辺</td></tr>
+    <tr><td>07:00〜09:00</td><td>出発シーン・走り出し</td><td>住宅街→橘通り</td></tr>
+    <tr><td>09:00〜12:00</td><td>探索シーン・宮崎名所カット</td><td>宮崎神宮・一ツ葉海岸</td></tr>
+    <tr><td>13:00〜15:00</td><td>商店街シーン・人物インタラクション</td><td>橘通り商店街</td></tr>
+    <tr><td>15:00〜17:00</td><td>宝発見シーン（メインドラマ）</td><td>ロケ地選定済みの場所</td></tr>
+    <tr><td>17:30〜18:30</td><td>夕焼けシルエット・エンディング</td><td>日南海岸 or 宮崎海岸</td></tr>
+  </table>
+</div>
+
+<!-- ⑦AI動画生成プロンプト -->
+<div class="section dark" id="aiprompts">
+  <h2>🤖 ⑦ AI動画生成プロンプト（全シーン）</h2>
+
+  <div class="tip-box" style="background: rgba(255,200,0,0.1); border-color: var(--gold); color: #ddd;">
+    各プロンプトは Veo3 / Runway / Kling / Pika / Sora に対応。<br>
+    ツールにより「--motion」「--aspect-ratio」等のパラメータが異なります。各ツールの最新仕様に合わせて調整してください。
+  </div>
+
+  <h3>▶ シーン1：日常（モノクロ・朝の街）</h3>
+  <p style="color: #aaa; margin-bottom: 5px;">
+    <span class="tool-badge badge-veo">Veo3</span>
+    <span class="tool-badge badge-runway">Runway</span>
+    <span class="tool-badge badge-kling">Kling</span>
+    <span class="tool-badge badge-pika">Pika</span>
+    <span class="tool-badge badge-sora">Sora</span>
+  </p>
+  <div class="prompt-box">A quiet morning in Miyazaki city Japan, desaturated black and white cinematic footage.
+A young Japanese woman sits on a doorstep, looking at her smartphone with a gentle sigh.
+Morning sunlight filters softly through trees. Birds chirping in the distance.
+Slow motion, shallow depth of field, anamorphic lens flare.
+Style: cinematic, melancholic, Terrence Malick inspired.
+Camera: slow pan right, handheld subtle movement.
+Aspect ratio: 9:16 (vertical for Instagram Reels / TikTok)
+Duration: 4 seconds</div>
+
+  <h3>▶ シーン2：スマホ通知（きっかけ）</h3>
+  <div class="prompt-box">Close-up of Japanese woman's hands holding a smartphone.
+Screen shows a social media notification: "ミヤトレ: 宮崎に宝を隠しました #miyatore"
+The comment section fills with excited Japanese text: "どこ!?" "見つけた！！" "行く！"
+The phone screen glows brightly in contrast to the muted surroundings.
+Her eyes widen with curiosity and excitement.
+Camera: extreme close-up macro, then slowly pull back to show her face.
+Color: screen glows vibrant while background stays desaturated.
+Duration: 3 seconds</div>
+
+  <h3>▶ シーン3：走り出し（カラー復活）</h3>
+  <div class="prompt-box">Cinematic shot of running sneakers on Miyazaki city streets.
+Low angle ground-level shot, camera follows the shoes at high speed.
+Colors rapidly transition from black-and-white to vivid, saturated colors as the runner accelerates.
+Miyazaki blue sky, cherry blossoms, colorful storefronts rushing past.
+Handheld energetic camera movement, motion blur on background.
+Style: dynamic, hopeful, joyful. Like the beginning of a Disney adventure.
+Duration: 4 seconds. Speed ramp from 0.5x to 1x.</div>
+
+  <h3>▶ シーン4：街を歩く（探索）</h3>
+  <div class="prompt-box">Multiple people walking through beautiful Miyazaki Japan locations.
+- Family with young children walking through Miyazaki Jingu shrine pathway, autumn leaves
+- Young friends consulting a paper map near Tachibana street shopping arcade
+- Elderly couple pointing at something off screen with excitement
+Cinematic Teal and Orange color grade. Warm golden hour light.
+Multiple quick cuts: wide establishing shots, medium shots of faces, close-up of map and hands.
+Background: traditional Japanese architecture mixed with modern shops.
+Style: Studio Ghibli meets National Geographic documentary.
+Duration: 10 seconds total</div>
+
+  <h3>▶ シーン5：宝発見（クライマックス）</h3>
+  <div class="prompt-box">A Japanese child (age 7-8) discovers a treasure box hidden behind a rock near a Miyazaki shrine.
+The child's face lights up with pure joy and amazement - "あった！！！！"
+Extreme slow motion (120fps) of the discovery moment.
+Golden light explosion particle effect around the treasure box.
+The child jumps up and down, runs to parents who embrace warmly.
+Two strangers high-five each other spontaneously, laughing.
+Everyone takes out smartphones to photograph and share.
+Camera: Start on child's eyes, pull back quickly to reveal the full scene.
+Color: Maximum saturation, warm golden glow, lens flares.
+Duration: 8 seconds</div>
+
+  <h3>▶ シーン6：SNS拡散（CGエフェクト）</h3>
+  <div class="prompt-box">Digital visualization: #ミヤトレ hashtag posts spreading across Japan.
+3D animated map of Japan, glowing orange dots appearing across the country starting from Miyazaki.
+Social media post cards floating and spinning, each showing smiling faces with treasure finds.
+The spread accelerates exponentially, filling the screen with joy.
+Style: Tech documentary meets Disney magic, warm orange and gold color palette.
+Text elements: Japanese hashtags, heart reactions, location pins
+Duration: 4 seconds. Fast paced, energetic.</div>
+
+  <h3>▶ シーン7：宮崎活性化（ドローン俯瞰）</h3>
+  <div class="prompt-box">Aerial drone footage over Miyazaki city Japan at golden hour.
+The streets and shopping areas are filled with happy people walking, shopping, laughing.
+Slow majestic drone pull-back revealing the beautiful Miyazaki landscape:
+city streets → green mountains → Pacific Ocean coastline → blue sky.
+Color: Rich golden sunset, warm amber tones, cinematic color grade.
+Camera: Begin 100m altitude over Tachibana street, slowly ascend to 300m while pulling back.
+Style: Epic documentary, "Planet Earth" meets "Isle of Dogs"
+Duration: 6 seconds</div>
+
+  <h3>▶ シーン8：エンディング（シルエット）</h3>
+  <div class="prompt-box">Silhouette of a Japanese family (parents and two children) holding hands on Miyazaki beach at sunset.
+The sky is painted in deep orange, pink, and purple gradients.
+Palm trees silhouette in the background (Miyazaki is known for palm trees).
+The family faces the setting sun over the Pacific Ocean.
+Camera: Slow dolly push towards the silhouettes, very slow.
+Text overlay fades in: ミヤトレ (in elegant bold Japanese/Latin font, gold colored)
+Second line: 日常にワクワクを。(smaller, white)
+Third line: 宮崎でワクワクできる日常を。(smallest, white)
+Duration: 6 seconds. Serene, emotional, hopeful.</div>
+
+  <h3>▶ ツール別パラメータ補足</h3>
+  <table class="cut-table">
+    <tr><th>ツール</th><th>縦型設定</th><th>品質設定</th><th>特記事項</th></tr>
+    <tr><td>Veo3 (Google)</td><td>aspect_ratio: 9:16</td><td>quality: high</td><td>日本語プロンプト対応。音声生成も可能</td></tr>
+    <tr><td>Runway Gen-4</td><td>--ar 9:16</td><td>--quality turbo</td><td>モーションブラシで動き指定可能</td></tr>
+    <tr><td>Kling 1.6</td><td>縦型モード選択</td><td>高品質モード</td><td>日本語プロンプト精度が高い</td></tr>
+    <tr><td>Pika 2.0</td><td>portrait mode</td><td>standard</td><td>SE・BGM自動生成機能あり</td></tr>
+    <tr><td>Sora (OpenAI)</td><td>9:16 portrait</td><td>1080p</td><td>最長20秒。スタイル指定が強い</td></tr>
+  </table>
+</div>
+
+<!-- ⑧動画編集指示 -->
+<div class="section" id="editing">
+  <h2>✂️ ⑧ 動画編集指示（CapCut完全版）</h2>
+
+  <div class="tip-box">CapCut（PC版推奨）で再現可能な設定をすべて記載しています。</div>
+
+  <h3>▶ プロジェクト設定</h3>
+  <div class="capcut-step">
+    <span class="step-num">1</span>
+    新規プロジェクト → 解像度：<strong>1080×1920（縦型・9:16）</strong> ／ フレームレート：<strong>30fps</strong>
+  </div>
+  <div class="capcut-step">
+    <span class="step-num">2</span>
+    SNS横型も必要な場合は別プロジェクトで <strong>1920×1080（16:9）</strong> も作成
+  </div>
+
+  <h3>▶ カラーグレーディング設定</h3>
+
+  <h4>📽️ 日常シーン（モノクロ）</h4>
+  <div class="capcut-step">
+    <span class="step-num">3</span>
+    調整レイヤー → 彩度：<strong>-100</strong> ／ コントラスト：<strong>+20</strong> ／ シャドウ：<strong>-15</strong>
+  </div>
+
+  <h4>🌈 カラー復活トランジション（走り出しシーン）</h4>
+  <div class="capcut-step">
+    <span class="step-num">4</span>
+    キーフレームを使用：0フレーム目 彩度-100 → 15フレーム目 彩度0（急速にカラーに）<br>
+    CapCut：クリップ選択 → 「キーフレーム追加」→ 彩度をアニメーション設定
+  </div>
+
+  <h4>🎬 本編のカラーグレード（Teal & Orange）</h4>
+  <div class="capcut-step">
+    <span class="step-num">5</span>
+    <strong>全クリップに適用するLUT：</strong><br>
+    CapCut内蔵フィルター → 「映画」カテゴリ → <strong>「CINEMA」または「FILM」系を選択</strong><br>
+    手動設定：ティール（シャドウ）：ブルー+グリーン寄り ／ オレンジ（ハイライト）：ウォーム
+  </div>
+
+  <div class="capcut-step">
+    <span class="step-num">6</span>
+    露出：<strong>+5〜+10</strong>（明るめが映える） ／ 彩度：<strong>+15</strong> ／ シャープネス：<strong>+20</strong>
+  </div>
+
+  <h3>▶ テロップ設定</h3>
+
+  <h4>ナレーションテロップ</h4>
+  <div class="capcut-step">
+    <span class="step-num">7</span>
+    フォント：<strong>Noto Sans JP Bold</strong> または <strong>源ノ角ゴシック Heavy</strong><br>
+    文字色：<strong>白（#FFFFFF）</strong> ／ アウトライン：<strong>黒2px</strong> ／ シャドウ：ソフト（Blur 8px）
+  </div>
+
+  <div class="capcut-step">
+    <span class="step-num">8</span>
+    アニメーション：テキスト入り：<strong>「フェードアップ」（0.3秒）</strong> ／ テキスト出：<strong>「フェードダウン」（0.2秒）</strong>
+  </div>
+
+  <h4>エンディングロゴテロップ</h4>
+  <div class="capcut-step">
+    <span class="step-num">9</span>
+    「ミヤトレ」：フォントサイズ <strong>80pt以上</strong> ／ 色：<strong>ゴールド（#FFD700）</strong> ／ レタースペーシング：<strong>広め</strong><br>
+    アニメーション：<strong>「スケールイン」</strong>（0.5秒かけてゆっくり現れる）
+  </div>
+
+  <div class="capcut-step">
+    <span class="step-num">10</span>
+    「日常にワクワクを。」：フォントサイズ <strong>40pt</strong> ／ 色：<strong>白</strong> ／ タイミング：ロゴから0.5秒後にフェードイン
+  </div>
+
+  <h3>▶ トランジション設定</h3>
+  <table class="cut-table">
+    <tr><th>シーン間</th><th>トランジション</th><th>時間</th><th>設定</th></tr>
+    <tr><td>日常→きっかけ</td><td>スマッシュカット</td><td>0秒（瞬間切替）</td><td>SE「ポン」に合わせる</td></tr>
+    <tr><td>きっかけ→走り出し</td><td>ズームIN＋ホワイトフラッシュ</td><td>0.3秒</td><td>CapCut「フラッシュ」トランジション</td></tr>
+    <tr><td>探索カット間</td><td>J-cut / L-cut</td><td>—</td><td>音声を少し先行させて繋ぐ</td></tr>
+    <tr><td>宝発見</td><td>スローモーション + 光フラッシュ</td><td>0.5秒</td><td>クリップ速度を0.2xに</td></tr>
+    <tr><td>本編→エンディング</td><td>クロスディゾルブ</td><td>1.0秒</td><td>感情的に落ち着かせる</td></tr>
+  </table>
+
+  <h3>▶ ズーム・カメラワーク演出</h3>
+  <div class="capcut-step">
+    <span class="step-num">11</span>
+    <strong>ケンバーンズ効果（静止画・AI生成動画に動きをつける）：</strong><br>
+    クリップ選択 → 「基本」→ スケールキーフレーム：開始100% → 終了110%（ゆっくりズームIN）
+  </div>
+  <div class="capcut-step">
+    <span class="step-num">12</span>
+    <strong>発見シーンのスマッシュズーム：</strong><br>
+    クリップの「宝発見の瞬間」フレームにキーフレーム → 0フレーム：scale100% → 5フレーム：scale150% → 10フレーム：scale120%
+  </div>
+
+  <h3>▶ BGM・SE配置</h3>
+  <div class="capcut-step">
+    <span class="step-num">13</span>
+    BGMをタイムラインに配置 → 音量：<strong>-6db（ナレーションと被らないように）</strong>
+  </div>
+  <div class="capcut-step">
+    <span class="step-num">14</span>
+    ナレーション音声：<strong>-3db</strong>（BGMより前に出す）
+  </div>
+  <div class="capcut-step">
+    <span class="step-num">15</span>
+    SE（効果音）：各タイミングに合わせて配置。音量は <strong>-8〜-10db</strong>（主張しすぎない）
+  </div>
+  <div class="capcut-step">
+    <span class="step-num">16</span>
+    BGMのフェード：エンディング最後の2秒で <strong>-6db → -∞ にフェードアウト</strong>
+  </div>
+
+  <h3>▶ エクスポート設定</h3>
+  <table class="cut-table">
+    <tr><th>プラットフォーム</th><th>解像度</th><th>ビットレート</th><th>形式</th></tr>
+    <tr><td>Instagram Reels / TikTok</td><td>1080×1920（縦）</td><td>高品質</td><td>MP4 H.264</td></tr>
+    <tr><td>YouTube ショート</td><td>1080×1920（縦）</td><td>高品質</td><td>MP4 H.264</td></tr>
+    <tr><td>YouTube 広告</td><td>1920×1080（横）</td><td>最高品質</td><td>MP4 H.264</td></tr>
+    <tr><td>ストック保存</td><td>4K 3840×2160</td><td>最高品質</td><td>MP4 H.265</td></tr>
+  </table>
+</div>
+
+<!-- ⑨最終成果物チェックリスト -->
+<div class="section" id="checklist">
+  <h2>✅ ⑨ 最終成果物チェックリスト</h2>
+
+  <h3>▶ 動画制作会社への発注時チェック</h3>
+  <ul class="checklist" style="padding-left: 0;">
+    <li>CM台本（30秒版・60秒版）完成</li>
+    <li>ナレーション全文＋ディレクション完成</li>
+    <li>絵コンテ（7シーン）完成</li>
+    <li>カット割り（秒数単位）完成</li>
+    <li>BGM方向性＋候補リスト完成</li>
+    <li>SE（効果音）リスト完成</li>
+    <li>ロケ地リスト確定（橘通り・宮崎神宮・一ツ葉海岸等）</li>
+    <li>出演者キャスティング（子供・家族・学生・地元の人）</li>
+    <li>撮影許可申請（宮崎市・各施設）</li>
+    <li>ブランドロゴデータ（ベクター形式）用意</li>
+  </ul>
+
+  <h3>▶ AI動画ツールで自作する場合のチェック</h3>
+  <ul class="checklist" style="padding-left: 0;">
+    <li>全シーンのAI動画プロンプト準備完了（8シーン）</li>
+    <li>使用するAIツール確定（Veo3 / Runway / Kling 等）</li>
+    <li>各シーンを生成（複数バリエーションを生成して最良を選択）</li>
+    <li>CapCutでタイムライン組み上げ</li>
+    <li>カラーグレーディング適用</li>
+    <li>テロップ配置（ナレーションテロップ＋エンディングロゴ）</li>
+    <li>BGM・SE配置＆音量調整</li>
+    <li>ナレーション音声収録（または AI 音声生成）</li>
+    <li>書き出し（各プラットフォーム形式）</li>
+    <li>最終確認：視聴者が「参加したい」と思えるか</li>
+  </ul>
+
+  <h3>▶ 最終確認：CMの本質チェック</h3>
+  <div class="warn-box">
+    完成したCMを見て、以下を必ず確認してください：
+  </div>
+  <ul class="checklist" style="padding-left: 0;">
+    <li>「宮崎って面白い」と思わせる映像になっているか</li>
+    <li>「自分も参加したい！」という衝動が湧くか</li>
+    <li>「ミヤトレを応援したい」という気持ちになるか</li>
+    <li>単なる宝探し動画ではなく「地域を動かすムーブメント」として表現できているか</li>
+    <li>ブランドメッセージ「日常にワクワクを。」が心に残るか</li>
+  </ul>
+</div>
+
+<!-- エンディングブランドメッセージ -->
+<div class="container">
+  <div class="brand-message">
+    <span class="miyatore">MIYATORE</span>
+    <div class="tagline1">日常にワクワクを。</div>
+    <div class="tagline2">宮崎でワクワクできる日常を。</div>
+  </div>
+</div>
+
+<footer>
+  ミヤトレ ブランドCM制作完全指示書 ／ 2026年5月 ／ Claude Code 生成<br>
+  本書は動画制作会社への発注・AI動画ツールでの自主制作、両方に対応しています。
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事業内容説明書</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Yu Gothic', 'MS PGothic', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            background: white;
+            padding: 15mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            page-break-inside: avoid;
+        }
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+        .header p {
+            font-size: 10px;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            background: #2c3e50;
+            padding: 5px 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid #e74c3c;
+        }
+        .content-row {
+            display: flex;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            font-size: 11px;
+        }
+        .label {
+            font-weight: bold;
+            width: 35%;
+            color: #2c3e50;
+        }
+        .value {
+            width: 65%;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            font-size: 10px;
+        }
+        th, td {
+            border: 1px solid #bbb;
+            padding: 5px;
+            text-align: left;
+        }
+        th {
+            background: #ecf0f1;
+            font-weight: bold;
+            width: 30%;
+        }
+        td {
+            width: 70%;
+        }
+        .business-box {
+            background: #f8f9fa;
+            border-left: 3px solid #3498db;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            page-break-inside: avoid;
+            font-size: 11px;
+        }
+        .business-box h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        .business-box p {
+            color: #555;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        .highlight {
+            background: #fffacd;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            page-break-inside: avoid;
+        }
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+                background: white;
+            }
+            .container {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 20mm;
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+            .header {
+                page-break-inside: avoid;
+            }
+            .section {
+                page-break-inside: avoid;
+            }
+            .business-box {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>事業内容説明書</h1>
+            <p>法人口座開設申込用</p>
+        </div>
+
+        <!-- 企業基本情報 -->
+        <div class="section">
+            <div class="section-title">1. 企業基本情報</div>
+            <div class="content-row">
+                <div class="label">会社名</div>
+                <div class="value">【会社名を入力】</div>
+            </div>
+            <div class="content-row">
+                <div class="label">代表者名</div>
+                <div class="value">【代表者名を入力】</div>
+            </div>
+            <div class="content-row">
+                <div class="label">住所</div>
+                <div class="value">【住所を入力】</div>
+            </div>
+            <div class="content-row">
+                <div class="label">設立年月日</div>
+                <div class="value">【設立日を入力】</div>
+            </div>
+            <div class="content-row">
+                <div class="label">従業員数</div>
+                <div class="value">【従業員数を入力】名</div>
+            </div>
+            <div class="content-row">
+                <div class="label">資本金</div>
+                <div class="value">【資本金を入力】円</div>
+            </div>
+        </div>
+
+        <!-- 事業概要 -->
+        <div class="section">
+            <div class="section-title">2. 事業概要</div>
+            <p style="margin-bottom: 15px; line-height: 1.8;">
+                当社は、デジタルマーケティングとサービス業を中核事業とする企業です。SNSを活用した情報発信・マーケティング支援事業と、
+                <span class="highlight">アネラカフェ</span>（ペットトリミングおよび福祉就労）の2つの事業を展開しており、
+                それぞれで実績を積み上げています。
+            </p>
+        </div>
+
+        <!-- 主要事業1: SNS事業 -->
+        <div class="section">
+            <div class="section-title">3. 主要事業（1）SNS運用・マーケティング事業</div>
+
+            <div class="business-box">
+                <h3>事業内容</h3>
+                <p>• Instagram等SNSプラットフォームの運用代行・コンテンツ企画</p>
+                <p>• 企業・個人事業主向けのSNS戦略策定・ブランド構築支援</p>
+                <p>• AI技術（Claude、GPT等）を活用したコンテンツ生成・最適化</p>
+                <p>• フォロワー増加・マネタイズ等の成果支援</p>
+            </div>
+        </div>
+
+        <!-- 主要事業2: アネラカフェ -->
+        <div class="section">
+            <div class="section-title">4. 主要事業（2）アネラカフェ（ペットトリミング・福祉就労）</div>
+
+            <div class="business-box">
+                <h3>事業内容</h3>
+                <p>• ふれあいカフェ、ペットトリミングサービス提供（フルサービス・リメイク等）</p>
+                <p>• 福祉就労支援B型施設の運営・管理</p>
+                <p>• 利用者向けの経営管理ツール・ダッシュボード構築</p>
+            </div>
+
+            <div class="business-box">
+                <h3>展開地域・拠点</h3>
+                <p>• メイン拠点：大分県</p>
+                <p>• サテライト拠点：宮崎県（今期出店予定）</p>
+                <p>• スタッフ数：正社員2名、パート8名</p>
+            </div>
+
+            <div class="business-box">
+                <h3>システム・ツール</h3>
+                <p>• <span class="highlight">予約管理システム</span>：オンライン予約・スタッフスケジュール管理</p>
+                <p>• <span class="highlight">在庫管理表</span>：ペットフード等の消費材を一元管理</p>
+            </div>
+        </div>
+
+        <!-- 経営方針 -->
+        <div class="section">
+            <div class="section-title">5. 経営方針・強み</div>
+
+            <table>
+                <tr>
+                    <th>項目</th>
+                    <th>内容</th>
+                </tr>
+                <tr>
+                    <td>デジタル化推進</td>
+                    <td>最新のIT・AI技術を積極的に導入し、業務効率化・利益最大化を実現</td>
+                </tr>
+                <tr>
+                    <td>多角化戦略</td>
+                    <td>SNS事業と福祉・サービス業の2本柱で、リスク分散と相乗効果を実現</td>
+                </tr>
+                <tr>
+                    <td>スタッフ育成</td>
+                    <td>現場スタッフの働きやすい環境整備と継続的なスキルアップ支援</td>
+                </tr>
+                <tr>
+                    <td>顧客重視</td>
+                    <td>SNS・ペットトリミング両事業で顧客満足度を最優先</td>
+                </tr>
+            </table>
+        </div>
+
+
+        <div class="footer">
+            <p>このドキュメントは法人口座開設申込の際に参考資料として提出されます。</p>
+            <p>記載内容は事実に基づくものです。</p>
+        </div>
+    </div>
+</body>
+</html>

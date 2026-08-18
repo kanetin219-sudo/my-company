@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>META広告運用レポート｜2026年5月｜匠のGEN</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1a2e4a;
+    --navy-light: #243d60;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --white: #ffffff;
+    --gray: #f5f5f0;
+    --gray-mid: #e0ddd6;
+    --text: #1a1a1a;
+    --text-muted: #666;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+    background: #f0ede8;
+    color: var(--text);
+  }
+
+  /* ===== 共通 ===== */
+  .section {
+    max-width: 1000px;
+    margin: 0 auto 48px;
+    background: var(--white);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(26,46,74,0.10);
+  }
+
+  .section-header {
+    background: var(--navy);
+    color: var(--white);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-header .label {
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .section-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .section-body {
+    padding: 32px;
+  }
+
+  /* ===== 表紙 ===== */
+  .cover {
+    max-width: 1000px;
+    margin: 48px auto 48px;
+    background: var(--navy);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 32px rgba(26,46,74,0.25);
+    position: relative;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 30%, rgba(201,168,76,0.12) 100%);
+    pointer-events: none;
+  }
+
+  .cover-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-brand {
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .cover-date {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.06em;
+  }
+
+  .cover-main {
+    margin-top: 32px;
+  }
+
+  .cover-sub {
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.16em;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .cover-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+  }
+
+  .cover-title span {
+    color: var(--gold);
+  }
+
+  .cover-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: 40px;
+  }
+
+  .cover-client {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+  }
+
+  .cover-client strong {
+    display: block;
+    font-size: 20px;
+    color: var(--white);
+    margin-top: 4px;
+    letter-spacing: 0.06em;
+  }
+
+  .cover-accent {
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin-top: 40px;
+  }
+
+  /* ===== テーブル ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-mid);
+    color: var(--text);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:nth-child(even) td { background: var(--gray); }
+
+  .highlight-row td {
+    background: rgba(201,168,76,0.12) !important;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .best-cpa {
+    color: #c0392b;
+    font-weight: 700;
+  }
+
+  .gold-text { color: var(--gold); font-weight: 700; }
+  .navy-text { color: var(--navy); font-weight: 700; }
+
+  /* ===== KPI カード ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 0;
+  }
+
+  .kpi-card {
+    background: var(--gray);
+    border-radius: 4px;
+    padding: 20px;
+    border-left: 4px solid var(--navy);
+    position: relative;
+  }
+
+  .kpi-card.highlight {
+    border-left-color: var(--gold);
+    background: rgba(201,168,76,0.08);
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+  }
+
+  .kpi-card.highlight .kpi-value { color: var(--gold); }
+
+  .kpi-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ===== タイムライン ===== */
+  .timeline {
+    display: flex;
+    gap: 0;
+    margin: 8px 0 0;
+    position: relative;
+  }
+
+  .phase {
+    flex: 1;
+    position: relative;
+    padding: 20px 16px;
+    background: var(--gray);
+    border-left: 3px solid var(--gray-mid);
+    transition: background 0.2s;
+  }
+
+  .phase:first-child { border-left: none; border-radius: 4px 0 0 4px; }
+  .phase:last-child { border-radius: 0 4px 4px 0; }
+
+  .phase.active {
+    background: var(--navy);
+    border-left-color: var(--gold);
+  }
+
+  .phase-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .phase.active .phase-num { color: var(--gold-light); }
+
+  .phase-period {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  .phase.active .phase-period { color: var(--white); }
+
+  .phase-title {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .phase.active .phase-title { color: rgba(255,255,255,0.85); }
+
+  .phase-result {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .phase.active .phase-result { color: var(--gold-light); }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 2px;
+    color: var(--navy);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ===== 見解ボックス ===== */
+  .insight-box {
+    background: rgba(26,46,74,0.05);
+    border-left: 4px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    padding: 18px 20px;
+    margin-top: 20px;
+  }
+
+  .insight-box h4 {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .insight-box ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .insight-box ul li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 4px 0 4px 16px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .insight-box ul li::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 10px;
+    top: 7px;
+  }
+
+  /* ===== チャートエリア ===== */
+  .chart-wrap {
+    margin-top: 24px;
+    position: relative;
+    height: 280px;
+  }
+
+  .chart-wrap-sm {
+    margin-top: 24px;
+    position: relative;
+    height: 240px;
+  }
+
+  /* ===== 提案リスト ===== */
+  .proposal-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .proposal-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 20px;
+    background: var(--gray);
+    border-radius: 4px;
+  }
+
+  .proposal-num {
+    width: 36px;
+    height: 36px;
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .proposal-content h3 {
+    font-size: 15px;
+    color: var(--navy);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .proposal-content p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ===== 注記 ===== */
+  .notes {
+    max-width: 1000px;
+    margin: 0 auto 64px;
+    padding: 20px 32px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+
+  .notes strong { color: var(--navy); }
+
+  /* ===== 見出し補助 ===== */
+  .sub-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-mid);
+    font-size: 14px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--text-muted); }
+  .stat-value { font-weight: 700; color: var(--navy); }
+  .stat-value.gold { color: var(--gold); }
+
+  .badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  @media print {
+    body { background: white; }
+    .section, .cover { box-shadow: none; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 表紙 ===== -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-brand">匠のGEN｜Takumi no GEN</div>
+    <div class="cover-date">2026年5月</div>
+  </div>
+  <div class="cover-main">
+    <div class="cover-sub">Monthly Report</div>
+    <div class="cover-title">META広告<br>運用レポート <span>2026年5月</span></div>
+    <div class="cover-accent"></div>
+  </div>
+  <div class="cover-bottom">
+    <div class="cover-client">
+      <span>Presented to</span>
+      <strong>匠のGEN 様</strong>
+    </div>
+    <div style="color:rgba(255,255,255,0.3);font-size:12px;text-align:right;">
+      集計期間：2026年2月〜5月9日<br>
+      データ出典：META広告マネージャー
+    </div>
+  </div>
+</div>
+
+<!-- ===== 運用サマリー ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">01</span>
+    <h2>広告運用サマリー（2月〜5月）</h2>
+  </div>
+  <div class="section-body">
+    <p class="sub-title">2026年2月の運用開始から5月9日時点までの月別実績</p>
+    <div class="two-col">
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>月</th>
+              <th>広告費</th>
+              <th>リスト数</th>
+              <th>CPA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2月</td>
+              <td>¥81,483</td>
+              <td><strong>13件</strong></td>
+              <td>¥6,268</td>
+            </tr>
+            <tr>
+              <td>3月</td>
+              <td>¥92,726</td>
+              <td>4件</td>
+              <td>¥23,182</td>
+            </tr>
+            <tr>
+              <td>4月</td>
+              <td>¥42,739</td>
+              <td>5件</td>
+              <td>¥8,548</td>
+            </tr>
+            <tr>
+              <td>5月（途中）</td>
+              <td>¥34,088</td>
+              <td>5件</td>
+              <td>¥6,818</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>累計</td>
+              <td>¥251,036</td>
+              <td>27件</td>
+              <td>¥9,298</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">※ リスト = LINE公式アカウント友だち追加数（広告経由）</p>
+      </div>
+      <div>
+        <div class="chart-wrap">
+          <canvas id="summaryChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== タイムライン ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">02</span>
+    <h2>広告運用の歩み｜2月〜アフターGW祭り</h2>
+  </div>
+  <div class="section-body">
+    <p class="sub-title">2月の運用開始から今回のイベントまでの取り組み全体像</p>
+    <div class="timeline">
+      <div class="phase">
+        <div class="phase-num">PHASE 1</div>
+        <div class="phase-period">2月</div>
+        <div class="phase-title">完成見学会<br>集客広告</div>
+        <div class="phase-result">13件・CPA¥4,724</div>
+      </div>
+      <div class="arrow">›</div>
+      <div class="phase">
+        <div class="phase-num">PHASE 2</div>
+        <div class="phase-period">2〜3月</div>
+        <div class="phase-title">完成見学会<br>集客広告（継続）</div>
+        <div class="phase-result">4件・CPA¥23,182</div>
+      </div>
+      <div class="arrow">›</div>
+      <div class="phase">
+        <div class="phase-num">PHASE 3</div>
+        <div class="phase-period">4月〜</div>
+        <div class="phase-title">R8.4 ブランド<br>イメージ広告 開始</div>
+        <div class="phase-result">ブランド認知強化</div>
+      </div>
+      <div class="arrow">›</div>
+      <div class="phase active">
+        <div class="phase-num">PHASE 4 ★</div>
+        <div class="phase-period">4〜5月</div>
+        <div class="phase-title">アフターGW祭り<br>集客広告</div>
+        <div class="phase-result">6件・CPA¥4,753（最良）</div>
+      </div>
+    </div>
+    <div class="insight-box" style="margin-top:16px;">
+      <h4>総評</h4>
+      <ul>
+        <li>イベント訴求×タイミング最適化により、アフターGW祭りで過去最良のCPAを達成</li>
+        <li>2月開始以来、累計27件のリストを獲得。地域内でのブランド認知が着実に積み上がっている</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2月詳細 ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">03</span>
+    <h2>2月 完成見学会｜集客広告 成果</h2>
+  </div>
+  <div class="section-body">
+    <div class="two-col">
+      <div>
+        <div class="stat-row">
+          <span class="stat-label">見学会広告費</span>
+          <span class="stat-value">¥61,407</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">月間総広告費</span>
+          <span class="stat-value">¥81,483</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">LINE友だち追加（リスト獲得）</span>
+          <span class="stat-value gold">13件 <span class="badge">最多</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">見学会広告CPA</span>
+          <span class="stat-value gold">¥4,724</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">月間CPA</span>
+          <span class="stat-value">¥6,268</span>
+        </div>
+      </div>
+      <div>
+        <div style="background:var(--gray);border-radius:4px;padding:16px;margin-bottom:12px;">
+          <p style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;">ポイント</p>
+          <ul style="font-size:13px;color:var(--text);padding-left:16px;line-height:1.8;">
+            <li>開始月にして最多リスト獲得（全期間で最高の月別リスト数）</li>
+            <li>見学会訴求型クリエイティブが高い反応率を示した</li>
+            <li>この月の成果が運用方針の基軸となった</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <h4>運用担当者の見解</h4>
+      <ul>
+        <li>見学会自体への反響が非常に良く、広告との相乗効果が生まれた</li>
+        <li>広告経由の集客に加え、<strong>広告運用の間接的効果</strong>（ブランド認知・指名検索の増加）が来場数を後押しした可能性が高い</li>
+        <li>META広告による継続的な露出が「匠のGEN」への信頼感醸成につながっていると判断</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3月詳細 ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">04</span>
+    <h2>3月 完成見学会｜集客広告 成果</h2>
+  </div>
+  <div class="section-body">
+    <div class="two-col">
+      <div>
+        <div class="stat-row">
+          <span class="stat-label">広告費</span>
+          <span class="stat-value">¥92,726</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">LINE友だち追加（リスト獲得）</span>
+          <span class="stat-value">4件</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">CPA</span>
+          <span class="stat-value">¥23,182</span>
+        </div>
+      </div>
+      <div>
+        <div style="background:var(--gray);border-radius:4px;padding:16px;">
+          <p style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;">振り返り</p>
+          <ul style="font-size:13px;color:var(--text);padding-left:16px;line-height:1.8;">
+            <li>2月（CPA¥4,724）と比較してCPAが上昇</li>
+            <li>同一クリエイティブの継続配信による「広告疲れ」の影響が考えられる</li>
+            <li>この結果を踏まえ、4月以降クリエイティブをリフレッシュ</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <h4>運用担当者の見解</h4>
+      <ul>
+        <li>3月も見学会自体への反響は良好で、来場者の反応は前向きだった</li>
+        <li>LINEリスト数（4件）という数字以上に、<strong>広告運用の間接的効果</strong>が出ていたと分析</li>
+        <li>広告を通じた継続的な露出により「匠のGEN」のブランド認知が地域内で着実に向上</li>
+        <li>来場者が「広告を見て知っていた」「以前から気になっていた」という状態が、来場の背景にある</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== キャンペーン比較 ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">05</span>
+    <h2>キャンペーン別 成果比較</h2>
+  </div>
+  <div class="section-body">
+    <div class="two-col">
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>キャンペーン</th>
+              <th>広告費</th>
+              <th>リスト</th>
+              <th>CPA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2月完成見学会</td>
+              <td>¥61,407</td>
+              <td>13件</td>
+              <td>¥4,724</td>
+            </tr>
+            <tr>
+              <td>3月完成見学会</td>
+              <td>¥92,726</td>
+              <td>4件</td>
+              <td>¥23,182</td>
+            </tr>
+            <tr>
+              <td>R8.4 イメージ広告</td>
+              <td>¥48,307</td>
+              <td>4件</td>
+              <td>¥12,077</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>アフターGW祭り ★</td>
+              <td>¥28,520</td>
+              <td>6件</td>
+              <td class="best-cpa">¥4,753</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">★ 全キャンペーン中 最優秀CPA・最少広告費で最多リスト獲得</p>
+      </div>
+      <div>
+        <div class="chart-wrap">
+          <canvas id="campaignChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== アフターGW祭り詳細 ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">06</span>
+    <h2>アフターGW祭り｜完成見学会 成果レポート</h2>
+  </div>
+  <div class="section-body">
+    <div style="display:flex;gap:24px;margin-bottom:24px;flex-wrap:wrap;">
+      <div style="background:var(--navy);color:var(--white);border-radius:4px;padding:16px 24px;">
+        <div style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:0.08em;margin-bottom:4px;">広告配信期間</div>
+        <div style="font-size:15px;font-weight:700;">2026年5月1日〜9日（9日間）</div>
+      </div>
+      <div style="background:var(--gold);color:var(--navy);border-radius:4px;padding:16px 24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;margin-bottom:4px;">見学会開催日</div>
+        <div style="font-size:15px;font-weight:700;">5月9日（土）・10日（日）</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>日付</th>
+              <th>広告費</th>
+              <th>リスト獲得</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>5月1日</td><td>¥2,038</td><td>2件</td></tr>
+            <tr><td>5月2日</td><td>¥2,226</td><td>2件</td></tr>
+            <tr><td>5月3日</td><td>¥2,209</td><td>0件</td></tr>
+            <tr><td>5月4日</td><td>¥2,043</td><td>0件</td></tr>
+            <tr><td>5月5日</td><td>¥2,161</td><td>0件</td></tr>
+            <tr><td>5月6日</td><td>¥2,019</td><td>1件</td></tr>
+            <tr><td>5月7日</td><td>¥2,196</td><td>0件</td></tr>
+            <tr><td>5月8日</td><td>¥5,701 ※予算増額</td><td>1件</td></tr>
+            <tr><td>5月9日</td><td>¥975</td><td>0件</td></tr>
+            <tr class="highlight-row"><td>合計（5月分）</td><td>¥21,568</td><td>6件</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="background:var(--gray);border-radius:4px;padding:10px 16px;font-size:13px;">
+            <span style="color:var(--text-muted);">5月CPA</span>
+            <strong style="display:block;color:var(--gold);font-size:18px;">¥3,595</strong>
+          </div>
+          <div style="background:var(--gray);border-radius:4px;padding:10px 16px;font-size:13px;">
+            <span style="color:var(--text-muted);">累計CPA（4〜5月）</span>
+            <strong style="display:block;color:var(--navy);font-size:18px;">¥4,753</strong>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="chart-wrap">
+          <canvas id="dailyChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KPIダッシュボード ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">07</span>
+    <h2>5月 KPIダッシュボード</h2>
+  </div>
+  <div class="section-body">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">広告費消化</div>
+        <div class="kpi-value">¥34,088</div>
+        <div class="kpi-note">5/9時点</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">リスト獲得</div>
+        <div class="kpi-value">5件</div>
+        <div class="kpi-note">5/9時点</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">5月CPA</div>
+        <div class="kpi-value">¥6,818</div>
+        <div class="kpi-note">5/9時点</div>
+      </div>
+      <div class="kpi-card highlight">
+        <div class="kpi-label">イベントCPA（過去最良）</div>
+        <div class="kpi-value">¥3,595</div>
+        <div class="kpi-note">アフターGW祭り（5月分）</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">累計リスト（2月〜）</div>
+        <div class="kpi-value">27件</div>
+        <div class="kpi-note">2月開始来</div>
+      </div>
+      <div class="kpi-card" style="border-left-color:var(--gray-mid);">
+        <div class="kpi-label">来場者数</div>
+        <div class="kpi-value" style="font-size:18px;color:var(--text-muted);">報告予定</div>
+        <div class="kpi-note">5/11報告予定</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== クリエイティブ別成果 ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">08</span>
+    <h2>クリエイティブ別 運用成果（4〜5月）</h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <thead>
+        <tr>
+          <th>広告名</th>
+          <th>種別</th>
+          <th>4月広告費</th>
+          <th>5月広告費</th>
+          <th>合計広告費</th>
+          <th>リスト</th>
+          <th>CPA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>R8.4 イメージ広告①</td>
+          <td>ブランドイメージ</td>
+          <td>¥17,949</td>
+          <td>¥5,653</td>
+          <td>¥23,602</td>
+          <td>1件</td>
+          <td>¥23,602</td>
+        </tr>
+        <tr>
+          <td>R8.4 イメージ広告②</td>
+          <td>ブランドイメージ</td>
+          <td>¥17,838</td>
+          <td>¥6,867</td>
+          <td>¥24,705</td>
+          <td>3件</td>
+          <td>¥8,235</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>アフターGW祭り ★</td>
+          <td>イベント訴求</td>
+          <td>¥6,952</td>
+          <td>¥21,568</td>
+          <td>¥28,520</td>
+          <td>6件</td>
+          <td class="best-cpa">¥4,753</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="insight-box" style="margin-top:20px;">
+      <h4>分析・示唆</h4>
+      <ul>
+        <li>イメージ広告①②はブランド認知目的で4月から継続配信。直接的なリスト獲得効率はイベント型に劣る</li>
+        <li>アフターGW祭りは最少の広告費（¥28,520）で最多リスト（6件）を獲得。イベント訴求型の優位性が明確</li>
+        <li>次回：イベント訴求クリエイティブを継続推奨・イメージ広告は補助的活用へ</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 今後の提案 ===== -->
+<div class="section">
+  <div class="section-header">
+    <span class="label">09</span>
+    <h2>今後の運用方針・提案</h2>
+  </div>
+  <div class="section-body">
+    <ul class="proposal-list">
+      <li class="proposal-item">
+        <div class="proposal-num">1</div>
+        <div class="proposal-content">
+          <h3>イベント型広告の継続強化</h3>
+          <p>アフターGW祭りはCPA¥3,595と全期間を通じて過去最良の成果を達成。次回見学会に合わせたイベント訴求広告を早期に準備することで、さらなる効率改善が期待できる。</p>
+        </div>
+      </li>
+      <li class="proposal-item">
+        <div class="proposal-num">2</div>
+        <div class="proposal-content">
+          <h3>予算配分の最適化</h3>
+          <p>5/8の予算増額でリスト獲得できた実績あり。反応が良い時間帯・曜日への集中投資を検討し、限られた予算で最大のリスト獲得を目指す。</p>
+        </div>
+      </li>
+      <li class="proposal-item">
+        <div class="proposal-num">3</div>
+        <div class="proposal-content">
+          <h3>累計27件リストへの追客施策</h3>
+          <p>問い合わせ済みリストへのリターゲティング広告の導入を提案。すでに「匠のGEN」に関心を持ったユーザーへの再アプローチにより、成約率の向上が見込める。</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== 巻末備考 ===== -->
+<div class="notes">
+  <strong>【データ出典・備考】</strong><br>
+  データ出典：META広告マネージャー・スプレッドシート集計　／　集計期間：2026年2月〜2026年5月9日時点<br>
+  リスト数 = LINE公式アカウント友だち追加数（広告経由）　／　来場者数は5月11日報告予定
+</div>
+
+<script>
+// ===== 月別サマリーチャート =====
+const summaryCtx = document.getElementById('summaryChart').getContext('2d');
+new Chart(summaryCtx, {
+  type: 'bar',
+  data: {
+    labels: ['2月', '3月', '4月', '5月(途中)'],
+    datasets: [
+      {
+        label: '広告費（円）',
+        data: [81483, 92726, 42739, 34088],
+        backgroundColor: 'rgba(26,46,74,0.75)',
+        borderColor: '#1a2e4a',
+        borderWidth: 1,
+        yAxisID: 'y',
+        borderRadius: 3,
+      },
+      {
+        label: 'リスト数（件）',
+        data: [13, 4, 5, 5],
+        type: 'line',
+        borderColor: '#c9a84c',
+        backgroundColor: 'rgba(201,168,76,0.15)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#c9a84c',
+        pointRadius: 5,
+        tension: 0.3,
+        yAxisID: 'y2',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { font: { size: 12 }, boxWidth: 14 } },
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        position: 'left',
+        ticks: {
+          callback: v => '¥' + v.toLocaleString(),
+          font: { size: 11 }
+        },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      },
+      y2: {
+        type: 'linear',
+        position: 'right',
+        ticks: { callback: v => v + '件', font: { size: 11 } },
+        grid: { drawOnChartArea: false }
+      },
+      x: { ticks: { font: { size: 12 } }, grid: { display: false } }
+    }
+  }
+});
+
+// ===== キャンペーン比較チャート =====
+const campaignCtx = document.getElementById('campaignChart').getContext('2d');
+new Chart(campaignCtx, {
+  type: 'bar',
+  data: {
+    labels: ['2月見学会', '3月見学会', 'R8.4イメージ', 'GW祭り'],
+    datasets: [
+      {
+        label: 'CPA（円）',
+        data: [4724, 23182, 12077, 4753],
+        backgroundColor: ['rgba(26,46,74,0.6)','rgba(26,46,74,0.6)','rgba(26,46,74,0.6)','rgba(201,168,76,0.85)'],
+        borderColor: ['#1a2e4a','#1a2e4a','#1a2e4a','#c9a84c'],
+        borderWidth: 1,
+        borderRadius: 3,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => '¥' + ctx.raw.toLocaleString() } }
+    },
+    scales: {
+      y: {
+        ticks: { callback: v => '¥' + v.toLocaleString(), font: { size: 11 } },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      },
+      x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+
+// ===== 日別推移チャート =====
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+new Chart(dailyCtx, {
+  type: 'line',
+  data: {
+    labels: ['5/1','5/2','5/3','5/4','5/5','5/6','5/7','5/8','5/9'],
+    datasets: [
+      {
+        label: '広告費（円）',
+        data: [2038, 2226, 2209, 2043, 2161, 2019, 2196, 5701, 975],
+        borderColor: '#1a2e4a',
+        backgroundColor: 'rgba(26,46,74,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: ['#1a2e4a','#1a2e4a','#1a2e4a','#1a2e4a','#1a2e4a','#1a2e4a','#1a2e4a','#c9a84c','#1a2e4a'],
+        pointRadius: [4,4,4,4,4,4,4,8,4],
+        tension: 0.3,
+        fill: true,
+        yAxisID: 'y',
+      },
+      {
+        label: 'リスト（件）',
+        data: [2, 2, 0, 0, 0, 1, 0, 1, 0],
+        borderColor: '#c9a84c',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointBackgroundColor: '#c9a84c',
+        pointRadius: 5,
+        tension: 0.2,
+        yAxisID: 'y2',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { font: { size: 12 }, boxWidth: 14 } },
+      annotation: {}
+    },
+    scales: {
+      y: {
+        position: 'left',
+        ticks: { callback: v => '¥' + v.toLocaleString(), font: { size: 11 } },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      },
+      y2: {
+        position: 'right',
+        ticks: { callback: v => v + '件', stepSize: 1, font: { size: 11 } },
+        grid: { drawOnChartArea: false },
+        min: 0, max: 4
+      },
+      x: { ticks: { font: { size: 12 } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

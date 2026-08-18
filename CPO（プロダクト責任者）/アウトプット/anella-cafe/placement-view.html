@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタッフ配置（閲覧） | ANELLA CAFE</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #EFF6FF;
+  --surface: #FFFFFF;
+  --primary: #2563EB;
+  --primary-grad: linear-gradient(135deg, #1D4ED8 0%, #4F46E5 100%);
+  --text: #1E3A5F;
+  --text-mid: #4B6CB7;
+  --text-soft: #94A3B8;
+  --border: #BFDBFE;
+  --shadow: rgba(37,99,235,0.10);
+  --shadow-md: rgba(37,99,235,0.16);
+  --a-color: #EC4899; --a-bg: #FDF2F8; --a-border: #FBCFE8;
+  --b-color: #059669; --b-bg: #ECFDF5; --b-border: #A7F3D0;
+  --c-color: #7C3AED; --c-bg: #F5F3FF; --c-border: #DDD6FE;
+  --un-color: #6366F1; --un-bg: #EEF2FF;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;min-height:100vh;}
+
+/* HEADER */
+.top-bar{
+  background:var(--primary-grad);color:#fff;
+  padding:10px 16px;position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  box-shadow:0 2px 12px rgba(37,99,235,0.30);
+}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-logo{font-family:'DM Serif Display',serif;font-size:1.2rem;letter-spacing:.04em;}
+.brand-sub{font-size:.65rem;opacity:.8;letter-spacing:.08em;display:block;}
+.view-badge{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:8px;padding:3px 12px;font-size:.72rem;font-weight:700;letter-spacing:.05em;}
+.date-nav{display:flex;align-items:center;gap:6px;}
+.date-label{font-size:.9rem;font-weight:700;min-width:140px;text-align:center;}
+.btn-ghost{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;font-size:.78rem;transition:.15s;}
+.btn-ghost:hover{background:rgba(255,255,255,.28);}
+.view-toggle{display:flex;background:rgba(255,255,255,.15);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.2);}
+.view-btn{border:none;background:none;color:rgba(255,255,255,.75);padding:5px 14px;font-size:.78rem;cursor:pointer;font-family:'Noto Sans JP',sans-serif;transition:.15s;display:flex;align-items:center;gap:4px;}
+.view-btn.active{background:#fff;color:#1D4ED8;font-weight:700;}
+.realtime-dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 6px #4ADE80;animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+/* BOARD */
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:16px;align-items:start;}
+@media(max-width:800px){.board{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.board{grid-template-columns:1fr;}}
+
+.area-col{border-radius:18px;padding:12px;min-height:200px;}
+.area-col-header{font-size:.75rem;font-weight:700;letter-spacing:.06em;padding:7px 12px;border-radius:10px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;color:#fff;}
+.area-count{font-size:.7rem;font-weight:700;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:99px;}
+
+.col-unassigned{background:var(--un-bg);border:1.5px solid #C7D2FE;}
+.col-unassigned .area-col-header{background:var(--un-color);}
+.col-A{background:var(--a-bg);border:1.5px solid var(--a-border);}
+.col-A .area-col-header{background:linear-gradient(135deg,#EC4899,#F472B6);}
+.col-B{background:var(--b-bg);border:1.5px solid var(--b-border);}
+.col-B .area-col-header{background:linear-gradient(135deg,#059669,#34D399);}
+.col-C{background:var(--c-bg);border:1.5px solid var(--c-border);}
+.col-C .area-col-header{background:linear-gradient(135deg,#7C3AED,#A78BFA);}
+
+/* CARD（閲覧専用） */
+.staff-card{background:#fff;border-radius:16px;margin-bottom:10px;box-shadow:0 2px 8px var(--shadow);border:1px solid #E2E8FF;}
+.staff-card-header{display:flex;align-items:center;gap:8px;padding:10px 12px 6px;}
+.staff-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.8);box-shadow:0 0 0 1px rgba(0,0,0,.08);}
+.staff-name{font-weight:700;font-size:.9rem;flex:1;color:var(--text);}
+.shift-badge{font-size:.7rem;color:var(--text-mid);background:var(--bg);border-radius:6px;padding:2px 7px;display:inline-flex;align-items:center;gap:3px;border:1px solid var(--border);}
+.shift-badge.no-time{color:var(--text-soft);border-style:dashed;}
+
+/* SLOT */
+.slot-section{padding:5px 10px 8px;}
+.slot-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.slot-lbl{font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;letter-spacing:.04em;}
+.slot-lbl.am{background:#DBEAFE;color:#1D4ED8;}
+.slot-lbl.pm{background:#EDE9FE;color:#6D28D9;}
+.slot-area-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;color:#fff;display:inline-block;}
+.slot-area-none{font-size:.7rem;color:var(--text-soft);padding:2px 10px;border:1.5px dashed var(--border);border-radius:99px;display:inline-block;}
+.slot-divider{border:none;border-top:1px dashed #E2E8FF;margin:2px 8px;}
+
+/* TASKS（閲覧専用・チェック不可） */
+.task-panel{padding:0 2px;}
+.task-item{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:7px;}
+.task-item label{font-size:.77rem;color:var(--text-mid);flex:1;}
+.task-item.checked label{color:var(--primary);font-weight:700;}
+.task-item input[type=checkbox]{width:15px;height:15px;flex-shrink:0;pointer-events:none;accent-color:var(--primary);}
+
+/* WEEK VIEW */
+.week-section{padding:16px;}
+.week-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.week-nav .wk-lbl{font-size:.95rem;font-weight:700;color:var(--text);flex:1;text-align:center;}
+.week-card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);border:1px solid var(--border);}
+.week-card table{width:100%;border-collapse:collapse;}
+.week-card thead th{background:var(--primary-grad);color:#fff;font-size:.75rem;font-weight:700;padding:10px 6px;text-align:center;}
+.week-card tbody td{border-bottom:1px solid #F0F4FF;padding:7px 5px;vertical-align:top;}
+.week-card tbody tr:last-child td{border-bottom:none;}
+.week-staff-cell{font-weight:700;font-size:.8rem;display:flex;align-items:center;gap:5px;white-space:nowrap;padding:0 4px;}
+.week-slot-cell{min-height:36px;}
+.week-chip{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:5px;display:inline-block;margin:1px 1px;color:#fff;}
+.wc-A{background:var(--a-color);}
+.wc-B{background:var(--b-color);}
+.wc-C{background:var(--c-color);}
+.wc-off{background:#CBD5E1;}
+.wc-none{background:#EEF2FF;color:#6366F1;font-size:.62rem;}
+.wk-today{background:#EFF6FF;}
+
+/* MONTH VIEW */
+.month-section{padding:16px;}
+.month-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.month-nav .mo-lbl{font-size:1.05rem;font-weight:900;color:var(--text);flex:1;text-align:center;}
+.month-card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);border:1px solid var(--border);}
+.month-card table{width:100%;border-collapse:collapse;}
+.month-card thead th{background:var(--primary-grad);color:#fff;font-size:.75rem;font-weight:700;padding:10px 4px;text-align:center;}
+.month-card tbody td{border:1px solid #EEF2FF;vertical-align:top;min-height:80px;padding:5px;}
+.month-card tbody td.today-cell{background:#EFF6FF;border:1.5px solid var(--primary);}
+.month-card tbody td.other-month{background:#F8FAFC;}
+.mo-day-num{font-size:.72rem;font-weight:700;color:var(--text-mid);margin-bottom:3px;}
+.mo-day-num.sun{color:#EF4444;}
+.mo-day-num.sat{color:#2563EB;}
+.mo-staff-chip{font-size:.63rem;font-weight:600;padding:1px 5px;border-radius:4px;display:flex;align-items:center;gap:2px;margin:1px 0;white-space:nowrap;overflow:hidden;}
+.mo-staff-chip.area-A{background:var(--a-bg);color:var(--a-color);border:1px solid var(--a-border);}
+.mo-staff-chip.area-B{background:var(--b-bg);color:var(--b-color);border:1px solid var(--b-border);}
+.mo-staff-chip.area-C{background:var(--c-bg);color:var(--c-color);border:1px solid var(--c-border);}
+.mo-staff-chip.area-none{background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;}
+.mo-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+@media(max-width:600px){.date-label{min-width:110px;font-size:.82rem;}.top-bar{gap:8px;}}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="brand">
+    <div>
+      <div class="brand-logo">🐾 ANELLA CAFE</div>
+      <span class="brand-sub">STAFF PLACEMENT</span>
+    </div>
+  </div>
+  <span class="view-badge"><i class="bi bi-eye me-1"></i>閲覧モード</span>
+  <div class="date-nav">
+    <button class="btn-ghost" onclick="navPrev()"><i class="bi bi-chevron-left"></i></button>
+    <span class="date-label" id="navLabel"></span>
+    <button class="btn-ghost" onclick="navNext()"><i class="bi bi-chevron-right"></i></button>
+    <button class="btn-ghost" onclick="navToday()">今日</button>
+  </div>
+  <div class="view-toggle">
+    <button class="view-btn active" id="vDay"   onclick="setView('day')">  <i class="bi bi-layout-three-columns"></i> 日</button>
+    <button class="view-btn"        id="vWeek"  onclick="setView('week')"> <i class="bi bi-calendar-week"></i> 週</button>
+    <button class="view-btn"        id="vMonth" onclick="setView('month')"><i class="bi bi-calendar-month"></i> 月</button>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.72rem;opacity:.85;">
+    <div class="realtime-dot"></div>リアルタイム更新中
+  </div>
+</div>
+
+<!-- DAY VIEW -->
+<div id="viewDay">
+  <div class="board">
+    <div class="area-col col-unassigned">
+      <div class="area-col-header"><span>🔷 未割当</span><span class="area-count" id="cnt-unassigned">0</span></div>
+      <div id="cards-unassigned"></div>
+    </div>
+    <div class="area-col col-A">
+      <div class="area-col-header"><span>🌸 A. ふれあい</span><span class="area-count" id="cnt-A">0</span></div>
+      <div id="cards-A"></div>
+    </div>
+    <div class="area-col col-B">
+      <div class="area-col-header"><span>💼 B. 多目的室</span><span class="area-count" id="cnt-B">0</span></div>
+      <div id="cards-B"></div>
+    </div>
+    <div class="area-col col-C">
+      <div class="area-col-header"><span>✨ C. 兼任</span><span class="area-count" id="cnt-C">0</span></div>
+      <div id="cards-C"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK VIEW -->
+<div id="viewWeek" style="display:none" class="week-section">
+  <div class="week-nav">
+    <button class="btn-ghost" style="color:var(--primary);border-color:var(--border);background:#fff;" onclick="shiftWeekView(-1)"><i class="bi bi-chevron-left"></i></button>
+    <span class="wk-lbl" id="weekRangeLabel"></span>
+    <button class="btn-ghost" style="color:var(--primary);border-color:var(--border);background:#fff;" onclick="shiftWeekView(1)"><i class="bi bi-chevron-right"></i></button>
+  </div>
+  <div class="week-card">
+    <table>
+      <thead><tr>
+        <th style="min-width:80px;">スタッフ</th>
+        <th id="wh0"></th><th id="wh1"></th><th id="wh2"></th>
+        <th id="wh3"></th><th id="wh4"></th><th id="wh5"></th>
+        <th id="wh6" style="color:#FFB3B3;"></th>
+      </tr></thead>
+      <tbody id="weekBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MONTH VIEW -->
+<div id="viewMonth" style="display:none" class="month-section">
+  <div class="month-nav">
+    <button class="btn-ghost" style="color:var(--primary);border-color:var(--border);background:#fff;" onclick="shiftMonthView(-1)"><i class="bi bi-chevron-left"></i></button>
+    <span class="mo-lbl" id="monthLabel"></span>
+    <button class="btn-ghost" style="color:var(--primary);border-color:var(--border);background:#fff;" onclick="shiftMonthView(1)"><i class="bi bi-chevron-right"></i></button>
+  </div>
+  <div class="month-card">
+    <table>
+      <thead><tr>
+        <th style="color:#FFB3B3;">日</th>
+        <th>月</th><th>火</th><th>水</th><th>木</th><th>金</th>
+        <th style="color:#93C5FD;">土</th>
+      </tr></thead>
+      <tbody id="monthBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// Supabase
+// ================================================================
+const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const AREA = {
+  A:{ label:'A. ふれあい', color:'#EC4899' },
+  B:{ label:'B. 多目的室', color:'#059669' },
+  C:{ label:'C. 兼任',     color:'#7C3AED' },
+  '休み':{ label:'休み',   color:'#94A3B8' },
+};
+const DOW = ['日','月','火','水','木','金','土'];
+
+// ================================================================
+// State
+// ================================================================
+let currentDate   = new Date();
+let currentView   = 'day';
+let weekViewBase  = null;
+let monthViewDate = null;
+let staffList     = [];
+let taskList      = [];
+let assignments   = [];
+let taskChecks    = {};
+let shifts        = {};
+let weekAsgn      = [];
+let weekShifts    = [];
+let monthAsgn     = [];
+let monthShifts   = [];
+let realtimeTimer = null;
+
+// ================================================================
+// Helpers
+// ================================================================
+const dateStr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function dayLabel(d) { return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; }
+function getMondayOfWeek(d) {
+  const c = new Date(d), day = c.getDay();
+  c.setDate(c.getDate() + (day===0 ? -6 : 1-day));
+  return c;
+}
+function getWeekDays(mon) {
+  return Array.from({length:7}, (_,i) => { const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+
+// ================================================================
+// Navigation
+// ================================================================
+function navPrev() {
+  if (currentView==='day')   { currentDate.setDate(currentDate.getDate()-1); loadDay(); }
+  if (currentView==='week')  { shiftWeekView(-1); }
+  if (currentView==='month') { shiftMonthView(-1); }
+}
+function navNext() {
+  if (currentView==='day')   { currentDate.setDate(currentDate.getDate()+1); loadDay(); }
+  if (currentView==='week')  { shiftWeekView(1); }
+  if (currentView==='month') { shiftMonthView(1); }
+}
+function navToday() {
+  currentDate   = new Date();
+  weekViewBase  = getMondayOfWeek(new Date());
+  monthViewDate = new Date();
+  if (currentView==='day')   loadDay();
+  if (currentView==='week')  loadWeekView();
+  if (currentView==='month') loadMonthView();
+}
+function setView(v) {
+  currentView = v;
+  ['day','week','month'].forEach(n => {
+    const cap = n.charAt(0).toUpperCase()+n.slice(1);
+    document.getElementById('view'+cap).style.display = n===v?'':'none';
+    document.getElementById('v'+cap).classList.toggle('active', n===v);
+  });
+  if (v==='day')   { document.getElementById('navLabel').textContent=dayLabel(currentDate); }
+  if (v==='week')  loadWeekView();
+  if (v==='month') loadMonthView();
+}
+
+// ================================================================
+// Init
+// ================================================================
+async function init() {
+  weekViewBase  = getMondayOfWeek(currentDate);
+  monthViewDate = new Date(currentDate);
+  const [sf, tk] = await Promise.all([
+    sb.from('placement_staff').select('*').eq('is_active',true).order('sort_order'),
+    sb.from('placement_tasks').select('*').eq('is_active',true).order('sort_order')
+  ]);
+  staffList = sf.data||[];
+  taskList  = tk.data||[];
+  await loadDay();
+  subscribeRealtime();
+}
+
+// ================================================================
+// Day View
+// ================================================================
+async function loadDay() {
+  document.getElementById('navLabel').textContent = dayLabel(currentDate);
+  const ds = dateStr(currentDate);
+  const [asgnRes, shiftRes] = await Promise.all([
+    sb.from('placement_assignments').select('*').eq('assignment_date',ds),
+    sb.from('placement_shifts').select('*').eq('shift_date',ds)
+  ]);
+  assignments = asgnRes.data||[];
+  shifts={};
+  (shiftRes.data||[]).forEach(s=>{ shifts[s.staff_id]={start:s.start_time,end:s.end_time}; });
+
+  const ids = assignments.map(a=>a.id);
+  taskChecks={};
+  if (ids.length) {
+    const {data:chks}=await sb.from('placement_task_checks').select('*').in('assignment_id',ids);
+    (chks||[]).forEach(c=>{
+      if(!taskChecks[c.assignment_id])taskChecks[c.assignment_id]=new Set();
+      taskChecks[c.assignment_id].add(c.task_id);
+    });
+  }
+  renderBoard();
+}
+
+function renderBoard() {
+  const areaMap={unassigned:[],A:[],B:[],C:[]};
+  staffList.forEach(staff=>{
+    const amA=assignments.find(a=>a.staff_id===staff.id&&a.time_slot==='午前');
+    const pmA=assignments.find(a=>a.staff_id===staff.id&&a.time_slot==='午後');
+    const am=amA?.area_code;
+    const key=(am==='A'||am==='B'||am==='C')?am:'unassigned';
+    areaMap[key].push(buildCard(staff,amA,pmA));
+  });
+  ['unassigned','A','B','C'].forEach(k=>{
+    const el=document.getElementById(`cards-${k}`);
+    el.innerHTML='';
+    areaMap[k].forEach(c=>el.appendChild(c));
+    document.getElementById(`cnt-${k}`).textContent=areaMap[k].length;
+  });
+}
+
+function buildSlotSection(staff, asgn, slot, taskArea) {
+  const area=asgn?.area_code;
+  const checks=asgn?(taskChecks[asgn.id]||new Set()):new Set();
+  const displayArea=taskArea||(area&&area!=='休み'?area:null);
+  const areaTasks=displayArea?taskList.filter(t=>t.area_code===displayArea):[];
+  const sc=slot==='午前'?'am':'pm';
+
+  let areaBadgeHtml;
+  if (!area) {
+    areaBadgeHtml=`<span class="slot-area-none">未割当</span>`;
+  } else if (area==='休み') {
+    areaBadgeHtml=`<span class="slot-area-badge" style="background:#94A3B8;">🔴 休み</span>`;
+  } else {
+    areaBadgeHtml=`<span class="slot-area-badge" style="background:${AREA[area].color};">${AREA[area].label}</span>`;
+  }
+
+  const taskHtml=areaTasks.map(t=>{
+    const chk=checks.has(t.id);
+    return `<div class="task-item${chk?' checked':''}">
+      <input type="checkbox" ${chk?'checked':''} disabled>
+      <label>${t.task_name}</label>
+    </div>`;
+  }).join('');
+
+  return `<div class="slot-section">
+    <div class="slot-row">
+      <span class="slot-lbl ${sc}">${slot}</span>${areaBadgeHtml}
+    </div>
+    ${taskHtml?`<div class="task-panel">${taskHtml}</div>`:''}
+  </div>`;
+}
+
+function buildCard(staff, amAsgn, pmAsgn) {
+  const div=document.createElement('div');
+  div.className='staff-card';
+
+  const sh=shifts[staff.id];
+  const tl=sh?.start&&sh?.end?`${sh.start}〜${sh.end}`:(sh?.start?sh.start+'〜':null);
+
+  const amArea=amAsgn?.area_code&&amAsgn.area_code!=='休み'?amAsgn.area_code:null;
+  const pmArea=pmAsgn?.area_code&&pmAsgn.area_code!=='休み'?pmAsgn.area_code:null;
+  const taskArea=amArea||pmArea;
+
+  div.innerHTML=`
+    <div class="staff-card-header">
+      <span class="staff-dot" style="background:${staff.color}"></span>
+      <span class="staff-name">${staff.name}</span>
+      <span class="shift-badge ${tl?'':'no-time'}">
+        <i class="bi bi-clock" style="font-size:.65rem;"></i>${tl||'時間未入力'}
+      </span>
+    </div>
+    <div style="border-top:1px solid #F0F4FF;">
+      ${buildSlotSection(staff,amAsgn,'午前',taskArea)}
+      <hr style="border:none;border-top:1px dashed #E2E8FF;margin:2px 8px;">
+      ${buildSlotSection(staff,pmAsgn,'午後',taskArea)}
+    </div>`;
+  return div;
+}
+
+// ================================================================
+// Week View
+// ================================================================
+function shiftWeekView(n) {
+  weekViewBase=new Date(weekViewBase);
+  weekViewBase.setDate(weekViewBase.getDate()+n*7);
+  loadWeekView();
+}
+async function loadWeekView() {
+  const days=getWeekDays(weekViewBase);
+  const s=dateStr(days[0]), e=dateStr(days[6]);
+  const [ar,sh]=await Promise.all([
+    sb.from('placement_assignments').select('*').gte('assignment_date',s).lte('assignment_date',e),
+    sb.from('placement_shifts').select('*').gte('shift_date',s).lte('shift_date',e)
+  ]);
+  weekAsgn=ar.data||[];
+  weekShifts=sh.data||[];
+  renderWeekView(days);
+}
+function renderWeekView(days) {
+  const today=dateStr(new Date());
+  const DOW_S=['月','火','水','木','金','土','日'];
+  const DOW_C=['','','','','','','#F87171'];
+  days.forEach((d,i)=>{
+    const el=document.getElementById(`wh${i}`);
+    const ds=dateStr(d);
+    el.innerHTML=`<span style="${DOW_C[i]?'color:'+DOW_C[i]:''}">${DOW_S[i]}</span><br><small style="font-weight:400;opacity:.8;">${d.getMonth()+1}/${d.getDate()}</small>`;
+    if(ds===today) el.style.background='rgba(255,255,255,.3)';
+  });
+  const label=`${days[0].getMonth()+1}/${days[0].getDate()} 〜 ${days[6].getMonth()+1}/${days[6].getDate()}`;
+  document.getElementById('weekRangeLabel').textContent=label;
+  document.getElementById('navLabel').textContent=label;
+
+  const tbody=document.getElementById('weekBody');
+  tbody.innerHTML=staffList.map(staff=>{
+    const cells=days.map(d=>{
+      const ds=dateStr(d);
+      const am=weekAsgn.find(a=>a.staff_id===staff.id&&a.assignment_date===ds&&a.time_slot==='午前');
+      const pm=weekAsgn.find(a=>a.staff_id===staff.id&&a.assignment_date===ds&&a.time_slot==='午後');
+      const sh=weekShifts.find(s=>s.staff_id===staff.id&&s.shift_date===ds);
+      const chip=(a,lbl)=>{
+        if(!a)return`<span class="week-chip wc-none">${lbl}未定</span>`;
+        if(a.area_code==='休み')return`<span class="week-chip wc-off">休み</span>`;
+        return`<span class="week-chip wc-${a.area_code}">${a.area_code}</span>`;
+      };
+      const shiftTxt=sh?.start_time&&sh?.end_time?`<div style="font-size:.62rem;color:var(--text-soft);margin-bottom:2px;">${sh.start_time}〜${sh.end_time}</div>`:'';
+      return`<td class="${ds===today?'wk-today':''}">
+        <div class="week-slot-cell">${shiftTxt}${chip(am,'午前')}${chip(pm,'午後')}</div>
+      </td>`;
+    }).join('');
+    return`<tr>
+      <td><div class="week-staff-cell">
+        <span style="width:9px;height:9px;border-radius:50%;background:${staff.color};display:inline-block;flex-shrink:0;"></span>
+        ${staff.name}
+      </div></td>${cells}
+    </tr>`;
+  }).join('');
+}
+
+// ================================================================
+// Month View
+// ================================================================
+function shiftMonthView(n) {
+  monthViewDate=new Date(monthViewDate.getFullYear(),monthViewDate.getMonth()+n,1);
+  loadMonthView();
+}
+async function loadMonthView() {
+  const y=monthViewDate.getFullYear(),m=monthViewDate.getMonth();
+  const first=new Date(y,m,1),last=new Date(y,m+1,0);
+  const s=dateStr(first),e=dateStr(last);
+  const [ar,sh]=await Promise.all([
+    sb.from('placement_assignments').select('*').gte('assignment_date',s).lte('assignment_date',e),
+    sb.from('placement_shifts').select('*').gte('shift_date',s).lte('shift_date',e)
+  ]);
+  monthAsgn=ar.data||[];
+  monthShifts=sh.data||[];
+  renderMonthView(y,m,first,last);
+}
+function renderMonthView(y,m,first,last) {
+  const label=`${y}年${m+1}月`;
+  document.getElementById('monthLabel').textContent=label;
+  document.getElementById('navLabel').textContent=label;
+  const today=dateStr(new Date());
+  const totalDays=last.getDate();
+  const startDow=first.getDay();
+  const rows=[];
+  let cells=[];
+  for(let i=0;i<startDow;i++) cells.push({empty:true});
+  for(let day=1;day<=totalDays;day++){
+    cells.push({day,date:new Date(y,m,day)});
+    if(cells.length===7){rows.push(cells);cells=[];}
+  }
+  if(cells.length){while(cells.length<7)cells.push({empty:true});rows.push(cells);}
+
+  const asgnMap={};
+  monthAsgn.forEach(a=>{
+    if(!asgnMap[a.assignment_date])asgnMap[a.assignment_date]={};
+    if(!asgnMap[a.assignment_date][a.staff_id])asgnMap[a.assignment_date][a.staff_id]={am:null,pm:null};
+    if(a.time_slot==='午前')asgnMap[a.assignment_date][a.staff_id].am=a.area_code;
+    if(a.time_slot==='午後')asgnMap[a.assignment_date][a.staff_id].pm=a.area_code;
+  });
+  const shiftMap={};
+  monthShifts.forEach(s=>{shiftMap[s.shift_date+'_'+s.staff_id]=s;});
+
+  const tbody=document.getElementById('monthBody');
+  tbody.innerHTML=rows.map(row=>`<tr>${row.map(cell=>{
+    if(cell.empty)return`<td style="background:#F8FAFC;"></td>`;
+    const ds=dateStr(cell.date);
+    const isToday=ds===today;
+    const dayAsgn=asgnMap[ds]||{};
+    const stClass=`mo-day-num${cell.date.getDay()===0?' sun':cell.date.getDay()===6?' sat':''}`;
+    const chips=staffList.filter(st=>shiftMap[ds+'_'+st.id]).map(st=>{
+      const a=dayAsgn[st.id];
+      const area=a?.am||a?.pm||null;
+      const cls=area&&area!=='休み'?`area-${area}`:'area-none';
+      return`<div class="mo-staff-chip ${cls}">
+        <span class="mo-dot" style="background:${st.color}"></span>${st.name}
+        <small style="opacity:.7;"> ${area&&area!=='休み'?area:'--'}</small>
+      </div>`;
+    }).join('');
+    return`<td class="${isToday?'today-cell':''}">
+      <div class="${stClass}">${cell.day}</div>${chips}
+    </td>`;
+  }).join('')}</tr>`).join('');
+}
+
+// ================================================================
+// Realtime（閲覧専用：受信のみ）
+// ================================================================
+function subscribeRealtime() {
+  sb.channel('placement-view-rt')
+    .on('postgres_changes',{event:'*',schema:'public',table:'placement_assignments'},()=>{
+      clearTimeout(realtimeTimer);
+      realtimeTimer=setTimeout(()=>{ if(currentView==='day')loadDay(); else if(currentView==='week')loadWeekView(); },600);
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'placement_task_checks'},()=>{
+      clearTimeout(realtimeTimer);
+      realtimeTimer=setTimeout(()=>{ if(currentView==='day')loadDay(); },600);
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'placement_shifts'},()=>{
+      clearTimeout(realtimeTimer);
+      realtimeTimer=setTimeout(()=>{ if(currentView==='day')loadDay(); },600);
+    })
+    .subscribe();
+}
+
+init();
+</script>
+</body>
+</html>

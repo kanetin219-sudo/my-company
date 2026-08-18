@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>顧問生精算シート</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #dbeafe;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--primary);
+    color: white;
+    padding: 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+  header h1 { font-size: 18px; font-weight: 700; }
+
+  .tabs {
+    display: flex;
+    background: white;
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 56px;
+    z-index: 99;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-content { display: none; padding: 20px 16px 80px; }
+  .tab-content.active { display: block; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+    background: white;
+  }
+  .form-input:focus { outline: none; border-color: var(--primary); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* 顧問料内訳 */
+  .fee-breakdown {
+    background: var(--primary-light);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .fee-breakdown-title { font-size: 13px; font-weight: 700; color: var(--primary-dark); margin-bottom: 10px; }
+  .fee-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(37,99,235,0.15);
+  }
+  .fee-row:last-child { border-bottom: none; }
+  .fee-label { color: var(--text-muted); }
+  .fee-value { font-weight: 600; }
+  .fee-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid var(--primary);
+  }
+  .fee-total-label { font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+  .fee-total-value { font-size: 22px; font-weight: 800; color: var(--primary); }
+
+  /* 報告履歴 */
+  .history-item {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary);
+  }
+  .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .history-month { font-size: 14px; font-weight: 700; color: var(--primary); }
+  .history-status { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .status-pending { background: #fef9c3; color: #92400e; }
+  .status-confirmed { background: #dcfce7; color: #166534; }
+  .history-body { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; }
+  .history-field { color: var(--text-muted); }
+  .history-field span { font-weight: 600; color: var(--text); }
+
+  /* 精算一覧テーブル */
+  .seisan-table-wrap { overflow-x: auto; }
+  .seisan-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 600px;
+  }
+  .seisan-table th {
+    background: var(--bg);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+  }
+  .seisan-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .seisan-table tr:last-child td { border-bottom: none; }
+  .seisan-table tr:hover td { background: #f8fafc; }
+  .seisan-table .total-row td {
+    background: var(--primary-light);
+    font-weight: 700;
+    border-top: 2px solid var(--primary);
+  }
+  .seisan-table .not-reported td { background: #fef2f2; }
+
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .text-muted { color: var(--text-muted); }
+
+  /* 顧問生設定 */
+  .client-setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .client-setting-item:last-child { border-bottom: none; }
+  .client-info { flex: 1; }
+  .client-name-setting { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .client-fee-info { font-size: 12px; color: var(--text-muted); }
+  .client-actions { display: flex; gap: 8px; }
+  .inactive-badge {
+    font-size: 10px;
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  /* モーダル */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); line-height: 1; }
+
+  /* トースト */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 300;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* サマリーカード */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .summary-card {
+    background: white;
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .summary-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .summary-value { font-size: 20px; font-weight: 800; color: var(--primary); }
+  .summary-value.green { color: var(--success); }
+  .summary-value.orange { color: var(--warning); }
+
+  .month-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .month-selector label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+  .admin-note-cell { font-size: 11px; color: var(--text-muted); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header>
+  <h1>💰 顧問生精算シート</h1>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('report')">📝 売上報告</div>
+  <div class="tab" onclick="switchTab('seisan')">📊 精算一覧</div>
+  <div class="tab" onclick="switchTab('settings')">⚙️ 顧問生設定</div>
+</div>
+
+<!-- ===== 売上報告タブ ===== -->
+<div id="tab-report" class="tab-content active">
+  <div class="card">
+    <div class="card-title">📝 今月の売上を報告する</div>
+
+    <!-- 管理者モード：ドロップダウン -->
+    <div id="report-client-select-wrap" class="form-group">
+      <label class="form-label">顧問生名</label>
+      <select id="report-client" class="form-input" onchange="onClientChange()">
+        <option value="">-- 選択してください --</option>
+      </select>
+    </div>
+    <!-- 顧問生モード：固定名表示 -->
+    <div id="report-client-fixed" style="display:none;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">顧問生名</div>
+      <div id="report-client-fixed-name" style="font-size:18px;font-weight:800;color:var(--primary);padding:10px 12px;background:var(--primary-light);border-radius:8px;"></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">年</label>
+        <select id="report-year" class="form-input"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">月</label>
+        <select id="report-month" class="form-input">
+          <option value="1">1月</option>
+          <option value="2">2月</option>
+          <option value="3">3月</option>
+          <option value="4">4月</option>
+          <option value="5">5月</option>
+          <option value="6">6月</option>
+          <option value="7">7月</option>
+          <option value="8">8月</option>
+          <option value="9">9月</option>
+          <option value="10">10月</option>
+          <option value="11">11月</option>
+          <option value="12">12月</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">単価（円）</label>
+        <input type="number" id="report-unit-price" class="form-input" placeholder="例：100000"
+          oninput="onUnitInput()" min="0" step="1000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">人数（人）</label>
+        <input type="number" id="report-unit-count" class="form-input" placeholder="例：10"
+          oninput="onUnitInput()" min="0" step="1">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">今月の売上（円）<span style="font-size:11px;color:var(--text-muted);margin-left:6px;">※ 単価×人数で自動入力、手動変更も可</span></label>
+      <input type="number" id="report-revenue" class="form-input" placeholder="例：1000000"
+        oninput="calcPreview()" min="0" step="1000" style="font-size:17px;font-weight:700;">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">着金金額（円）</label>
+        <input type="number" id="report-chakkin-amount" class="form-input" placeholder="例：800000"
+          min="0" step="1000" oninput="calcPreview()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">着金人数（人）</label>
+        <input type="number" id="report-chakkin-count" class="form-input" placeholder="例：8"
+          min="0" step="1">
+      </div>
+    </div>
+
+    <div id="fee-preview" style="display:none;" class="fee-breakdown">
+      <div class="fee-breakdown-title">💴 顧問料の内訳（プレビュー）</div>
+      <div class="fee-row">
+        <span class="fee-label">固定顧問料</span>
+        <span class="fee-value" id="preview-fixed">—</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">売上成果報酬 <span id="preview-rate-label" style="font-size:11px;"></span></span>
+        <span class="fee-value" id="preview-commission">—</span>
+      </div>
+      <div class="fee-total-row">
+        <span class="fee-total-label">合計顧問料</span>
+        <span class="fee-total-value" id="preview-total">—</span>
+      </div>
+    </div>
+
+    <div id="already-reported" style="display:none;background:#fef9c3;border-radius:8px;padding:12px;margin-top:12px;font-size:13px;color:#92400e;">
+      ⚠️ この月はすでに報告済みです。上書き保存されます。
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;margin-top:16px;padding:14px;font-size:15px;" onclick="submitReport()">
+      報告する
+    </button>
+  </div>
+
+  <!-- 履歴 -->
+  <div class="card" id="history-card" style="display:none;">
+    <div class="card-title">📅 過去の報告履歴</div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- ===== 精算一覧タブ ===== -->
+<div id="tab-seisan" class="tab-content">
+  <div class="month-selector">
+    <label>対象月：</label>
+    <select id="seisan-year" class="form-input" style="width:100px;padding:8px 10px;" onchange="loadSeisan()"></select>
+    <select id="seisan-month" class="form-input" style="width:80px;padding:8px 10px;" onchange="loadSeisan()">
+      <option value="1">1月</option>
+      <option value="2">2月</option>
+      <option value="3">3月</option>
+      <option value="4">4月</option>
+      <option value="5">5月</option>
+      <option value="6">6月</option>
+      <option value="7">7月</option>
+      <option value="8">8月</option>
+      <option value="9">9月</option>
+      <option value="10">10月</option>
+      <option value="11">11月</option>
+      <option value="12">12月</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="loadSeisan()">🔄 更新</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📥 CSV出力</button>
+  </div>
+
+  <div class="summary-grid" id="seisan-summary" style="display:none;">
+    <div class="summary-card">
+      <div class="summary-label">報告済み</div>
+      <div class="summary-value green" id="sum-reported">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">未報告</div>
+      <div class="summary-value orange" id="sum-unreported">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">売上合計</div>
+      <div class="summary-value" id="sum-revenue">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">顧問料合計</div>
+      <div class="summary-value" id="sum-fee">0</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div id="seisan-loading" class="loading">読み込み中...</div>
+    <div id="seisan-empty" class="empty-state" style="display:none;">
+      <div class="icon">📭</div>
+      <p>顧問生が登録されていません</p>
+    </div>
+    <div class="seisan-table-wrap" id="seisan-table-wrap" style="display:none;">
+      <table class="seisan-table" id="seisan-table">
+        <thead>
+          <tr>
+            <th>顧問生名</th>
+            <th class="num">売上</th>
+            <th class="num">着金金額</th>
+            <th class="num">着金人数</th>
+            <th class="num">固定料金</th>
+            <th class="num">成果報酬</th>
+            <th class="num">顧問料合計</th>
+            <th>状態</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="seisan-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 顧問生設定タブ ===== -->
+<div id="tab-settings" class="tab-content">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="card-title" style="margin:0;padding:0;border:none;">顧問生一覧</div>
+      <button class="btn btn-primary btn-sm" onclick="openClientModal()">＋ 追加</button>
+    </div>
+    <div id="client-list-settings">
+      <div class="loading">読み込み中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 顧問生追加/編集モーダル -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-client-title">顧問生を追加</span>
+      <button class="modal-close" onclick="closeClientModal()">×</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">顧問生名 *</label>
+      <input type="text" id="m-name" class="form-input" placeholder="例：田中 花子">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">固定顧問料（円/月）</label>
+        <input type="number" id="m-fixed" class="form-input" placeholder="例：30000" min="0" step="1000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">売上歩合（%）</label>
+        <input type="number" id="m-rate" class="form-input" placeholder="例：5" min="0" max="100" step="0.5">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">着金金額（円）</label>
+        <input type="number" id="m-chakkin-amount" class="form-input" placeholder="例：800000" min="0" step="1000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">着金人数（人）</label>
+        <input type="number" id="m-chakkin-count" class="form-input" placeholder="例：8" min="0" step="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">状態</label>
+      <select id="m-active" class="form-input">
+        <option value="true">アクティブ</option>
+        <option value="false">非アクティブ</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveClient()">保存</button>
+      <button class="btn btn-ghost" onclick="closeClientModal()">キャンセル</button>
+    </div>
+    <button id="delete-client-btn" class="btn btn-danger" style="width:100%;margin-top:8px;display:none;" onclick="deleteClient()">
+      この顧問生を削除
+    </button>
+  </div>
+</div>
+
+<!-- 精算確認モーダル -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-title">
+      <span>精算を確認</span>
+      <button class="modal-close" onclick="closeConfirmModal()">×</button>
+    </div>
+    <div id="confirm-content"></div>
+    <div class="form-group" style="margin-top:16px;">
+      <label class="form-label">管理者メモ（任意）</label>
+      <input type="text" id="confirm-note" class="form-input" placeholder="例：振込済み、など">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-success" style="flex:1;" onclick="confirmReport()">✅ 確認済みにする</button>
+      <button class="btn btn-ghost" onclick="closeConfirmModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修正モーダル -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-edit-title">売上を修正</span>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">単価（円）</label>
+        <input type="number" id="edit-unit-price" class="form-input" min="0" step="1000" oninput="onEditUnitInput()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">人数（人）</label>
+        <input type="number" id="edit-unit-count" class="form-input" min="0" step="1" oninput="onEditUnitInput()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">売上（円）<span style="font-size:11px;color:var(--text-muted);margin-left:6px;">※ 単価×人数で自動入力</span></label>
+      <input type="number" id="edit-revenue" class="form-input" min="0" step="1000">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">着金金額（円）</label>
+        <input type="number" id="edit-chakkin-amount" class="form-input" min="0" step="1000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">着金人数（人）</label>
+        <input type="number" id="edit-chakkin-count" class="form-input" min="0" step="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">管理者メモ</label>
+      <input type="text" id="edit-note" class="form-input" placeholder="修正理由など">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEdit()">保存</button>
+      <button class="btn btn-ghost" onclick="closeEditModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== Supabase ==========
+const SB_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ========== 状態 ==========
+let clients = [];
+let editingClientId = null;
+let confirmReportId = null;
+let editReportId = null;
+let editClientData = null;
+let clientMode = null; // 顧問生モード時は顧問生オブジェクト
+
+// ========== 初期化 ==========
+async function init() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+
+  // 年セレクト
+  const years = [y - 1, y, y + 1];
+  ['report-year', 'seisan-year'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = years.map(yr => `<option value="${yr}">${yr}年</option>`).join('');
+    el.value = y;
+  });
+  document.getElementById('report-month').value = m;
+  document.getElementById('seisan-month').value = m;
+
+  await loadClients();
+
+  // URLパラメータで顧問生モード判定
+  const params = new URLSearchParams(window.location.search);
+  const cId = params.get('c');
+  if (cId) {
+    enterClientMode(cId);
+  } else {
+    loadSeisan();
+  }
+}
+
+// ========== 顧問生モード ==========
+function enterClientMode(clientId) {
+  const c = clients.find(x => x.id === clientId && x.active);
+  if (!c) {
+    document.body.innerHTML = `
+      <div style="font-family:-apple-system,sans-serif;text-align:center;padding:80px 20px;color:#64748b;">
+        <div style="font-size:48px;margin-bottom:16px;">🔗</div>
+        <h2 style="font-size:18px;margin-bottom:8px;color:#1e293b;">URLが無効です</h2>
+        <p style="font-size:14px;">このURLは存在しないか、無効になっています。<br>管理者にお問い合わせください。</p>
+      </div>`;
+    return;
+  }
+  clientMode = c;
+
+  // ヘッダー変更
+  document.querySelector('header h1').textContent = `💰 ${c.name} 精算シート`;
+
+  // タブを売上報告のみに（精算一覧・設定タブを隠す）
+  const tabs = document.querySelectorAll('.tab');
+  tabs[1].style.display = 'none';
+  tabs[2].style.display = 'none';
+
+  // 名前ドロップダウンを隠して固定名を表示
+  document.getElementById('report-client-select-wrap').style.display = 'none';
+  document.getElementById('report-client-fixed').style.display = 'block';
+  document.getElementById('report-client-fixed-name').textContent = c.name;
+
+  // プレビュー再計算と履歴読み込み
+  calcPreview();
+  loadHistory(c.id);
+}
+
+// ========== ユーティリティ ==========
+function fmt(n) {
+  return Number(n).toLocaleString('ja-JP') + '円';
+}
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+let toastTimer;
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ========== タブ切り替え ==========
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    const names = ['report', 'seisan', 'settings'];
+    el.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+
+  if (name === 'seisan') loadSeisan();
+  if (name === 'settings') renderClientSettings();
+}
+
+// ========== 顧問生読み込み ==========
+async function loadClients() {
+  const { data, error } = await sb.from('seisan_clients').select('*').order('created_at');
+  if (error) { showToast('顧問生の読み込みに失敗しました'); return; }
+  clients = data || [];
+  updateClientSelects();
+}
+
+function updateClientSelects() {
+  const sel = document.getElementById('report-client');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- 選択してください --</option>';
+  clients.filter(c => c.active).forEach(c => {
+    sel.innerHTML += `<option value="${c.id}">${esc(c.name)}</option>`;
+  });
+  if (currentVal) sel.value = currentVal;
+}
+
+// ========== 売上報告タブ ==========
+function onClientChange() {
+  const clientId = document.getElementById('report-client').value;
+  calcPreview();
+  if (clientId) {
+    loadHistory(clientId);
+  } else {
+    document.getElementById('history-card').style.display = 'none';
+  }
+}
+
+function getSelectedClient() {
+  if (clientMode) return clientMode;
+  const id = document.getElementById('report-client').value;
+  return clients.find(c => c.id === id) || null;
+}
+
+function onUnitInput() {
+  const price = parseInt(document.getElementById('report-unit-price').value) || 0;
+  const count = parseInt(document.getElementById('report-unit-count').value) || 0;
+  if (price > 0 && count > 0) {
+    document.getElementById('report-revenue').value = price * count;
+  }
+  calcPreview();
+}
+
+function calcPreview() {
+  const c = getSelectedClient();
+  const chakkin_amount = parseInt(document.getElementById('report-chakkin-amount').value) || 0;
+  const preview = document.getElementById('fee-preview');
+
+  if (!c) { preview.style.display = 'none'; return; }
+
+  const commission = Math.floor(chakkin_amount * 0.1);
+  const total = c.fixed_fee + commission;
+
+  document.getElementById('preview-fixed').textContent = fmt(c.fixed_fee);
+  document.getElementById('preview-rate-label').textContent = `（着金の10%）`;
+  document.getElementById('preview-commission').textContent = fmt(commission);
+  document.getElementById('preview-total').textContent = fmt(total);
+  preview.style.display = 'block';
+
+  checkAlreadyReported();
+}
+
+async function checkAlreadyReported() {
+  const c = getSelectedClient();
+  if (!c) return;
+  const year = parseInt(document.getElementById('report-year').value);
+  const month = parseInt(document.getElementById('report-month').value);
+
+  const { data } = await sb.from('seisan_reports')
+    .select('id')
+    .eq('client_id', c.id)
+    .eq('year', year)
+    .eq('month', month)
+    .maybeSingle();
+
+  document.getElementById('already-reported').style.display = data ? 'block' : 'none';
+}
+
+async function submitReport() {
+  const c = getSelectedClient();
+  if (!c) { showToast('顧問生を選択してください'); return; }
+
+  const revenue = parseInt(document.getElementById('report-revenue').value);
+  if (isNaN(revenue) || revenue < 0) { showToast('売上を入力してください'); return; }
+
+  const year = parseInt(document.getElementById('report-year').value);
+  const month = parseInt(document.getElementById('report-month').value);
+  const chakkin_amount = parseInt(document.getElementById('report-chakkin-amount').value) || 0;
+  const commission = Math.floor(chakkin_amount * 0.1);
+  const calculated_fee = c.fixed_fee + commission;
+
+  const unit_price = parseInt(document.getElementById('report-unit-price').value) || 0;
+  const unit_count = parseInt(document.getElementById('report-unit-count').value) || 0;
+  const chakkin_count = parseInt(document.getElementById('report-chakkin-count').value) || 0;
+
+  const payload = {
+    client_id: c.id,
+    year, month, revenue,
+    unit_price, unit_count,
+    chakkin_amount, chakkin_count,
+    fixed_fee: c.fixed_fee,
+    commission_rate: c.commission_rate,
+    calculated_fee,
+    status: 'pending',
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await sb.from('seisan_reports').upsert(payload, {
+    onConflict: 'client_id,year,month'
+  });
+
+  if (error) { showToast('保存に失敗しました: ' + error.message); return; }
+
+  showToast(`✅ ${year}年${month}月の売上を報告しました！`);
+  document.getElementById('already-reported').style.display = 'block';
+  loadHistory(c.id);
+}
+
+async function loadHistory(clientId) {
+  const { data } = await sb.from('seisan_reports')
+    .select('*')
+    .eq('client_id', clientId)
+    .order('year', { ascending: false })
+    .order('month', { ascending: false })
+    .limit(12);
+
+  const card = document.getElementById('history-card');
+  const list = document.getElementById('history-list');
+
+  if (!data || data.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  list.innerHTML = data.map(r => `
+    <div class="history-item">
+      <div class="history-header">
+        <span class="history-month">${r.year}年${r.month}月</span>
+        <span class="history-status ${r.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+          ${r.status === 'confirmed' ? '✅ 確認済み' : '⏳ 確認待ち'}
+        </span>
+      </div>
+      <div class="history-body">
+        ${r.unit_price ? `<span class="history-field">単価：<span>${fmt(r.unit_price)}</span></span>` : ''}
+        ${r.unit_count ? `<span class="history-field">人数：<span>${r.unit_count}人</span></span>` : ''}
+        <span class="history-field">売上：<span>${fmt(r.revenue)}</span></span>
+        ${r.chakkin_amount ? `<span class="history-field">着金金額：<span style="color:var(--success);">${fmt(r.chakkin_amount)}</span></span>` : ''}
+        ${r.chakkin_count ? `<span class="history-field">着金人数：<span style="color:var(--success);">${r.chakkin_count}人</span></span>` : ''}
+        <span class="history-field">固定：<span>${fmt(r.fixed_fee)}</span></span>
+        <span class="history-field">歩合：<span>${fmt(r.calculated_fee - r.fixed_fee)}</span></span>
+        <span class="history-field">顧問料：<span style="color:var(--primary);font-size:15px;">${fmt(r.calculated_fee)}</span></span>
+      </div>
+      ${r.admin_note ? `<div style="margin-top:6px;font-size:12px;color:var(--text-muted);">📝 ${esc(r.admin_note)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ========== 精算一覧タブ ==========
+async function loadSeisan() {
+  const year = parseInt(document.getElementById('seisan-year').value);
+  const month = parseInt(document.getElementById('seisan-month').value);
+
+  document.getElementById('seisan-loading').style.display = 'block';
+  document.getElementById('seisan-table-wrap').style.display = 'none';
+  document.getElementById('seisan-empty').style.display = 'none';
+  document.getElementById('seisan-summary').style.display = 'none';
+
+  if (clients.length === 0) {
+    document.getElementById('seisan-loading').style.display = 'none';
+    document.getElementById('seisan-empty').style.display = 'block';
+    return;
+  }
+
+  const activeClients = clients.filter(c => c.active);
+
+  const { data: reports } = await sb.from('seisan_reports')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month);
+
+  const reportMap = {};
+  (reports || []).forEach(r => { reportMap[r.client_id] = r; });
+
+  let totalRevenue = 0, totalFee = 0, reported = 0, unreported = 0;
+
+  const rows = activeClients.map(c => {
+    const r = reportMap[c.id];
+    if (r) {
+      reported++;
+      totalRevenue += r.revenue;
+      totalFee += r.calculated_fee;
+    } else {
+      unreported++;
+    }
+    return { client: c, report: r || null };
+  });
+
+  document.getElementById('sum-reported').textContent = reported;
+  document.getElementById('sum-unreported').textContent = unreported;
+  document.getElementById('sum-revenue').textContent = (totalRevenue / 10000).toFixed(1) + '万';
+  document.getElementById('sum-fee').textContent = (totalFee / 10000).toFixed(1) + '万';
+  document.getElementById('seisan-summary').style.display = 'grid';
+
+  const tbody = document.getElementById('seisan-tbody');
+  tbody.innerHTML = rows.map(({ client: c, report: r }) => {
+    if (!r) {
+      return `
+      <tr class="not-reported">
+        <td><strong>${esc(c.name)}</strong></td>
+        <td class="num text-muted">—</td>
+        <td class="num text-muted">—</td>
+        <td class="num text-muted">—</td>
+        <td class="num">${fmt(c.fixed_fee)}</td>
+        <td class="num text-muted">—</td>
+        <td class="num text-muted">—</td>
+        <td><span class="history-status status-pending">未報告</span></td>
+        <td><span style="font-size:12px;color:var(--text-muted);">報告待ち</span></td>
+      </tr>`;
+    }
+
+    const commission = r.calculated_fee - r.fixed_fee;
+    return `
+    <tr>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td class="num">${fmt(r.revenue)}</td>
+      <td class="num" style="color:var(--success);font-weight:600;">${r.chakkin_amount ? fmt(r.chakkin_amount) : '<span style="color:var(--text-muted);">—</span>'}</td>
+      <td class="num" style="color:var(--success);font-weight:600;">${r.chakkin_count ? r.chakkin_count + '人' : '<span style="color:var(--text-muted);">—</span>'}</td>
+      <td class="num">${fmt(r.fixed_fee)}</td>
+      <td class="num">${fmt(commission)}<span style="font-size:10px;color:var(--text-muted);"> (${r.commission_rate}%)</span></td>
+      <td class="num" style="font-weight:700;color:var(--primary);">${fmt(r.calculated_fee)}</td>
+      <td>
+        <span class="history-status ${r.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+          ${r.status === 'confirmed' ? '✅ 確認済' : '⏳ 待ち'}
+        </span>
+        ${r.admin_note ? `<div class="admin-note-cell" title="${esc(r.admin_note)}">${esc(r.admin_note)}</div>` : ''}
+      </td>
+      <td style="white-space:nowrap;">
+        ${r.status !== 'confirmed' ? `<button class="btn btn-success btn-sm" onclick="openConfirmModal('${r.id}', '${esc(c.name)}', ${r.calculated_fee})">確認</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="openEditModal('${r.id}', '${esc(c.name)}', ${r.revenue}, '${esc(r.admin_note || '')}', ${r.fixed_fee}, ${r.commission_rate}, ${r.unit_price || 0}, ${r.unit_count || 0}, ${r.chakkin_amount || 0}, ${r.chakkin_count || 0})">修正</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // 合計行
+  if (reported > 0) {
+    tbody.innerHTML += `
+    <tr class="total-row">
+      <td>合計（${reported}名）</td>
+      <td class="num">${fmt(totalRevenue)}</td>
+      <td class="num">—</td>
+      <td class="num">—</td>
+      <td class="num">${fmt(totalFee)}</td>
+      <td colspan="2"></td>
+    </tr>`;
+  }
+
+  document.getElementById('seisan-loading').style.display = 'none';
+  document.getElementById('seisan-table-wrap').style.display = 'block';
+}
+
+// ===== 確認モーダル =====
+function openConfirmModal(reportId, name, fee) {
+  confirmReportId = reportId;
+  document.getElementById('confirm-note').value = '';
+  document.getElementById('confirm-content').innerHTML = `
+    <div style="background:var(--primary-light);border-radius:10px;padding:16px;margin-bottom:4px;">
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px;">${esc(name)}</div>
+      <div style="font-size:22px;font-weight:800;color:var(--primary);">${fmt(fee)}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">この精算内容を確認済みにします</div>
+    </div>`;
+  document.getElementById('modal-confirm').classList.add('open');
+}
+function closeConfirmModal() {
+  document.getElementById('modal-confirm').classList.remove('open');
+  confirmReportId = null;
+}
+async function confirmReport() {
+  if (!confirmReportId) return;
+  const note = document.getElementById('confirm-note').value;
+  const { error } = await sb.from('seisan_reports')
+    .update({ status: 'confirmed', admin_note: note, updated_at: new Date().toISOString() })
+    .eq('id', confirmReportId);
+  if (error) { showToast('保存に失敗しました'); return; }
+  showToast('✅ 確認済みにしました');
+  closeConfirmModal();
+  loadSeisan();
+}
+
+// ===== 修正モーダル =====
+function openEditModal(reportId, name, revenue, note, fixedFee, rate, unitPrice, unitCount, chakkinAmount, chakkinCount) {
+  editReportId = reportId;
+  editClientData = { fixedFee, rate };
+  document.getElementById('modal-edit-title').textContent = `${name} の売上を修正`;
+  document.getElementById('edit-unit-price').value = unitPrice || '';
+  document.getElementById('edit-unit-count').value = unitCount || '';
+  document.getElementById('edit-revenue').value = revenue;
+  document.getElementById('edit-chakkin-amount').value = chakkinAmount || '';
+  document.getElementById('edit-chakkin-count').value = chakkinCount || '';
+  document.getElementById('edit-note').value = note;
+  document.getElementById('modal-edit').classList.add('open');
+}
+function onEditUnitInput() {
+  const price = parseInt(document.getElementById('edit-unit-price').value) || 0;
+  const count = parseInt(document.getElementById('edit-unit-count').value) || 0;
+  if (price > 0 && count > 0) {
+    document.getElementById('edit-revenue').value = price * count;
+  }
+}
+function closeEditModal() {
+  document.getElementById('modal-edit').classList.remove('open');
+  editReportId = null;
+}
+async function saveEdit() {
+  if (!editReportId) return;
+  const revenue = parseInt(document.getElementById('edit-revenue').value);
+  if (isNaN(revenue) || revenue < 0) { showToast('売上を入力してください'); return; }
+  const unit_price = parseInt(document.getElementById('edit-unit-price').value) || 0;
+  const unit_count = parseInt(document.getElementById('edit-unit-count').value) || 0;
+  const chakkin_amount = parseInt(document.getElementById('edit-chakkin-amount').value) || 0;
+  const chakkin_count = parseInt(document.getElementById('edit-chakkin-count').value) || 0;
+  const note = document.getElementById('edit-note').value;
+  const commission = Math.floor(revenue * editClientData.rate / 100);
+  const calculated_fee = editClientData.fixedFee + commission;
+  const { error } = await sb.from('seisan_reports')
+    .update({ revenue, unit_price, unit_count, chakkin_amount, chakkin_count, calculated_fee, admin_note: note, status: 'pending', updated_at: new Date().toISOString() })
+    .eq('id', editReportId);
+  if (error) { showToast('保存に失敗しました'); return; }
+  showToast('✅ 修正しました');
+  closeEditModal();
+  loadSeisan();
+}
+
+// ========== 顧問生設定タブ ==========
+function renderClientSettings() {
+  const el = document.getElementById('client-list-settings');
+  if (clients.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">👥</div><p>顧問生が登録されていません</p></div>`;
+    return;
+  }
+  const base = window.location.href.split('?')[0];
+  el.innerHTML = clients.map(c => `
+    <div class="client-setting-item">
+      <div class="client-info">
+        <div class="client-name-setting">
+          ${esc(c.name)}
+          ${!c.active ? '<span class="inactive-badge">非アクティブ</span>' : ''}
+        </div>
+        <div class="client-fee-info">
+          固定：${fmt(c.fixed_fee)}　歩合：${c.commission_rate}%
+        </div>
+      </div>
+      <div class="client-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copyClientURL('${c.id}', '${esc(c.name)}')">🔗 URL</button>
+        <button class="btn btn-ghost btn-sm" onclick="openClientModal('${c.id}')">編集</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function copyClientURL(clientId, name) {
+  const base = window.location.href.split('?')[0];
+  const url = `${base}?c=${clientId}`;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast(`✅ ${name} の個別URLをコピーしました`);
+  }).catch(() => {
+    prompt(`${name} の個別URLをコピーしてください：`, url);
+  });
+}
+
+function openClientModal(clientId) {
+  editingClientId = clientId || null;
+  document.getElementById('modal-client-title').textContent = clientId ? '顧問生を編集' : '顧問生を追加';
+  document.getElementById('delete-client-btn').style.display = clientId ? 'block' : 'none';
+
+  if (clientId) {
+    const c = clients.find(x => x.id === clientId);
+    if (!c) return;
+    document.getElementById('m-name').value = c.name;
+    document.getElementById('m-fixed').value = c.fixed_fee;
+    document.getElementById('m-rate').value = c.commission_rate;
+    document.getElementById('m-chakkin-amount').value = c.chakkin_amount || '';
+    document.getElementById('m-chakkin-count').value = c.chakkin_count || '';
+    document.getElementById('m-active').value = String(c.active);
+  } else {
+    document.getElementById('m-name').value = '';
+    document.getElementById('m-fixed').value = '';
+    document.getElementById('m-rate').value = '';
+    document.getElementById('m-chakkin-amount').value = '';
+    document.getElementById('m-chakkin-count').value = '';
+    document.getElementById('m-active').value = 'true';
+  }
+
+  document.getElementById('modal-client').classList.add('open');
+}
+function closeClientModal() {
+  document.getElementById('modal-client').classList.remove('open');
+  editingClientId = null;
+}
+async function saveClient() {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name) { showToast('名前を入力してください'); return; }
+
+  const fixed_fee = parseInt(document.getElementById('m-fixed').value) || 0;
+  const commission_rate = parseFloat(document.getElementById('m-rate').value) || 0;
+  const chakkin_amount = parseInt(document.getElementById('m-chakkin-amount').value) || 0;
+  const chakkin_count = parseInt(document.getElementById('m-chakkin-count').value) || 0;
+  const active = document.getElementById('m-active').value === 'true';
+
+  let error;
+  if (editingClientId) {
+    ({ error } = await sb.from('seisan_clients')
+      .update({ name, fixed_fee, commission_rate, chakkin_amount, chakkin_count, active })
+      .eq('id', editingClientId));
+  } else {
+    ({ error } = await sb.from('seisan_clients')
+      .insert({ name, fixed_fee, commission_rate, chakkin_amount, chakkin_count, active }));
+  }
+
+  if (error) { showToast('保存に失敗しました: ' + error.message); return; }
+
+  showToast(editingClientId ? '✅ 更新しました' : '✅ 追加しました');
+  closeClientModal();
+  await loadClients();
+  renderClientSettings();
+  updateClientSelects();
+}
+async function deleteClient() {
+  if (!editingClientId) return;
+  const c = clients.find(x => x.id === editingClientId);
+  if (!confirm(`「${c?.name}」を削除しますか？過去の精算データも全て削除されます。`)) return;
+
+  const { error } = await sb.from('seisan_clients').delete().eq('id', editingClientId);
+  if (error) { showToast('削除に失敗しました'); return; }
+
+  showToast('削除しました');
+  closeClientModal();
+  await loadClients();
+  renderClientSettings();
+  updateClientSelects();
+}
+
+// ========== CSV出力 ==========
+function exportCSV() {
+  const year = document.getElementById('seisan-year').value;
+  const month = document.getElementById('seisan-month').value;
+  const rows = document.querySelectorAll('#seisan-tbody tr:not(.total-row)');
+  if (rows.length === 0) { showToast('データがありません'); return; }
+
+  let csv = `﻿顧問生名,売上,固定顧問料,成果報酬,顧問料合計,状態\n`;
+  rows.forEach(tr => {
+    const tds = tr.querySelectorAll('td');
+    const name = tds[0]?.textContent?.trim() || '';
+    const rev  = tds[1]?.textContent?.trim().replace(/[円,]/g,'') || '';
+    const fix  = tds[2]?.textContent?.trim().replace(/[円,]/g,'') || '';
+    const com  = tds[3]?.textContent?.trim().replace(/[円,（）\s\d\.%]/g,'').replace(/[^0-9]/g,'') || '';
+    const tot  = tds[4]?.textContent?.trim().replace(/[円,]/g,'') || '';
+    const stat = tds[5]?.textContent?.trim().replace(/\s+/g,'') || '';
+    csv += `"${name}","${rev}","${fix}","${com}","${tot}","${stat}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `精算_${year}年${month}月.csv`;
+  a.click();
+}
+
+// ========== 起動 ==========
+init();
+</script>
+</body>
+</html>

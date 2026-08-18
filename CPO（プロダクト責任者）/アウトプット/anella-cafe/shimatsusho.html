@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>始末書 | アネラカフェ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Noto Sans JP", sans-serif;
+      background: #F7F5F2;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    /* タブシステム */
+    .tab-container {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .tab-button {
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      color: #999;
+      transition: all 0.2s;
+      font-family: "Noto Sans JP", sans-serif;
+    }
+
+    .tab-button.active {
+      color: #1A3A5C;
+      border-bottom-color: #1A3A5C;
+    }
+
+    .tab-button:hover {
+      color: #1A3A5C;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .container {
+      max-width: 210mm;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 印刷タイトル（印刷時のみ表示） */
+    .print-title {
+      display: none;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 20pt;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .print-title-company {
+      font-size: 12pt;
+      margin-top: 5px;
+      font-weight: normal;
+    }
+
+    /* 見出しスタイル */
+    h1 {
+      font-family: "Noto Serif JP", serif;
+      font-size: 18px;
+      margin-bottom: 30px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* セクション */
+    .section {
+      margin-bottom: 30px;
+      page-break-inside: avoid;
+    }
+
+    .section-header {
+      padding: 10px 15px;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+
+    .section-header.part-a {
+      background: #1A3A5C;
+    }
+
+    .section-header.part-b {
+      background: #C53030;
+    }
+
+    /* フォーム行 */
+    .form-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: start;
+    }
+
+    .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    .form-row.two-col {
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-row.two-col > div {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .form-label {
+      font-weight: bold;
+      font-size: 13px;
+      padding: 8px 0;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      font-family: "Noto Sans JP", sans-serif;
+      font-size: 12px;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 100%;
+      background: #fafafa;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+      font-size: 11px;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    textarea:focus {
+      outline: none;
+      background: #fff;
+      border-color: #1A3A5C;
+      box-shadow: 0 0 3px rgba(26, 58, 92, 0.2);
+    }
+
+    /* チップ（複数選択） */
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 8px 12px;
+      border: 1px solid #bbb;
+      border-radius: 20px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .chip:hover {
+      border-color: #1A3A5C;
+      background: #f0f5f9;
+    }
+
+    .chip.selected {
+      background: #1A3A5C;
+      color: white;
+      border-color: #1A3A5C;
+    }
+
+    /* 選択済み種別の表示（印刷時のみ） */
+    .selected-category {
+      display: none;
+      font-size: 12px;
+      color: #333;
+      line-height: 1.8;
+    }
+
+    .selected-category-item {
+      display: inline;
+      margin-right: 15px;
+    }
+
+    /* ボタングループ */
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: "Noto Sans JP", sans-serif;
+    }
+
+    .btn-print {
+      background: #1A3A5C;
+      color: white;
+    }
+
+    .btn-print:hover {
+      background: #0f2340;
+    }
+
+    .btn-reset {
+      background: #f0f0f0;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+
+    .btn-reset:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-save {
+      background: #2E7D32;
+      color: white;
+      margin-right: 10px;
+    }
+
+    .btn-save:hover {
+      background: #1b5e20;
+    }
+
+    .btn-save:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* 履歴管理 */
+    .history-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .history-filters input {
+      flex: 1;
+      min-width: 150px;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .history-item {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .history-item:hover {
+      background: #f0f0f0;
+      border-color: #1A3A5C;
+      box-shadow: 0 2px 8px rgba(26, 58, 92, 0.1);
+    }
+
+    .history-item-header {
+      display: grid;
+      grid-template-columns: 150px 1fr 150px;
+      gap: 15px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
+    .history-item-staff {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .history-item-date {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .history-item-status {
+      text-align: right;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #e8f5e9;
+      color: #2E7D32;
+    }
+
+    .history-item-status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .history-item-content {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+    }
+
+    .message {
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+
+    .message.success {
+      background: #e8f5e9;
+      color: #2E7D32;
+      border: 1px solid #81c784;
+    }
+
+    .message.error {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef5350;
+    }
+
+    .btn-delete {
+      background: #d32f2f;
+      color: white;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: #b71c1c;
+    }
+
+    .history-item-delete {
+      display: none;
+    }
+
+    .history-item:hover .history-item-delete {
+      display: inline-block;
+    }
+
+    /* 署名欄（印刷時のみ表示） */
+    .signature-section {
+      display: none;
+      margin-top: 40px;
+      page-break-inside: avoid;
+    }
+
+    .signature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .signature-box {
+      border: 1px solid #333;
+      padding: 60px 10px 10px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+      position: relative;
+    }
+
+    .signature-box-label {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+    }
+
+    /* 印刷用スタイル */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 15mm;
+      }
+
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 100%;
+        padding: 12mm 15mm;
+        box-shadow: none;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 12mm 15mm;
+      }
+
+      .print-title {
+        display: block;
+      }
+
+      .print-title-company {
+        display: block;
+      }
+
+      .button-group {
+        display: none;
+      }
+
+      .tab-container {
+        display: none;
+      }
+
+      .chip {
+        display: none;
+      }
+
+      .selected-category {
+        display: block;
+      }
+
+      .signature-section {
+        display: block;
+      }
+
+      /* 印刷時はモノクロ */
+      .section-header.part-a {
+        background: #333 !important;
+        color: white !important;
+      }
+
+      .section-header.part-b {
+        background: #666 !important;
+        color: white !important;
+      }
+
+      /* 入力欄は下線のみ */
+      input[type="text"],
+      input[type="date"],
+      textarea {
+        border: none !important;
+        border-bottom: 1px solid #333 !important;
+        background: transparent !important;
+        padding: 4px 0 2px 0 !important;
+        font-size: 10pt !important;
+        color: #333 !important;
+        font-family: "Noto Sans JP", sans-serif !important;
+        line-height: 1.4 !important;
+      }
+
+      textarea {
+        min-height: 50pt !important;
+      }
+
+      input[type="text"]::placeholder,
+      input[type="date"]::placeholder,
+      textarea::placeholder {
+        color: transparent !important;
+      }
+
+      body {
+        font-size: 10pt;
+      }
+
+      .section {
+        page-break-inside: avoid;
+      }
+
+      /* 塗りつぶしを削除 */
+      input:focus,
+      textarea:focus {
+        outline: none;
+        box-shadow: none;
+      }
+
+      /* リンクのテキスト表示を非表示 */
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      a::after {
+        content: "";
+      }
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      .form-row.two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row.two-col > div {
+        grid-template-columns: 80px 1fr;
+      }
+
+      .signature-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- タブシステム -->
+    <div class="tab-container">
+      <button class="tab-button active" onclick="switchTab('form')">記入フォーム</button>
+      <button class="tab-button" onclick="switchTab('history')">履歴管理</button>
+    </div>
+
+    <!-- タブ1: 記入フォーム -->
+    <div id="form-tab" class="tab-content active">
+
+    <div class="print-title">
+      始　末　書
+      <div class="print-title-company">ANELLA CAFE 大分店</div>
+    </div>
+
+    <!-- PART A: 指導内容（管理者・上長が記入） -->
+    <div class="section">
+      <div class="section-header part-a">PART A: 指導内容（管理者・上長が記入）</div>
+
+      <div class="form-row two-col">
+        <div>
+          <label class="form-label">指導日付</label>
+          <input type="date" id="instructionDate">
+        </div>
+        <div>
+          <label class="form-label">指導担当者名</label>
+          <input type="text" id="instructorName" placeholder="例：田中太郎">
+        </div>
+      </div>
+
+      <div class="form-row two-col">
+        <div>
+          <label class="form-label">スタッフ名</label>
+          <input type="text" id="staffName" placeholder="例：山田花子">
+        </div>
+        <div>
+          <label class="form-label">発生日時</label>
+          <input type="text" id="incidentDateTime" placeholder="例：2026年8月7日 14:30頃">
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <label class="form-label">指導の種別（複数選択可）</label>
+        <div class="chip-group" id="categoryChips">
+          <span class="chip" data-category="遅刻・早退">遅刻・早退</span>
+          <span class="chip" data-category="無断欠勤">無断欠勤</span>
+          <span class="chip" data-category="業務上のミス">業務上のミス</span>
+          <span class="chip" data-category="接客態度">接客態度</span>
+          <span class="chip" data-category="報告・連絡・相談の不足">報告・連絡・相談の不足</span>
+          <span class="chip" data-category="規則違反">規則違反</span>
+          <span class="chip" data-category="安全管理">安全管理</span>
+          <span class="chip" data-category="その他">その他</span>
+        </div>
+        <div class="selected-category" id="selectedCategoryDisplay"></div>
+      </div>
+
+      <div class="form-row full">
+        <label class="form-label">指導の内容・事実経緯</label>
+        <textarea id="instructionContent" placeholder="具体的な出来事や状況を記入してください"></textarea>
+      </div>
+
+      <div class="form-row full">
+        <label class="form-label">会社・組織への影響</label>
+        <textarea id="companyImpact" placeholder="この行為がもたらした影響について記入してください"></textarea>
+      </div>
+    </div>
+
+    <!-- PART B: 改善案・反省文（スタッフが記入） -->
+    <div class="section">
+      <div class="section-header part-b">PART B: 改善案・反省文（指導を受けたスタッフが記入）</div>
+
+      <div class="form-row full">
+        <label class="form-label">事実の確認・自己の認識</label>
+        <textarea id="factConfirmation" placeholder="指導内容をどう認識しているか、自分の理解を記入してください"></textarea>
+      </div>
+
+      <div class="form-row full">
+        <label class="form-label">改善策・具体的な行動計画</label>
+        <textarea id="improvementPlan" placeholder="今後どのように改善するか、具体的に記入してください"></textarea>
+      </div>
+
+      <div class="form-row full">
+        <label class="form-label">再発防止へ一言</label>
+        <textarea id="preventionPledge" placeholder="今後の改善への想いを記入してください"></textarea>
+      </div>
+    </div>
+
+    <!-- 署名欄（印刷時のみ） -->
+    <div class="signature-section">
+      <div class="signature-row">
+        <div class="signature-box">
+          <div class="signature-box-label">スタッフ</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-box-label">直属上長</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-box-label">代表確認</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ボタン -->
+    <div class="button-group">
+      <button class="btn-save" id="saveBtn" onclick="handleSave()">💾 記録を保存</button>
+      <button class="btn-print" onclick="handlePrint()">🖨️ 印刷する</button>
+      <button class="btn-reset" onclick="handleReset()">リセット</button>
+    </div>
+    </div>
+
+    <!-- タブ2: 履歴管理 -->
+    <div id="history-tab" class="tab-content">
+      <h2 style="margin-bottom: 20px;">指導記録の履歴</h2>
+
+      <div class="history-filters">
+        <input type="text" id="searchStaffName" placeholder="スタッフ名で検索...">
+        <input type="date" id="searchFromDate" placeholder="開始日">
+        <input type="date" id="searchToDate" placeholder="終了日">
+        <button onclick="loadHistory()" style="background: #1A3A5C; color: white;">検索</button>
+      </div>
+
+      <div id="messageContainer"></div>
+      <div id="historyContainer" class="history-list">
+        <div class="loading">読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Supabase接続確認
+    const supabaseUrl = window.supabase ? 'connected' : 'error';
+
+    // 今日の日付をデフォルトに設定
+    function setDefaultDates() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
+
+      document.getElementById('instructionDate').value = dateString;
+    }
+
+    // タブ切り替え
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+
+      if (tabName === 'history') {
+        loadHistory();
+      }
+    }
+
+    // メッセージ表示
+    function showMessage(message, type = 'success') {
+      const container = document.getElementById('messageContainer');
+      container.innerHTML = `<div class="message ${type}">${message}</div>`;
+      setTimeout(() => container.innerHTML = '', 3000);
+    }
+
+    // Supabaseに保存
+    async function handleSave() {
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = '保存中...';
+
+      try {
+        const instructorName = document.getElementById('instructorName').value.trim();
+        const staffName = document.getElementById('staffName').value.trim();
+
+        if (!instructorName || !staffName) {
+          showMessage('指導担当者名とスタッフ名を入力してください', 'error');
+          saveBtn.disabled = false;
+          saveBtn.textContent = '💾 記録を保存';
+          return;
+        }
+
+        const selectedCategories = Array.from(document.querySelectorAll('.chip.selected'))
+          .map(chip => chip.getAttribute('data-category'));
+
+        const data = {
+          created_by: instructorName,
+          staff_name: staffName,
+          instruction_date: document.getElementById('instructionDate').value,
+          incident_datetime: document.getElementById('incidentDateTime').value,
+          categories: selectedCategories,
+          instruction_content: document.getElementById('instructionContent').value,
+          company_impact: document.getElementById('companyImpact').value,
+          fact_confirmation: document.getElementById('factConfirmation').value,
+          improvement_plan: document.getElementById('improvementPlan').value,
+          prevention_pledge: document.getElementById('preventionPledge').value,
+          is_submitted: true
+        };
+
+        const { error } = await window.supabase
+          .from('shimatsusho_records')
+          .insert([data]);
+
+        if (error) throw error;
+
+        showMessage('✅ 記録を保存しました！');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 記録を保存';
+      } catch (error) {
+        console.error('保存エラー:', error);
+        showMessage('保存に失敗しました: ' + error.message, 'error');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 記録を保存';
+      }
+    }
+
+    // 履歴を読み込み
+    async function loadHistory() {
+      const container = document.getElementById('historyContainer');
+      container.innerHTML = '<div class="loading">読み込み中...</div>';
+
+      try {
+        const staffName = document.getElementById('searchStaffName').value.trim();
+        const fromDate = document.getElementById('searchFromDate').value;
+        const toDate = document.getElementById('searchToDate').value;
+
+        let query = window.supabase.from('shimatsusho_records').select('*');
+
+        if (staffName) {
+          query = query.ilike('staff_name', `%${staffName}%`);
+        }
+        if (fromDate) {
+          query = query.gte('instruction_date', fromDate);
+        }
+        if (toDate) {
+          query = query.lte('instruction_date', toDate);
+        }
+
+        const { data, error } = await query.order('instruction_date', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="loading">該当する記録がありません</div>';
+          return;
+        }
+
+        container.innerHTML = data.map(record => `
+          <div class="history-item">
+            <div class="history-item-header">
+              <div class="history-item-staff" onclick="loadRecordToForm('${record.id}')">${escapeHtml(record.staff_name)}</div>
+              <div class="history-item-date" onclick="loadRecordToForm('${record.id}')">${record.instruction_date} 記録</div>
+              <div class="history-item-status ${record.is_submitted ? '' : 'pending'}" onclick="loadRecordToForm('${record.id}')">
+                ${record.is_submitted ? '提出済み' : '作成中'}
+              </div>
+              <button class="btn-delete history-item-delete" onclick="deleteRecord('${record.id}', '${escapeHtml(record.staff_name)}')">削除</button>
+            </div>
+            <div class="history-item-content" onclick="loadRecordToForm('${record.id}')">
+              <strong>指導内容:</strong> ${escapeHtml(record.instruction_content || '未記入')} <br>
+              <strong>指導者:</strong> ${escapeHtml(record.created_by || '')} <br>
+              <strong>種別:</strong> ${(record.categories || []).join('、') || '未設定'}
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('読み込みエラー:', error);
+        container.innerHTML = '<div class="loading">読み込みエラー: ' + error.message + '</div>';
+      }
+    }
+
+    // XSS対策
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 記録を削除
+    async function deleteRecord(recordId, staffName) {
+      if (!confirm(`${staffName}の記録を削除してもよろしいですか？\nこの操作は取り消せません。`)) {
+        return;
+      }
+
+      try {
+        const { error } = await window.supabase
+          .from('shimatsusho_records')
+          .delete()
+          .eq('id', recordId);
+
+        if (error) throw error;
+
+        showMessage(`✅ ${staffName}の記録を削除しました`);
+        loadHistory(); // 履歴を再読み込み
+      } catch (error) {
+        console.error('削除エラー:', error);
+        showMessage('削除に失敗しました: ' + error.message, 'error');
+      }
+    }
+
+    // 履歴から記録をフォームに読み込み
+    async function loadRecordToForm(recordId) {
+      try {
+        const { data, error } = await window.supabase
+          .from('shimatsusho_records')
+          .select('*')
+          .eq('id', recordId)
+          .single();
+
+        if (error) throw error;
+        if (!data) {
+          showMessage('記録が見つかりません', 'error');
+          return;
+        }
+
+        // フォームに読み込み
+        document.getElementById('instructionDate').value = data.instruction_date || '';
+        document.getElementById('instructorName').value = data.created_by || '';
+        document.getElementById('staffName').value = data.staff_name || '';
+        document.getElementById('incidentDateTime').value = data.incident_datetime || '';
+        document.getElementById('instructionContent').value = data.instruction_content || '';
+        document.getElementById('companyImpact').value = data.company_impact || '';
+        document.getElementById('factConfirmation').value = data.fact_confirmation || '';
+        document.getElementById('improvementPlan').value = data.improvement_plan || '';
+        document.getElementById('preventionPledge').value = data.prevention_pledge || '';
+
+        // カテゴリーをリセットして、保存されたものを選択
+        document.querySelectorAll('.chip').forEach(chip => {
+          chip.classList.remove('selected');
+        });
+        if (data.categories && Array.isArray(data.categories)) {
+          data.categories.forEach(category => {
+            const chip = document.querySelector(`.chip[data-category="${category}"]`);
+            if (chip) chip.classList.add('selected');
+          });
+        }
+        updateSelectedCategoryDisplay();
+
+        // 「記入フォーム」タブに切り替え
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelector('.tab-button:first-child').classList.add('active');
+        document.getElementById('form-tab').classList.add('active');
+
+        showMessage(`✅ 記録を読み込みました（${data.staff_name}）`);
+      } catch (error) {
+        console.error('読み込みエラー:', error);
+        showMessage('読み込みに失敗しました: ' + error.message, 'error');
+      }
+    }
+
+    // チップのクリック処理
+    function setupChipListeners() {
+      const chips = document.querySelectorAll('.chip');
+      chips.forEach(chip => {
+        chip.addEventListener('click', function() {
+          this.classList.toggle('selected');
+          updateSelectedCategoryDisplay();
+        });
+      });
+    }
+
+    // 選択済みカテゴリーの表示を更新
+    function updateSelectedCategoryDisplay() {
+      const selected = Array.from(document.querySelectorAll('.chip.selected'))
+        .map(chip => chip.getAttribute('data-category'));
+
+      const display = document.getElementById('selectedCategoryDisplay');
+      if (selected.length > 0) {
+        display.innerHTML = selected
+          .map(cat => `<span class="selected-category-item">・${cat}</span>`)
+          .join('');
+      } else {
+        display.innerHTML = '';
+      }
+    }
+
+    // 印刷処理
+    function handlePrint() {
+      // 現在のフォーム内容を取得
+      const formData = {
+        instructionDate: document.getElementById('instructionDate').value,
+        instructorName: document.getElementById('instructorName').value,
+        staffName: document.getElementById('staffName').value,
+        incidentDateTime: document.getElementById('incidentDateTime').value,
+        categories: Array.from(document.querySelectorAll('.chip.selected')).map(c => c.getAttribute('data-category')),
+        instructionContent: document.getElementById('instructionContent').value,
+        companyImpact: document.getElementById('companyImpact').value,
+        factConfirmation: document.getElementById('factConfirmation').value,
+        improvementPlan: document.getElementById('improvementPlan').value,
+        preventionPledge: document.getElementById('preventionPledge').value
+      };
+
+      // 印刷用ウィンドウを開く
+      const printWindow = window.open('', 'print', 'width=800,height=600');
+
+      // 印刷用HTMLを生成
+      const printHTML = generatePrintHTML(formData);
+
+      printWindow.document.write(printHTML);
+      printWindow.document.close();
+
+      // ウィンドウの読み込み完了後に印刷
+      printWindow.onload = function() {
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 250);
+      };
+    }
+
+    // 印刷用HTML生成
+    function generatePrintHTML(data) {
+      return `
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>始末書</title>
+          <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: "Noto Sans JP", sans-serif; line-height: 1.6; }
+            @page { size: A4 portrait; margin: 15mm; }
+            @media print {
+              body { font-size: 10pt; }
+              input, textarea { border: none; border-bottom: 1px solid #333; background: transparent; padding: 4px 0 2px 0; color: #333; }
+              textarea { min-height: 50pt; }
+            }
+            .container { max-width: 210mm; padding: 20px; }
+            .title { text-align: center; font-size: 20pt; font-weight: bold; margin-bottom: 10px; letter-spacing: 2px; }
+            .company { text-align: center; font-size: 12pt; margin-bottom: 30px; }
+            .section { margin-bottom: 20px; page-break-inside: avoid; }
+            .section-header { background: #333; color: white; padding: 10px 15px; font-weight: bold; font-size: 12pt; }
+            .form-row { display: grid; grid-template-columns: 120px 1fr; gap: 15px; margin-bottom: 12px; align-items: start; }
+            .form-label { font-weight: bold; font-size: 11pt; }
+            .form-value { font-size: 11pt; padding: 4px 0 2px 0; border-bottom: 1px solid #333; min-height: 20px; }
+            .signature-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 40px; }
+            .signature-box { border: 1px solid #333; padding: 60px 10px 10px; text-align: center; font-size: 10pt; position: relative; }
+            .signature-label { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 9pt; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="title">始　末　書</div>
+            <div class="company">ANELLA CAFE 大分店</div>
+
+            <div class="section">
+              <div class="section-header">PART A: 指導内容</div>
+              <div class="form-row">
+                <div class="form-label">指導日付</div>
+                <div class="form-value">${data.instructionDate}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">指導担当者</div>
+                <div class="form-value">${data.instructorName}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">スタッフ名</div>
+                <div class="form-value">${data.staffName}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">発生日時</div>
+                <div class="form-value">${data.incidentDateTime}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">指導の種別</div>
+                <div class="form-value">${data.categories.join('、')}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">指導内容</div>
+                <div class="form-value" style="grid-column: 2; white-space: pre-wrap; min-height: 60px;">${data.instructionContent}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">会社への影響</div>
+                <div class="form-value" style="grid-column: 2; white-space: pre-wrap; min-height: 60px;">${data.companyImpact}</div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-header">PART B: 改善策・再発防止</div>
+              <div class="form-row">
+                <div class="form-label">事実の確認</div>
+                <div class="form-value" style="grid-column: 2; white-space: pre-wrap; min-height: 60px;">${data.factConfirmation}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">改善策</div>
+                <div class="form-value" style="grid-column: 2; white-space: pre-wrap; min-height: 60px;">${data.improvementPlan}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">再発防止</div>
+                <div class="form-value" style="grid-column: 2; white-space: pre-wrap; min-height: 60px;">${data.preventionPledge}</div>
+              </div>
+            </div>
+
+            <div class="signature-row">
+              <div class="signature-box">
+                <div class="signature-label">スタッフ</div>
+              </div>
+              <div class="signature-box">
+                <div class="signature-label">直属上長</div>
+              </div>
+              <div class="signature-box">
+                <div class="signature-label">代表確認</div>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    }
+
+    // リセット処理
+    function handleReset() {
+      if (confirm('本当に全ての入力内容をリセットしますか？')) {
+        document.getElementById('instructionDate').value = '';
+        document.getElementById('instructorName').value = '';
+        document.getElementById('staffName').value = '';
+        document.getElementById('incidentDateTime').value = '';
+        document.getElementById('instructionContent').value = '';
+        document.getElementById('companyImpact').value = '';
+        document.getElementById('factConfirmation').value = '';
+        document.getElementById('improvementPlan').value = '';
+        document.getElementById('preventionPledge').value = '';
+
+        // チップを全て選択解除
+        document.querySelectorAll('.chip').forEach(chip => {
+          chip.classList.remove('selected');
+        });
+        updateSelectedCategoryDisplay();
+
+        // 日付をリセット
+        setDefaultDates();
+      }
+    }
+
+    // 初期化
+    window.addEventListener('DOMContentLoaded', function() {
+      setDefaultDates();
+      setupChipListeners();
+    });
+  </script>
+</body>
+</html>

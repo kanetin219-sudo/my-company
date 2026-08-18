@@ -199,7 +199,7 @@
 
     .section-label { font-size: 12px; font-weight: 700; color: var(--text-mid); margin-bottom: 8px; }
 
-    .status-btns { display: flex; gap: 8px; margin-bottom: 16px; }
+    .status-btns { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .status-btn {
       flex: 1; padding: 12px 8px; border-radius: 10px; border: 2px solid var(--border); background: var(--surface);
       font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
@@ -209,6 +209,8 @@
     .status-btn.active-booked { border-color: var(--primary); background: var(--warn-bg); color: var(--primary); }
     .status-btn.active-visited { border-color: var(--accent); background: #E8F5E9; color: var(--accent); }
     .status-btn.active-cancelled { border-color: var(--gray); background: var(--gray-bg); color: var(--gray); }
+    .status-btn.active-deleted { border-color: #d32f2f; background: #ffebee; color: #d32f2f; }
+    #sbDeleted { background: #d32f2f !important; color: white !important; border-color: #d32f2f !important; }
 
     .memo-area {
       width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
@@ -516,6 +518,7 @@
       <button class="status-btn" id="sbBooked"  onclick="changeStatus('予約済み')">予約済み</button>
       <button class="status-btn" id="sbVisited" onclick="changeStatus('来店済み')">来店済み</button>
       <button class="status-btn" id="sbCancelled" onclick="changeStatus('キャンセル')">キャンセル</button>
+      <button class="status-btn" id="sbDeleted" onclick="changeStatus('削除済み')">削除</button>
     </div>
 
     <div class="section-label">予約詳細</div>
@@ -1246,6 +1249,7 @@ async function changeStatus(status) {
     document.getElementById('sbBooked').className = 'status-btn' + (status === '予約済み' ? ' active-booked' : '');
     document.getElementById('sbVisited').className = 'status-btn' + (status === '来店済み' ? ' active-visited' : '');
     document.getElementById('sbCancelled').className = 'status-btn' + (status === 'キャンセル' ? ' active-cancelled' : '');
+    document.getElementById('sbDeleted').className = 'status-btn' + (status === '削除済み' ? ' active-deleted' : '');
     loadReservations();
   }
 }

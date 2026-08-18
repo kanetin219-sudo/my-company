@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5月完成見学会 成果レポート｜匠のGEN</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1a2e4a;
+    --gold: #c9a84c;
+    --gold-light: #f0dfa0;
+    --white: #ffffff;
+    --gray: #f5f5f0;
+    --gray-mid: #e0ddd6;
+    --text: #1a1a1a;
+    --muted: #888;
+    --red: #c0392b;
+    --green: #27ae60;
+    --bg: #f0ede8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* ===== 表紙 ===== */
+  .cover {
+    max-width: 960px;
+    margin: 40px auto;
+    background: var(--navy);
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 56px 56px 48px;
+    position: relative;
+    box-shadow: 0 8px 40px rgba(26,46,74,0.25);
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.08);
+    pointer-events: none;
+  }
+
+  .cover-eyebrow { font-size: 11px; color: var(--gold); letter-spacing: 0.2em; font-weight: 700; margin-bottom: 16px; }
+  .cover-title { font-size: 40px; font-weight: 700; color: #fff; line-height: 1.25; margin-bottom: 8px; }
+  .cover-title em { color: var(--gold); font-style: normal; }
+  .cover-date { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 24px; letter-spacing: 0.06em; }
+  .cover-line { width: 60px; height: 3px; background: var(--gold); margin: 20px 0; border-radius: 2px; }
+
+  /* ===== セクション共通 ===== */
+  .section {
+    max-width: 960px;
+    margin: 0 auto 40px;
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 20px rgba(26,46,74,0.08);
+  }
+
+  .sec-head {
+    padding: 20px 32px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sec-num {
+    width: 28px; height: 28px;
+    background: var(--gold);
+    color: var(--navy);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .sec-head h2 { font-size: 17px; color: #fff; font-weight: 700; letter-spacing: 0.04em; }
+  .sec-body { padding: 32px; }
+
+  /* ===== 大きなKPI ===== */
+  .hero-kpi {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .hero-card {
+    flex: 1;
+    background: var(--gray);
+    border-radius: 10px;
+    padding: 24px 20px;
+    text-align: center;
+    border-top: 4px solid var(--gray-mid);
+    position: relative;
+  }
+
+  .hero-card.gold { border-top-color: var(--gold); background: rgba(201,168,76,0.07); }
+  .hero-card.green { border-top-color: var(--green); background: rgba(39,174,96,0.06); }
+  .hero-card.red { border-top-color: var(--red); background: rgba(192,57,43,0.05); }
+
+  .hero-icon { font-size: 32px; margin-bottom: 10px; }
+  .hero-label { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .hero-num { font-size: 42px; font-weight: 800; color: var(--navy); line-height: 1; }
+  .hero-card.gold .hero-num { color: #a07820; }
+  .hero-card.green .hero-num { color: var(--green); }
+  .hero-card.red .hero-num { color: var(--red); }
+  .hero-unit { font-size: 16px; font-weight: 700; }
+  .hero-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* ===== 流入図（矢印フロー） ===== */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+
+  .flow-box {
+    flex-shrink: 0;
+    background: var(--gray);
+    border-radius: 8px;
+    padding: 16px 18px;
+    text-align: center;
+    min-width: 110px;
+  }
+
+  .flow-box.accent { background: var(--navy); color: #fff; }
+  .flow-box.gold { background: rgba(201,168,76,0.15); border: 2px solid var(--gold); }
+  .flow-box.highlight { background: var(--gold); }
+
+  .flow-icon { font-size: 26px; margin-bottom: 6px; }
+  .flow-label { font-size: 12px; font-weight: 700; line-height: 1.3; }
+  .flow-num { font-size: 28px; font-weight: 800; color: var(--navy); margin: 4px 0; }
+  .flow-box.accent .flow-label { color: rgba(255,255,255,0.85); }
+  .flow-box.accent .flow-num { color: var(--gold-light); }
+  .flow-box.gold .flow-num { color: #8a6a10; }
+  .flow-box.highlight .flow-num { color: var(--navy); }
+
+  .flow-arrow {
+    font-size: 22px;
+    color: var(--gray-mid);
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+
+  /* ===== 広告カード比較 ===== */
+  .ad-cards {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .ad-card {
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    background: var(--gray);
+    border: 2px solid transparent;
+    position: relative;
+  }
+
+  .ad-card.winner { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+  .ad-card.runner { background: rgba(26,46,74,0.06); border-color: var(--navy); }
+  .ad-card.loser { background: rgba(192,57,43,0.06); border-color: rgba(192,57,43,0.3); }
+
+  .ad-card-num { font-size: 18px; font-weight: 800; color: var(--navy); }
+  .ad-card.winner .ad-card-num { color: #8a6a10; }
+  .ad-card.loser .ad-card-num { color: var(--red); }
+
+  .ad-card-name { font-size: 10px; color: var(--muted); margin-bottom: 10px; }
+
+  .ad-bar-wrap { height: 60px; display: flex; flex-direction: column; justify-content: flex-end; margin: 8px 0; }
+  .ad-bar {
+    background: var(--navy);
+    border-radius: 3px;
+    width: 100%;
+    min-height: 4px;
+    transition: height 0.6s ease;
+  }
+  .ad-card.winner .ad-bar { background: var(--gold); }
+  .ad-card.loser .ad-bar { background: rgba(192,57,43,0.4); }
+
+  .ad-bar-label { font-size: 20px; font-weight: 800; color: var(--navy); margin-top: 4px; }
+  .ad-card.winner .ad-bar-label { color: #8a6a10; }
+  .ad-card.loser .ad-bar-label { color: var(--red); }
+
+  .ad-bar-unit { font-size: 11px; color: var(--muted); }
+
+  .ad-badge {
+    position: absolute;
+    top: -10px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  .ad-badge.ctr { background: var(--navy); color: var(--gold); }
+  .ad-badge.ng { background: var(--red); color: white; }
+
+  /* ===== CTRビジュアル ===== */
+  .ctr-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-mid);
+  }
+  .ctr-row:last-child { border-bottom: none; }
+  .ctr-name { width: 56px; font-size: 13px; font-weight: 700; color: var(--navy); flex-shrink: 0; }
+  .ctr-track { flex: 1; height: 28px; background: var(--gray); border-radius: 6px; overflow: hidden; position: relative; }
+  .ctr-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 700; color: var(--navy); transition: width 0.8s ease; }
+  .ctr-val { width: 44px; text-align: right; font-size: 13px; font-weight: 700; color: var(--navy); flex-shrink: 0; }
+
+  /* ===== LINE登録フロー ===== */
+  .funnel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0;
+  }
+
+  .funnel-step {
+    width: 100%;
+    max-width: 500px;
+    padding: 14px 20px;
+    text-align: center;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    position: relative;
+  }
+
+  .funnel-step::after {
+    content: '▼';
+    position: absolute;
+    bottom: -18px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: var(--gray-mid);
+    z-index: 1;
+  }
+  .funnel-step:last-child::after { display: none; }
+
+  .funnel-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .funnel-num { font-size: 32px; font-weight: 800; line-height: 1.1; }
+  .funnel-unit { font-size: 13px; font-weight: 700; }
+  .funnel-rate { font-size: 11px; margin-top: 2px; }
+
+  /* ===== プログレス ===== */
+  .progress-big {
+    margin: 20px 0;
+    background: var(--gray);
+    border-radius: 12px;
+    padding: 28px 32px;
+  }
+
+  .progress-nums {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+
+  .p-now { font-size: 13px; color: var(--muted); }
+  .p-now strong { display: block; font-size: 52px; font-weight: 800; color: var(--navy); line-height: 1; }
+  .p-now span { font-size: 18px; }
+
+  .p-goal { font-size: 13px; color: var(--muted); text-align: right; }
+  .p-goal strong { display: block; font-size: 32px; font-weight: 800; color: var(--gold); line-height: 1; }
+  .p-goal span { font-size: 14px; }
+
+  .p-bar { height: 28px; background: var(--gray-mid); border-radius: 14px; overflow: hidden; }
+  .p-fill { height: 100%; background: linear-gradient(90deg, var(--navy), var(--gold)); border-radius: 14px; width: 25%; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; }
+  .p-fill span { font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.9); }
+  .p-note { font-size: 12px; color: var(--muted); margin-top: 10px; text-align: center; }
+
+  /* ===== アクション ===== */
+  .actions { display: flex; flex-direction: column; gap: 14px; }
+  .action {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 18px;
+    border-radius: 10px;
+    background: var(--gray);
+  }
+  .action.priority { background: rgba(201,168,76,0.08); border-left: 4px solid var(--gold); }
+  .action.warn { background: rgba(192,57,43,0.05); border-left: 4px solid var(--red); }
+
+  .action-icon { font-size: 28px; flex-shrink: 0; }
+  .action-title { font-size: 15px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+  .action.priority .action-title { color: #8a6a10; }
+  .action-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ===== チャート ===== */
+  .chart-wrap { position: relative; height: 240px; margin-top: 20px; }
+
+  /* ===== キャプション ===== */
+  .caption { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .footer-note {
+    max-width: 960px;
+    margin: 0 auto 60px;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 8px;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 700px) {
+    .cover { padding: 36px 24px; }
+    .cover-title { font-size: 28px; }
+    .sec-body { padding: 20px; }
+    .hero-kpi { flex-wrap: wrap; }
+    .hero-num { font-size: 32px; }
+    .ad-cards { grid-template-columns: repeat(3, 1fr); }
+    .flow { flex-wrap: wrap; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 表紙 ===== -->
+<div class="cover">
+  <div class="cover-eyebrow">EVENT REPORT ／ 2026年5月</div>
+  <div class="cover-title">5月完成見学会<br><em>成果レポート</em></div>
+  <div class="cover-line"></div>
+  <div class="cover-date">開催日：2026年5月23日（土）・24日（日）｜宮崎市生目<br>集計期間：2026年5月15日〜24日</div>
+</div>
+
+<!-- ===== 01 見学会 来場結果 ===== -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-num">1</div>
+    <h2>見学会 来場結果</h2>
+  </div>
+  <div class="sec-body">
+
+    <!-- ヒーローKPI -->
+    <div class="hero-kpi">
+      <div class="hero-card gold">
+        <div class="hero-icon">🏠</div>
+        <div class="hero-label">来場総数</div>
+        <div class="hero-num">37<span class="hero-unit">組</span></div>
+        <div class="hero-sub">新規 10組 ＋ 既存 27組</div>
+      </div>
+      <div class="hero-card green">
+        <div class="hero-icon">✨</div>
+        <div class="hero-label">新規来場</div>
+        <div class="hero-num">10<span class="hero-unit">組</span></div>
+        <div class="hero-sub">初めてのご来場</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-icon">📸</div>
+        <div class="hero-label">インスタ経由</div>
+        <div class="hero-num">9<span class="hero-unit">組</span></div>
+        <div class="hero-sub">うち新規 6組</div>
+      </div>
+    </div>
+
+    <!-- お客様の来場ルート -->
+    <p style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;">📍 どこから来てくれたの？</p>
+    <div class="flow">
+      <div class="flow-box gold">
+        <div class="flow-icon">📱</div>
+        <div class="flow-label">インスタ<br>見て来場</div>
+        <div class="flow-num" style="font-size:22px;">9組</div>
+      </div>
+      <div class="flow-arrow">＋</div>
+      <div class="flow-box gold">
+        <div class="flow-icon">🌐</div>
+        <div class="flow-label">HP予約</div>
+        <div class="flow-num" style="font-size:22px;">3組</div>
+      </div>
+      <div class="flow-arrow">＋</div>
+      <div class="flow-box gold">
+        <div class="flow-icon">📸</div>
+        <div class="flow-label">インスタ<br>予約</div>
+        <div class="flow-num" style="font-size:22px;">5組</div>
+      </div>
+      <div class="flow-arrow">＋</div>
+      <div class="flow-box">
+        <div class="flow-icon">🤝</div>
+        <div class="flow-label">その他<br>（既存等）</div>
+        <div class="flow-num" style="font-size:22px;">20組</div>
+      </div>
+      <div class="flow-arrow">=</div>
+      <div class="flow-box accent">
+        <div class="flow-icon">🏠</div>
+        <div class="flow-label">来場総数</div>
+        <div class="flow-num">37組</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;background:rgba(39,174,96,0.07);border-left:4px solid var(--green);border-radius:0 8px 8px 0;padding:14px 18px;">
+      <p style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px;">✅ インスタ広告の成果</p>
+      <p style="font-size:13px;color:#2d4a2d;line-height:1.7;">インスタグラム広告経由で<strong>9組</strong>が来場。うち新規6組はすべてインスタ広告からの反響です。META広告（Instagram）が来場集客に直結していることが数字で確認できました。</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== 02 META広告 成果 ===== -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-num">2</div>
+    <h2>META広告（Facebook・Instagram広告）の成果</h2>
+  </div>
+  <div class="sec-body">
+
+    <!-- 広告の流れ図 -->
+    <p style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:18px;">📊 広告を出してから LINE 登録まで、何人動いたか</p>
+
+    <div class="funnel">
+      <div class="funnel-step" style="background:#e8f0f8;width:90%;">
+        <div class="funnel-label">① 広告を見た人</div>
+        <div class="funnel-num" style="color:var(--navy);">121,122<span class="funnel-unit" style="font-size:16px;color:var(--muted);"> 回表示</span></div>
+      </div>
+      <div style="height:20px;"></div>
+      <div class="funnel-step" style="background:#ddeaf7;width:72%;">
+        <div class="funnel-label">② リンクをクリックした人</div>
+        <div class="funnel-num" style="color:var(--navy);">2,150<span class="funnel-unit" style="font-size:16px;color:var(--muted);"> 人</span></div>
+        <div class="funnel-rate" style="color:var(--muted);">表示された人の 1.77% がクリック</div>
+      </div>
+      <div style="height:20px;"></div>
+      <div class="funnel-step" style="background:rgba(201,168,76,0.18);width:50%;border:2px solid var(--gold);">
+        <div class="funnel-label">③ LINE に登録した人</div>
+        <div class="funnel-num" style="color:#8a6a10;">14<span class="funnel-unit" style="font-size:16px;"> 人</span></div>
+        <div class="funnel-rate" style="color:var(--muted);">クリックした人の 0.65% が登録</div>
+      </div>
+    </div>
+
+    <!-- 主要KPI -->
+    <div class="hero-kpi" style="margin-top:24px;">
+      <div class="hero-card gold">
+        <div class="hero-label">広告費合計</div>
+        <div class="hero-num">252<span class="hero-unit">K</span></div>
+        <div class="hero-sub">¥252,072（9日間）</div>
+      </div>
+      <div class="hero-card green">
+        <div class="hero-label">1人あたりの広告費</div>
+        <div class="hero-num">¥9,003</div>
+        <div class="hero-sub">リード獲得単価 CPA</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(201,168,76,0.08);border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:14px 18px;margin-top:4px;">
+      <p style="font-size:13px;font-weight:700;color:#8a6a10;margin-bottom:6px;">📌 次のアクション</p>
+      <p style="font-size:13px;color:#3a2a10;line-height:1.7;">クリックした <strong>2,150人のうち LINE 登録したのは 14人（0.65%）</strong>。<br>LP の冒頭にお施主さんインタビューを追加するなど、改修を重ねながら転換率を上げていきます。</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== 03 広告クリエイティブ比較 ===== -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-num">3</div>
+    <h2>どの広告が効いたか？ クリエイティブ比較</h2>
+  </div>
+  <div class="sec-body">
+
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">6種類の広告を同時に出して比較しました。棒グラフは「LINE登録につながった件数」です。</p>
+
+    <!-- 広告カード -->
+    <div class="ad-cards">
+
+      <div class="ad-card winner" style="position:relative;">
+        <div class="ad-badge">★ 最多リード</div>
+        <div style="margin-top:8px;">
+          <div class="ad-card-num">①</div>
+          <div class="ad-card-name">生目①</div>
+          <div class="ad-bar-wrap">
+            <div class="ad-bar" style="height:100%;"></div>
+          </div>
+          <div class="ad-bar-label">12件</div>
+          <div class="ad-bar-unit">リード獲得</div>
+        </div>
+      </div>
+
+      <div class="ad-card runner">
+        <div style="margin-top:8px;">
+          <div class="ad-card-num" style="color:var(--muted);">②</div>
+          <div class="ad-card-name">生目②</div>
+          <div class="ad-bar-wrap">
+            <div class="ad-bar" style="height:17%;background:var(--gray-mid);"></div>
+          </div>
+          <div class="ad-bar-label" style="color:var(--muted);">2件</div>
+          <div class="ad-bar-unit">リード獲得</div>
+        </div>
+      </div>
+
+      <div class="ad-card runner" style="border-color:rgba(39,174,96,0.4);">
+        <div style="margin-top:8px;">
+          <div class="ad-card-num" style="color:#1a5e3a;">③</div>
+          <div class="ad-card-name">生目③</div>
+          <div class="ad-bar-wrap">
+            <div class="ad-bar" style="height:75%;background:rgba(39,174,96,0.5);"></div>
+          </div>
+          <div class="ad-bar-label" style="color:#1a5e3a;">9件</div>
+          <div class="ad-bar-unit">リード獲得</div>
+        </div>
+      </div>
+
+      <div class="ad-card loser" style="position:relative;">
+        <div class="ad-badge ng">要見直し</div>
+        <div style="margin-top:8px;">
+          <div class="ad-card-num">④</div>
+          <div class="ad-card-name">生目④</div>
+          <div class="ad-bar-wrap">
+            <div class="ad-bar" style="height:4%;background:rgba(192,57,43,0.3);"></div>
+          </div>
+          <div class="ad-bar-label">0件</div>
+          <div class="ad-bar-unit">リード獲得</div>
+        </div>
+      </div>
+
+      <div class="ad-card runner">
+        <div style="margin-top:8px;">
+          <div class="ad-card-num" style="color:var(--muted);">⑤</div>
+          <div class="ad-card-name">生目⑤</div>
+          <div class="ad-bar-wrap">
+            <div class="ad-bar" style="height:8%;background:var(--gray-mid);"></div>
+          </div>
+          <div class="ad-bar-label" style="color:var(--muted);">1件</div>
+          <div class="ad-bar-unit">リード獲得</div>
+        </div>
+      </div>
+
+      <div class="ad-card runner" style="border-color:rgba(26,46,74,0.5);position:relative;">
+        <div class="ad-badge ctr">CTR最高</div>
+        <div style="margin-top:8px;">
+          <div class="ad-card-num">⑥</div>
+          <div class="ad-card-name">生目⑥</div>
+          <div class="ad-bar-wrap">
+            <div class="ad-bar" style="height:33%;background:rgba(26,46,74,0.5);"></div>
+          </div>
+          <div class="ad-bar-label">4件</div>
+          <div class="ad-bar-unit">リード獲得</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CTR（クリック率）横棒グラフ -->
+    <p style="font-size:13px;font-weight:700;color:var(--navy);margin:24px 0 12px;">📊 「見て気になってクリックした率（CTR）」 — 高いほど広告の引きつけ力が強い</p>
+
+    <div>
+      <div class="ctr-row">
+        <div class="ctr-name">①</div>
+        <div class="ctr-track"><div class="ctr-fill" style="width:50%;background:rgba(201,168,76,0.6);">1.31%</div></div>
+        <div class="ctr-val" style="color:#8a6a10;">1.31%</div>
+      </div>
+      <div class="ctr-row">
+        <div class="ctr-name">②</div>
+        <div class="ctr-track"><div class="ctr-fill" style="width:61%;background:rgba(26,46,74,0.2);">1.60%</div></div>
+        <div class="ctr-val">1.60%</div>
+      </div>
+      <div class="ctr-row">
+        <div class="ctr-name">③</div>
+        <div class="ctr-track"><div class="ctr-fill" style="width:58%;background:rgba(26,46,74,0.2);">1.53%</div></div>
+        <div class="ctr-val">1.53%</div>
+      </div>
+      <div class="ctr-row">
+        <div class="ctr-name">④</div>
+        <div class="ctr-track"><div class="ctr-fill" style="width:55%;background:rgba(192,57,43,0.25);">1.44%</div></div>
+        <div class="ctr-val" style="color:var(--red);">1.44%</div>
+      </div>
+      <div class="ctr-row">
+        <div class="ctr-name">⑤</div>
+        <div class="ctr-track"><div class="ctr-fill" style="width:86%;background:rgba(26,46,74,0.3);">2.25%</div></div>
+        <div class="ctr-val">2.25%</div>
+      </div>
+      <div class="ctr-row">
+        <div class="ctr-name">⑥</div>
+        <div class="ctr-track"><div class="ctr-fill" style="width:100%;background:rgba(26,46,74,0.5);font-weight:800;">2.63%</div></div>
+        <div class="ctr-val" style="color:var(--navy);font-weight:800;">2.63%</div>
+      </div>
+    </div>
+    <p class="caption">※ ⑥はクリック率トップ。次回は①③⑥を中心に運用予定。④は停止して予算を振り替えます。</p>
+
+  </div>
+</div>
+
+<!-- ===== 04 LINE登録 目標進捗 ===== -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-num">4</div>
+    <h2>LINE登録 — 7月末 180人への進捗</h2>
+  </div>
+  <div class="sec-body">
+
+    <div class="progress-big">
+      <div class="progress-nums">
+        <div class="p-now">現在<strong>45<span>人</span></strong></div>
+        <div style="font-size:22px;font-weight:800;color:var(--gold);">→</div>
+        <div class="p-goal">目標（7月末）<strong>180<span>人</span></strong></div>
+      </div>
+      <div class="p-bar">
+        <div class="p-fill"><span>25%</span></div>
+      </div>
+      <div class="p-note">あと <strong style="color:var(--navy);">135人</strong> ／ 残り約 9 週間</div>
+    </div>
+
+    <!-- 週ペース図 -->
+    <p style="font-size:13px;font-weight:700;color:var(--navy);margin:20px 0 12px;">📅 達成するには週に何人必要か</p>
+    <div style="display:flex;gap:12px;align-items:stretch;">
+      <div style="flex:1;background:rgba(192,57,43,0.06);border-radius:10px;padding:18px;text-align:center;border:2px dashed rgba(192,57,43,0.3);">
+        <div style="font-size:11px;color:var(--red);font-weight:700;margin-bottom:6px;">今のペース</div>
+        <div style="font-size:36px;font-weight:800;color:var(--red);">約2〜3<span style="font-size:16px;">人/週</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">このままでは到達困難</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:24px;color:var(--gray-mid);">→</div>
+      <div style="flex:1;background:rgba(39,174,96,0.07);border-radius:10px;padding:18px;text-align:center;border:2px solid rgba(39,174,96,0.3);">
+        <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:6px;">必要なペース</div>
+        <div style="font-size:36px;font-weight:800;color:var(--green);">約15<span style="font-size:16px;">人/週</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">LP改修で実現可能な目標</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== 05 次のアクション ===== -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-num">5</div>
+    <h2>次にやること</h2>
+  </div>
+  <div class="sec-body">
+
+    <div class="actions">
+      <div class="action priority">
+        <div class="action-icon">🎬</div>
+        <div>
+          <div class="action-title">LINE登録特典施策のご提案</div>
+          <div class="action-desc">現在の転換率 0.65% を改善するため、テレビCMの切り抜き・LINE 登録特典・施主インタビューの実装を私たちが順次対応します。テストしながら数を増やしていきます。</div>
+        </div>
+      </div>
+      <div class="action priority">
+        <div class="action-icon">📣</div>
+        <div>
+          <div class="action-title">次回は①・③・⑥の広告を中心に出す</div>
+          <div class="action-desc">今回の結果で①（リード最多）・⑥（クリック率最高）・③（リード2位）が効果的とわかりました。④は停止して、予算をこの3本に集中。次回の見学会では似たテイストの動画撮影とイメージ広告への横展開もしていきます。</div>
+        </div>
+      </div>
+      <div class="action">
+        <div class="action-icon">🎥</div>
+        <div>
+          <div class="action-title">暮らしを訴求した広告を作成したい</div>
+          <div class="action-desc">社員さん宅を撮影して、朝・夜・休日・子ども主体など暮らしのシーンを広告クリエイティブとして制作していきます。</div>
+        </div>
+      </div>
+      <div class="action warn">
+        <div class="action-icon">📊</div>
+        <div>
+          <div class="action-title">毎月 LINE 登録数を確認し、週15人ペースを目指す</div>
+          <div class="action-desc">7月末 180人達成には週 15人ペースが必要です。6月・7月と毎月状況を確認しながら広告予算の調整を行います。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer-note">
+  データ出典：META広告マネージャー・エルメ（L Message）　／　集計期間：2026年5月15日〜24日　／　作成日：2026年5月26日
+</div>
+
+</body>
+</html>

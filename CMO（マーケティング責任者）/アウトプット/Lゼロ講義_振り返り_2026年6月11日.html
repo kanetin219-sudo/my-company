@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lゼロ講義 振り返り｜2026年6月11日 さえ</title>
+<style>
+  :root {
+    --bg: #faf7f4;
+    --card: #ffffff;
+    --navy: #1a2e4a;
+    --gold: #c9a84c;
+    --gold-light: #fdf3d8;
+    --pink: #e8567a;
+    --pink-light: #fde8ef;
+    --teal: #2b7a78;
+    --teal-light: #e4f4f3;
+    --purple: #6b4fa0;
+    --purple-light: #f0ebfb;
+    --orange: #d4702a;
+    --orange-light: #fdf0e6;
+    --green: #3a9e5e;
+    --green-light: #e8f5ee;
+    --text: #1a1a1a;
+    --muted: #888;
+    --border: #ece5dc;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Hiragino Sans','Meiryo',sans-serif; background:var(--bg); color:var(--text); line-height:1.75; }
+  .wrap { max-width:820px; margin:0 auto; padding:36px 16px 80px; }
+
+  /* ヘッダー */
+  .header { background:linear-gradient(135deg,#1a2e4a 0%,#2c4a6e 100%); border-radius:24px; padding:44px 40px 36px; margin-bottom:32px; position:relative; overflow:hidden; }
+  .header::before { content:''; position:absolute; right:-60px; bottom:-60px; width:260px; height:260px; border-radius:50%; background:rgba(201,168,76,0.12); }
+  .header-badge { display:inline-block; background:var(--gold); color:#fff; font-size:11px; font-weight:bold; padding:5px 16px; border-radius:20px; margin-bottom:14px; letter-spacing:0.1em; }
+  .header h1 { color:#fff; font-size:28px; font-weight:bold; margin-bottom:6px; position:relative; z-index:1; }
+  .header-sub { color:rgba(255,255,255,0.65); font-size:15px; margin-bottom:16px; }
+  .header-meta { display:flex; flex-wrap:wrap; gap:16px; color:rgba(255,255,255,0.5); font-size:13px; }
+
+  /* サマリー */
+  .summary-card { background:linear-gradient(135deg,#1e3554,#2c4e72); border-radius:18px; padding:28px 32px; margin-bottom:32px; color:#fff; }
+  .summary-label { font-size:11px; letter-spacing:0.12em; color:var(--gold); font-weight:bold; margin-bottom:10px; }
+  .summary-card p { font-size:15px; line-height:1.85; color:rgba(255,255,255,0.85); }
+
+  /* セクション */
+  .section { margin-bottom:36px; }
+  .section-title { font-size:15px; font-weight:bold; color:var(--navy); margin-bottom:14px; padding-left:14px; border-left:4px solid var(--gold); line-height:1.4; }
+
+  /* プロフィールカード */
+  .profile-card { background:var(--card); border-radius:18px; padding:28px 32px; border:1px solid var(--border); margin-bottom:32px; }
+  .profile-header { display:flex; align-items:center; gap:18px; margin-bottom:20px; flex-wrap:wrap; }
+  .profile-avatar { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,var(--gold),#f0c040); display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
+  .profile-name { font-size:22px; font-weight:bold; color:var(--navy); }
+  .profile-sub { font-size:13px; color:var(--muted); }
+  .profile-tags { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .ptag { font-size:12px; background:var(--gold-light); color:var(--navy); padding:4px 12px; border-radius:20px; font-weight:bold; }
+  .profile-timeline { border-left:3px solid var(--gold); padding-left:16px; display:flex; flex-direction:column; gap:10px; }
+  .pt-item { font-size:13px; color:#444; }
+  .pt-year { font-size:11px; font-weight:bold; color:var(--gold); display:block; margin-bottom:2px; }
+  .affiliate-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-top:16px; }
+  .af-card { background:var(--gold-light); border-radius:12px; padding:12px 14px; text-align:center; }
+  .af-name { font-size:12px; color:var(--navy); font-weight:bold; margin-bottom:4px; }
+  .af-count { font-size:20px; font-weight:bold; color:var(--gold); }
+  .af-unit { font-size:11px; color:var(--muted); }
+
+  /* ビッグメッセージ */
+  .big-msg { background:var(--gold-light); border-radius:16px; padding:24px 28px; margin-bottom:32px; border-left:5px solid var(--gold); display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .bm-icon { font-size:36px; }
+  .bm-text { font-size:18px; font-weight:bold; color:var(--navy); flex:1; line-height:1.5; }
+
+  /* ストーリーネタ6選 */
+  .story-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:580px){ .story-grid{ grid-template-columns:1fr; } }
+  .story-card { background:var(--card); border-radius:16px; border:1px solid var(--border); overflow:hidden; }
+  .story-header { padding:14px 18px 10px; display:flex; align-items:center; gap:10px; }
+  .story-num { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:bold; color:#fff; flex-shrink:0; }
+  .c1 { background:#e8567a; } .c2 { background:#2b7a78; } .c3 { background:#6b4fa0; }
+  .c4 { background:#c9a84c; } .c5 { background:#3a9e5e; } .c6 { background:#d4702a; }
+  .story-title-wrap {}
+  .story-label { font-size:10px; font-weight:bold; letter-spacing:0.08em; color:var(--muted); }
+  .story-title { font-size:15px; font-weight:bold; color:var(--navy); line-height:1.3; }
+  .story-body { padding:0 18px 14px; }
+  .story-desc { font-size:13px; color:#555; line-height:1.65; margin-bottom:8px; }
+  .story-example { background:var(--bg); border-radius:8px; padding:10px 12px; font-size:12px; color:#555; border-left:3px solid var(--border); line-height:1.6; }
+  .story-card:nth-child(1) .story-example { border-left-color:#e8567a; background:#fde8ef; }
+  .story-card:nth-child(2) .story-example { border-left-color:#2b7a78; background:#e4f4f3; }
+  .story-card:nth-child(3) .story-example { border-left-color:#6b4fa0; background:#f0ebfb; }
+  .story-card:nth-child(4) .story-example { border-left-color:#c9a84c; background:#fdf3d8; }
+  .story-card:nth-child(5) .story-example { border-left-color:#3a9e5e; background:#e8f5ee; }
+  .story-card:nth-child(6) .story-example { border-left-color:#d4702a; background:#fdf0e6; }
+  .story-quote { margin-top:8px; font-size:12px; color:#888; font-style:italic; }
+
+  /* 読まない壁 */
+  .wall-wrap { background:var(--card); border-radius:16px; border:1px solid var(--border); overflow:hidden; margin-bottom:20px; }
+  .wall-header { background:var(--navy); color:#fff; padding:14px 22px; font-size:14px; font-weight:bold; }
+  .wall-grid { display:grid; grid-template-columns:repeat(3,1fr); }
+  @media(max-width:520px){ .wall-grid{ grid-template-columns:1fr; } }
+  .wall-item { padding:20px 18px; text-align:center; border-right:1px solid var(--border); }
+  .wall-item:last-child { border-right:none; }
+  .wall-num { font-size:24px; font-weight:bold; color:var(--navy); margin-bottom:4px; }
+  .wall-name { font-size:14px; font-weight:bold; color:var(--navy); margin-bottom:6px; }
+  .wall-desc { font-size:12px; color:#666; line-height:1.6; }
+  .wall-note { background:var(--pink-light); padding:14px 22px; font-size:14px; color:#b03460; font-weight:bold; border-top:1px solid var(--border); }
+
+  /* 1枚目の工夫 */
+  .first-card { background:var(--card); border-radius:16px; padding:24px 26px; border:1px solid var(--border); }
+  .first-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  @media(max-width:500px){ .first-grid{ grid-template-columns:1fr; } }
+  .fi-item { background:var(--bg); border-radius:10px; padding:12px 14px; font-size:13px; color:#444; line-height:1.6; border-left:3px solid var(--gold); }
+  .fi-label { font-size:10px; font-weight:bold; color:var(--gold); margin-bottom:4px; }
+  .first-ng { background:#fde8ef; border-radius:10px; padding:12px 16px; font-size:13px; color:#b03460; border-left:3px solid var(--pink); }
+
+  /* AvsB */
+  .type-compare { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:500px){ .type-compare{ grid-template-columns:1fr; } }
+  .type-card { border-radius:16px; padding:22px 20px; border:2px solid; }
+  .type-card.a-type { background:var(--teal-light); border-color:var(--teal); }
+  .type-card.b-type { background:#fdf0f3; border-color:#e8c0cc; }
+  .type-label { font-size:24px; font-weight:bold; margin-bottom:4px; }
+  .a-type .type-label { color:var(--teal); } .b-type .type-label { color:#c06080; }
+  .type-name { font-size:12px; font-weight:bold; margin-bottom:12px; }
+  .a-type .type-name { color:var(--teal); } .b-type .type-name { color:#c06080; }
+  .type-stat { font-size:13px; color:#444; padding:4px 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+  .type-stat:last-of-type { border-bottom:none; }
+  .type-badge { display:inline-block; font-size:11px; font-weight:bold; padding:4px 14px; border-radius:20px; margin-top:12px; }
+  .a-type .type-badge { background:var(--teal); color:#fff; }
+  .b-type .type-badge { background:#c06080; color:#fff; }
+
+  /* 視聴タイミング */
+  .timing-grid { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  .timing-chip { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:8px 16px; font-size:13px; color:#444; display:flex; align-items:center; gap:8px; box-shadow:0 1px 6px rgba(0,0,0,0.04); }
+  .tc-e { font-size:16px; }
+  .timing-note { background:var(--pink-light); border-radius:12px; padding:14px 18px; font-size:14px; color:#b03460; font-weight:bold; border-left:3px solid var(--pink); }
+
+  /* Q&A */
+  .qa-item { background:var(--card); border-radius:14px; border:1px solid var(--border); overflow:hidden; margin-bottom:12px; }
+  .qa-q { background:var(--navy); color:#fff; padding:12px 20px; font-size:14px; font-weight:bold; display:flex; gap:10px; align-items:flex-start; }
+  .qa-who { background:var(--gold); color:var(--navy); font-size:11px; font-weight:bold; padding:2px 9px; border-radius:20px; white-space:nowrap; flex-shrink:0; margin-top:2px; }
+  .qa-a { padding:14px 20px; font-size:14px; color:#444; line-height:1.7; }
+  .qa-a strong { color:var(--teal); }
+
+  /* チェックリスト */
+  .checklist { background:var(--card); border-radius:16px; border:1px solid var(--border); overflow:hidden; }
+  .cl-header { background:var(--navy); color:#fff; padding:14px 22px; font-size:14px; font-weight:bold; }
+  .check-item { display:flex; align-items:flex-start; gap:14px; padding:14px 22px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; }
+  .check-item:last-child { border-bottom:none; }
+  .check-item:hover { background:#faf8f5; }
+  .check-box { width:22px; height:22px; border:2px solid var(--border); border-radius:6px; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; font-size:13px; }
+  .check-item.done .check-box { background:var(--teal); border-color:var(--teal); color:#fff; }
+  .check-item.done .check-text { text-decoration:line-through; color:var(--muted); }
+  .check-text { font-size:14px; color:#333; line-height:1.6; }
+  .ctag { display:inline-block; font-size:10px; font-weight:bold; padding:2px 9px; border-radius:20px; margin-left:8px; vertical-align:middle; }
+  .tag-now { background:#fde8ef; color:var(--pink); }
+  .tag-today { background:var(--teal-light); color:var(--teal); }
+  .tag-habit { background:var(--gold-light); color:#a07a20; }
+
+  /* アクション */
+  .action-list { background:var(--card); border-radius:16px; border:1px solid var(--border); overflow:hidden; }
+  .action-item { display:flex; align-items:flex-start; gap:14px; padding:14px 22px; border-bottom:1px solid var(--border); }
+  .action-item:last-child { border-bottom:none; }
+  .action-name { font-size:13px; font-weight:bold; color:#fff; background:var(--navy); padding:3px 12px; border-radius:20px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
+  .action-text { font-size:14px; color:#444; line-height:1.6; }
+
+  /* フッター */
+  .footer { text-align:center; font-size:12px; color:var(--muted); margin-top:48px; padding-top:20px; border-top:1px solid var(--border); }
+
+  /* ネタカードの色 */
+  .story-card:nth-child(1) .story-num { background:#e8567a; }
+  .story-card:nth-child(2) .story-num { background:#2b7a78; }
+  .story-card:nth-child(3) .story-num { background:#6b4fa0; }
+  .story-card:nth-child(4) .story-num { background:#c9a84c; }
+  .story-card:nth-child(5) .story-num { background:#3a9e5e; }
+  .story-card:nth-child(6) .story-num { background:#d4702a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="header-badge">REVIEW &amp; ACTION</div>
+    <h1>Lゼロ 講義 振り返り</h1>
+    <div class="header-sub">伝わるストーリー術 × アフィリエイト × 関係構築</div>
+    <div class="header-meta">
+      <span>📅 2026年6月11日（木）</span>
+      <span>🕙 22:01〜23:18</span>
+      <span>👩‍🏫 講師：さえ（愛知）</span>
+    </div>
+  </div>
+
+  <!-- サマリー -->
+  <div class="summary-card">
+    <div class="summary-label">TODAY'S SUMMARY</div>
+    <p>愛知のお出かけアカウント発信者「さえ」を講師に迎えた勉強会。大学生の2011年からインスタを始め独学でフォロワーを伸ばし、6万人超えてから初めて講座に入った実績者。今日のテーマは「伝わるストーリー術」。6つのネタの型・読まない壁・1枚目の工夫・閲覧数より関係性という考え方を具体エピソードとともに解説。この講義が終わったら今日からすぐ書ける状態になる。</p>
+  </div>
+
+  <!-- 講師プロフィール -->
+  <div class="section">
+    <div class="section-title">講師プロフィール：さえ</div>
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="profile-avatar">🏯</div>
+        <div>
+          <div class="profile-name">さえ</div>
+          <div class="profile-sub">愛知の子連れお出かけアカウント｜元看護師｜2児のママ</div>
+        </div>
+      </div>
+      <div class="profile-tags">
+        <span class="ptag">🏯 愛知お出かけアカウント</span>
+        <span class="ptag">💉 元看護師</span>
+        <span class="ptag">🎵 ミセスファン</span>
+        <span class="ptag">🛍️ 楽天ヘビーユーザー</span>
+        <span class="ptag">✈️ 旅行好き</span>
+      </div>
+      <div class="profile-timeline">
+        <div class="pt-item"><span class="pt-year">2011年</span>大学生の頃にインスタ開始（加工アプリ目的）。写真だけを投稿しフォロワー1.6万人まで成長</div>
+        <div class="pt-item"><span class="pt-year">結婚・出産期</span>看護師退職後フォロワーが減少。文字入れに挑戦するも伸びず</div>
+        <div class="pt-item"><span class="pt-year">転換期</span>「愛知のお出かけアカウントをやってる人がいない」→先行者利益を狙ってお出かけアカウントに変更。<strong>6万人まで独学で成長</strong></div>
+        <div class="pt-item"><span class="pt-year">2022〜2023年</span>初めて講座に入る。アフィリエイトで<strong>7桁達成</strong></div>
+        <div class="pt-item"><span class="pt-year">2024年6月</span>夫婦で法人化。12月に自分の講座を開設</div>
+        <div class="pt-item"><span class="pt-year">実績</span>ユニバ・ららぽーと・スシロー・山田ホームズとタイアップ。テレビ出演・雑誌掲載。200人前での登壇講義</div>
+      </div>
+      <div style="margin-top:20px;">
+        <div class="section-title" style="margin-bottom:12px;">アフィリエイト実績（累計件数）</div>
+        <div class="affiliate-grid">
+          <div class="af-card"><div class="af-name">にこ石鹸</div><div class="af-count">682</div><div class="af-unit">件</div></div>
+          <div class="af-card"><div class="af-name">カンポ</div><div class="af-count">746</div><div class="af-unit">件</div></div>
+          <div class="af-card"><div class="af-name">ネイチャーコーン</div><div class="af-count">972</div><div class="af-unit">件</div></div>
+          <div class="af-card"><div class="af-name">ベルミスシリーズ</div><div class="af-count">1,192</div><div class="af-unit">件</div></div>
+          <div class="af-card"><div class="af-name">マナーラトーンアップ</div><div class="af-count">1,745</div><div class="af-unit">件</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 今日の前提 -->
+  <div class="big-msg">
+    <div class="bm-icon">💡</div>
+    <div class="bm-text">ストーリーは<strong>「きれいに作り込む場所ではない」</strong>。<br>24時間で消えるからこそ価値がある。<br>今の自分を見せる場所。失敗してもバレない。</div>
+  </div>
+
+  <!-- ストーリーネタ6選 -->
+  <div class="section">
+    <div class="section-title">さえ式 ストーリーネタ6選（全部これで回せる）</div>
+    <div class="story-grid">
+
+      <div class="story-card">
+        <div class="story-header">
+          <div class="story-num">1</div>
+          <div class="story-title-wrap">
+            <div class="story-label">HUMAN TOUCH</div>
+            <div class="story-title">やらかした失敗話</div>
+          </div>
+        </div>
+        <div class="story-body">
+          <div class="story-desc">失敗・ミス・大変だったことを出すと人間味が生まれる。「完璧そうなさえさんもこんな失敗するんだ」という発見がフォロワーとの距離を縮める。</div>
+          <div class="story-example">
+            🍳 <strong>さえ実例：餃子96個冷凍庫コンセント事件</strong><br>
+            楽天で買った96個入り餃子。冷凍庫のコンセントが抜けていて全部溶けた。皮がくっついてしまい、包丁で半分に切って焼いた。「餃子とは思えない」状態のストーリーを投稿→「豪快すぎる！」「笑えて親近感」と大反響。
+          </div>
+          <div class="story-quote">💬「さえさんもこんな失敗あるんだって思った記憶があります！」（ゆき）</div>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-header">
+          <div class="story-num">2</div>
+          <div class="story-title-wrap">
+            <div class="story-label">DISCOVERY</div>
+            <div class="story-title">それ知らなかった！という話</div>
+          </div>
+        </div>
+        <div class="story-body">
+          <div class="story-desc">気づき・学び・発見を載せることでフォロワーにとって有益情報になる。「知らなかった！」のDMが会話のきっかけになる。</div>
+          <div class="story-example">
+            🏯 <strong>さえ実例：愛知の穴場グルメスポット</strong><br>
+            手作り五平餅が食べられる場所と値段をストーリーで紹介。「知らなかった！行きたい！」とコメントが来て実際に行ってくれたフォロワーもいた。「実際に行ってくれるのが嬉しい」と意識的に投稿した。
+          </div>
+          <div class="story-quote">💬「知らなかったです！とDMもらって会話が増えるの嬉しいです」（ちよ）</div>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-header">
+          <div class="story-num">3</div>
+          <div class="story-title-wrap">
+            <div class="story-label">CONVERSATION</div>
+            <div class="story-title">フォロワーさんに聞く話</div>
+          </div>
+        </div>
+        <div class="story-body">
+          <div class="story-desc">質問・相談をすることでフォロワーとの会話が生まれる。「教えてもらう側」になることで距離が縮まり、信頼も生まれる。</div>
+          <div class="story-example">
+            🗼 <strong>さえ実例：名古屋駅でどんなもの買う？アンケート</strong><br>
+            「名古屋駅行ったらみんなどんなもの買う?どこ行く?」と質問箱に。大量のコメントをもらい、その情報をもとに実際に買いに行ったストーリーを投稿。フォロワーが「おすすめしたお店に行ってくれた」で嬉しくなる仕組み。
+          </div>
+          <div class="story-quote">💬「実際行ってくれるの嬉しいです」（ゆん）→「意識してやってます」（さえ）</div>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-header">
+          <div class="story-num">4</div>
+          <div class="story-title-wrap">
+            <div class="story-label">EMPATHY</div>
+            <div class="story-title">わかる！の共感話</div>
+          </div>
+        </div>
+        <div class="story-body">
+          <div class="story-desc">「あるある」「懐かしい」「それそれ！」という共感ネタを出すことで一気に距離が縮まる。昔の話が盛り上がりやすい。</div>
+          <div class="story-example">
+            ✏️ <strong>さえ実例：習字道具カタログ事件</strong><br>
+            娘が学校から習字道具のカタログを持って帰ってきた。「昔は赤と黒のセットだったよね」と投稿→大量のコメント。「私も赤だった！」「黒派でした！」と二択が自然に生まれ、現在の娘はミッキーのかわいいセット。「時代が違う」という共感で盛り上がった。
+          </div>
+          <div class="story-quote">💬「かねちん：僕は黒でした📝」「ちよ：赤でした！😂」</div>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-header">
+          <div class="story-num">5</div>
+          <div class="story-title-wrap">
+            <div class="story-label">PERSONALITY</div>
+            <div class="story-title">好きなものの話</div>
+          </div>
+        </div>
+        <div class="story-body">
+          <div class="story-desc">趣味・好きなものを出すことで人柄が分かる。同じものが好きな人との距離が一気に縮まる。「この人もっと知りたい」につながる自己紹介ストーリー。</div>
+          <div class="story-example">
+            🎵 <strong>さえ実例：ミセスのライブ</strong><br>
+            「ミセスのライブに行ってきました！」と投稿。「ミセスが好きなんだ」と知ったフォロワーが急に近く感じる。好きなものが一緒なだけで「この人好き」になるのは人間の本能。コンビニのアイスや映画など何でもOK。
+          </div>
+          <div class="story-quote">💬「好きなものが一緒って急に親近感わきます」（ゆん）</div>
+        </div>
+      </div>
+
+      <div class="story-card">
+        <div class="story-header">
+          <div class="story-num">6</div>
+          <div class="story-title-wrap">
+            <div class="story-label">AUTHENTIC</div>
+            <div class="story-title">本音の話</div>
+          </div>
+        </div>
+        <div class="story-body">
+          <div class="story-desc">悩み・感情・不安を出すことでファンが深まる。「この人の本音が知れた」という体験が強烈な信頼を生む。</div>
+          <div class="story-example">
+            😔 <strong>さえ実例：お出かけできない本音</strong><br>
+            「お出かけアカウントなのに、子供が大きくなってお出かけしたくない日もある。頻度が減ってフォロワーさんに申し訳ない」という本音を投稿。→「もっと応援したくなりました」「そんな思いでやってたんですね」と共感コメントが殺到。
+          </div>
+          <div class="story-quote">💬「言葉にできなかった気持ちを代弁してくれる人に人は惹かれる」（さえ）</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 読まない壁 -->
+  <div class="section">
+    <div class="section-title">「読まない壁」を知らないと全部無駄になる</div>
+    <div class="wall-wrap">
+      <div class="wall-header">📚 3つの壁（検索してみて！すぐ出てくる）</div>
+      <div class="wall-grid">
+        <div class="wall-item">
+          <div class="wall-num">①</div>
+          <div class="wall-name">読まない壁</div>
+          <div class="wall-desc">どんな良い内容でも<strong>1秒以内</strong>にスワイプされたら意味なし</div>
+        </div>
+        <div class="wall-item">
+          <div class="wall-num">②</div>
+          <div class="wall-name">信じない壁</div>
+          <div class="wall-desc">読んでも「本当に？」と疑われたら購入に至らない</div>
+        </div>
+        <div class="wall-item">
+          <div class="wall-num">③</div>
+          <div class="wall-name">行動しない壁</div>
+          <div class="wall-desc">信じても面倒くさくて購入ページに飛ばないことも</div>
+        </div>
+      </div>
+      <div class="wall-note">🚨 最初の「読まない壁」を突破しないと、②③に進む機会すらない。だから1枚目が命。</div>
+    </div>
+
+    <!-- フォロワーの視聴タイミング -->
+    <div style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:10px;">フォロワーさんがインスタを見るタイミング（参加者の声）</div>
+      <div class="timing-grid">
+        <div class="timing-chip"><span class="tc-e">😴</span>寝る前（えり・とも）</div>
+        <div class="timing-chip"><span class="tc-e">🛋️</span>ベッドでダラダラ（ちよ）</div>
+        <div class="timing-chip"><span class="tc-e">🕐</span>隙間時間（ゆん）</div>
+        <div class="timing-chip"><span class="tc-e">😶</span>ぼーっとしているとき（はゆたん）</div>
+        <div class="timing-chip"><span class="tc-e">🚃</span>移動中（Nanamin）</div>
+        <div class="timing-chip"><span class="tc-e">☕</span>仕事の休憩時間（ちほこ）</div>
+        <div class="timing-chip"><span class="tc-e">📱</span>暇なとき（ゆん）</div>
+        <div class="timing-chip"><span class="tc-e">😅</span>リール作らなきゃなのについ見てしまう（しの）</div>
+      </div>
+      <div class="timing-note">💡 「頑張って見てあげよう」という人はいない。ダラっとした状態でスクロールしている人の指を止めるのが1枚目の役割。</div>
+    </div>
+  </div>
+
+  <!-- 1枚目の工夫 -->
+  <div class="section">
+    <div class="section-title">1枚目で指を止める：さえ式テクニック</div>
+    <div class="first-card">
+      <div class="first-grid">
+        <div class="fi-item">
+          <div class="fi-label">地域ネタで食いつかせる</div>
+          「愛知県内のここどこか分かる人いる？」→知ってる人が思わず止まる
+        </div>
+        <div class="fi-item">
+          <div class="fi-label">テンテンテンで気になる</div>
+          「今日の夜、男の子たちが出ていっちゃって…」→続きが気になってタップ
+        </div>
+        <div class="fi-item">
+          <div class="fi-label">「初めて」で引く</div>
+          「○○になって初めて」→何があったの？と2枚目へ
+        </div>
+        <div class="fi-item">
+          <div class="fi-label">驚きワードで止める</div>
+          「マジか」「えっ」「ワン！」など感情ワードで指が止まる
+        </div>
+      </div>
+      <div class="first-ng">
+        ❌ NG：1枚目に長文ぎっしり / 1枚で全部説明しようとする / いきなり商品説明<br>
+        → これは全部すぐスワイプされます
+      </div>
+    </div>
+  </div>
+
+  <!-- 閲覧数の真実 -->
+  <div class="section">
+    <div class="section-title">ストーリー閲覧数の真実：どっちに憧れる？</div>
+    <div class="type-compare">
+      <div class="type-card a-type">
+        <div class="type-label">A</div>
+        <div class="type-name">関係構築できているアカウント</div>
+        <div class="type-stat">📊 閲覧数：1,000</div>
+        <div class="type-stat">💬 DM：めっちゃ来る</div>
+        <div class="type-stat">📋 アンケート：反応あり</div>
+        <div class="type-stat">💰 売上：<strong>10万円</strong></div>
+        <div class="type-badge">全員がこれを目指した！</div>
+      </div>
+      <div class="type-card b-type">
+        <div class="type-label">B</div>
+        <div class="type-name">関係構築できていないアカウント</div>
+        <div class="type-stat">📊 閲覧数：5,000</div>
+        <div class="type-stat">💬 DM：ない</div>
+        <div class="type-stat">📋 アンケート：反応なし</div>
+        <div class="type-stat">💰 売上：<strong>0円</strong></div>
+        <div class="type-badge">これはNG</div>
+      </div>
+    </div>
+    <div style="margin-top:14px; background:var(--teal-light); border-radius:12px; padding:14px 18px; font-size:14px; color:var(--teal); font-weight:bold; border-left:3px solid var(--teal);">
+      💡 人は「情報で買う」のではなく「この人から買いたい」で動く。関係構築が先、売上は後からついてくる。
+    </div>
+  </div>
+
+  <!-- 商材選びの基準 -->
+  <div class="section">
+    <div class="section-title">アフィリエイト商材選びの鉄則（さえの実例つき）</div>
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">原則</div>「なぜこれを使うのか」が言語化できる商材だけを選ぶ</div>
+      <div class="qa-a">
+        <strong>流行ってるから・みんな載せてるから、だけはNG。</strong>ストーリーで紹介する時に言葉が出てこなくなる。フォロワーさんが知りたいのは「あなたが何でこれを選んだか」。
+      </div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">実例①</div>クッションファンデ→リキッドファンデに変えた理由</div>
+      <div class="qa-a">
+        「クッションファンデのパフに菌がたまることを知った。ズボラで洗えないからニキビもできやすくなる→変えた」という理由を明確に説明。フォロワーさんが「そういうことか！」と納得してくれた。<strong>変えた理由を語れることが信頼になる。</strong><br>
+        → 最終的にマナーラから<strong>ステムボーテ</strong>という下地に変更し、その理由も丁寧に投稿。
+      </div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">実例②</div>日傘を載せなかったはゆたんの正しい判断</div>
+      <div class="qa-a">
+        「みんな日傘のストーリーを載せていたけど、私には日傘する余裕がないので載せませんでした」→<strong>これは正しい。</strong>自分が理由を語れない商材は、無理に載せないでOK。「使ってみてよかった＋理由が一言言える」が最低ライン。
+      </div>
+    </div>
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">新商材PR</div>いきなりリンクを貼らない。興味付けに数日使う</div>
+      <div class="qa-a">
+        「最近これを使い始めた」→「使い心地どうかな」→「これすごくよかった！詳しくはこちら」という段階を踏む。いきなりリンクを貼ると「売ろうとしてる」感が出てスワイプされる。
+      </div>
+    </div>
+  </div>
+
+  <!-- Q&A -->
+  <div class="section">
+    <div class="section-title">参加者Q&amp;A</div>
+
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">しの</div>失敗談と「憧れポイント」はどう違う？</div>
+      <div class="qa-a"><strong>失敗=共感・距離を縮める。憧れ=「自分もなりたい」という動機づけ。</strong>どっちが正しいというわけでなく、まず色々出してフォロワーさんの反応を見てから調整していけばいい。引かれたら「出しすぎた」、盛り上がったら「この感じで出していい」と判断する。</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">しの</div>ストーリーは1枚ずつ？まとめてあげるべき？</div>
+      <div class="qa-a"><strong>基本は1枚ずつ。</strong>まとめてあげること自体は閲覧数的には落ちないが、きれいに10枚作ろうとして1日かかるくらいなら1枚ずつの方がいい。熱量が下がってしまうのが一番もったいない。</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">えり</div>家づくりアカウント130人。ストーリーに日常を載せていい？</div>
+      <div class="qa-a"><strong>全然大丈夫！</strong>むしろ家づくりアカウントなら家の中での日常を載せるのは自然。フォロワーが少ないうちから日常を出して人柄を積み上げることで、フォロワーが増えた時に「この人知ってる」という親近感になる。</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">みゆゆ</div>新しい商材PRで気をつけていることは？</div>
+      <div class="qa-a"><strong>なぜこの商品を使おうと思ったかを自分の中で言語化してから紹介する。</strong>気持ちが乗らないまま紹介するとストーリーが薄くなる。まず数日使って、理由を言えるようになってから出す。</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">はゆたん</div>DMの終わりどきがわからない</div>
+      <div class="qa-a">ハートのダブルタップで終わらせたり、「またいつでもDMしてください」というニュアンスの言葉を最後に入れて自然に終わらせる。<strong>終わりを意識しすぎず、自然なひと区切りでOK。</strong></div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">しの</div>素材が足りなくてストーリーを上げられない</div>
+      <div class="qa-a"><strong>リール用に撮った動画をスクショして、そのままストーリーに使えばいい。</strong>新しく撮らなくていい。動画から2〜3枚スクショするだけで素材になる。さえもリール素材をそのままストーリーに使っている。</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q"><div class="qa-who">ちよ</div>今日の学びをストーリーにしてさえさん・かねちんをメンションしていい？</div>
+      <div class="qa-a"><strong>むしろやってほしい！</strong>「今日さえさんからこんなこと学んだ」という投稿は自分のアウトプットになるし、メンションされた側も嬉しい。お互いにメリットがある。</div>
+    </div>
+  </div>
+
+  <!-- 実践チェックリスト -->
+  <div class="section">
+    <div class="section-title">今日から使える実践チェックリスト</div>
+    <div class="checklist">
+      <div class="cl-header">✅ できたらクリックしてチェック！</div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">今日起きた「クスッ」とする失敗談を1つ思い出してストーリーに投稿する<span class="ctag tag-now">今すぐ</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">アンケートスタンプで「二択」を作って投稿する（例：赤ペン派 vs 黒ペン派）<span class="ctag tag-now">今すぐ</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">アンケート回答者全員にコピペでいいから返信する<span class="ctag tag-today">今日中</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">今紹介したい商材に「なぜこれを選んだか」を一言で言語化する<span class="ctag tag-today">今日中</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">「載せないゾーン」を3つ決めてメモする（子供の行事・近所のスーパーなど）<span class="ctag tag-today">今日中</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">リール用に撮った動画をスクショしてSNS素材として保存する<span class="ctag tag-habit">習慣化</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">ストーリーは「まとめあげ」ではなく「1枚ずつ」投稿する<span class="ctag tag-habit">習慣化</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">新商材PRは数日「使い心地レポ」をしてからリンクを貼る<span class="ctag tag-habit">習慣化</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">ストーリー1枚目は「ダラダラ見ている人の指を止める言葉」を意識して作る<span class="ctag tag-habit">習慣化</span></div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">投稿時間は21時までを目安にする（23時は寝落ちが多くエンゲージが落ちる）<span class="ctag tag-habit">習慣化</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 参加者アクション -->
+  <div class="section">
+    <div class="section-title">参加者のネクストアクション宣言</div>
+    <div class="action-list">
+      <div class="action-item">
+        <div class="action-name">しの</div>
+        <div class="action-text">アフィリエイトをすぐ試す。今日中に下書きを作る。「気持ちのハードルが下がった！」</div>
+      </div>
+      <div class="action-item">
+        <div class="action-name">みゆゆ</div>
+        <div class="action-text">ネタはあった。ストーリーの作り方を今日の学びで変える。「明日のストーリーに生かします！」</div>
+      </div>
+      <div class="action-item">
+        <div class="action-name">えり</div>
+        <div class="action-text">家づくりアカウント（130人）でストーリーが手付かずだった→今日からスタート。「全然手付かずなので本当に勉強になりました！」</div>
+      </div>
+      <div class="action-item">
+        <div class="action-name">ちよ</div>
+        <div class="action-text">身バレが多くて日常を出せなかった→載せないゾーンを決めて少しずつ人柄を見せる。「🔥」</div>
+      </div>
+      <div class="action-item">
+        <div class="action-name">ゆき</div>
+        <div class="action-text">これから投稿スタート。全部悩んでいたが動画を何度も見返して学ぶ。</div>
+      </div>
+      <div class="action-item">
+        <div class="action-name">はゆたん</div>
+        <div class="action-text">アンケート回答者が増えてDMが増えてきた。終わりどきを意識しながら関係構築を続ける。</div>
+      </div>
+      <div class="action-item">
+        <div class="action-name">Nanamin</div>
+        <div class="action-text">ズボラでSNS素材管理が大変→リール素材をそのままストーリーに使う方法を試す。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Lゼロ 講義 振り返り ｜ 2026年6月11日（木）22:01〜23:18 ｜ 講師：さえ（愛知）<br>
+    出典：動画文字起こし＋チャットログ ｜ 作成：2026年6月12日
+  </div>
+
+</div>
+
+<script>
+  function toggleCheck(el) {
+    el.classList.toggle('done');
+    var box = el.querySelector('.check-box');
+    box.textContent = el.classList.contains('done') ? '✓' : '';
+  }
+</script>
+</body>
+</html>

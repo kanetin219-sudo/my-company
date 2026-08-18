@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>工賃明細書 生成ツール</title>
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== 画面UI ===== */
+body { background: #eef2f7; font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; }
+
+#ui {
+  background: #1a5276;
+  padding: 20px 28px;
+  color: white;
+}
+#ui h1 { font-size: 20px; margin-bottom: 4px; letter-spacing: 1px; }
+#ui .subtitle { font-size: 11px; opacity: 0.7; margin-bottom: 16px; }
+
+#drop-zone {
+  border: 2px dashed rgba(255,255,255,0.5);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+}
+#drop-zone:hover, #drop-zone.over { background: rgba(255,255,255,0.12); }
+#drop-zone p { font-size: 15px; margin-bottom: 6px; }
+#drop-zone small { opacity: 0.75; font-size: 12px; }
+#fileInput { display: none; }
+
+.btn-white {
+  background: white; color: #1a5276; border: none;
+  padding: 6px 18px; border-radius: 4px; font-size: 13px;
+  cursor: pointer; margin-top: 10px; font-weight: bold;
+}
+
+#status { margin-top: 12px; font-size: 13px; min-height: 18px; }
+
+#action-bar { display: none; margin-top: 14px; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn-green {
+  background: #27ae60; color: white; border: none;
+  padding: 10px 24px; border-radius: 5px; font-size: 15px;
+  font-weight: bold; cursor: pointer;
+}
+.btn-green:hover { background: #1e8449; }
+.btn-blue {
+  background: #2e86c1; color: white; border: none;
+  padding: 10px 24px; border-radius: 5px; font-size: 15px;
+  font-weight: bold; cursor: pointer;
+}
+.btn-blue:hover { background: #2472a4; }
+.btn-purple {
+  background: #8e44ad; color: white; border: none;
+  padding: 10px 24px; border-radius: 5px; font-size: 15px;
+  font-weight: bold; cursor: pointer;
+}
+.btn-purple:hover { background: #7d3c98; }
+.btn-purple:disabled { background: #bbb; cursor: not-allowed; }
+#save-msg { font-size: 12px; color: #a9dfbf; }
+
+#transfer-bar { margin-top: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn-orange {
+  background: #e67e22; color: white; border: none;
+  padding: 8px 18px; border-radius: 4px; font-size: 13px;
+  font-weight: bold; cursor: pointer;
+}
+.btn-orange:hover { background: #ca6f1e; }
+#import-file { display: none; }
+#transfer-msg { font-size: 12px; color: #f9e79f; }
+
+/* 結果エリア */
+#result-area { padding: 20px 28px; max-width: 720px; }
+#result-area h2 { color: #1a5276; font-size: 16px; margin-bottom: 14px; }
+
+.card {
+  background: white; border-radius: 6px; padding: 12px 18px;
+  margin-bottom: 8px; display: flex; justify-content: space-between;
+  align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.card .uname { font-size: 15px; font-weight: bold; color: #222; }
+.card .uamt  { font-size: 14px; color: #1a5276; }
+
+/* 履歴エリア */
+#history-area { padding: 0 28px 28px; max-width: 720px; }
+#history-area h2 {
+  color: #555; font-size: 15px; margin-bottom: 12px;
+  padding-top: 20px; border-top: 1px solid #ddd;
+}
+.hist-card {
+  background: white; border-radius: 6px; padding: 12px 18px;
+  margin-bottom: 8px; display: flex; justify-content: space-between;
+  align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-left: 4px solid #2e86c1;
+}
+.hist-card .hinfo { font-size: 14px; color: #222; }
+.hist-card .hinfo span { font-size: 11px; color: #888; margin-left: 10px; }
+.hist-card .hbtns { display: flex; gap: 8px; }
+.btn-small-blue {
+  background: #2e86c1; color: white; border: none;
+  padding: 5px 14px; border-radius: 4px; font-size: 12px; cursor: pointer;
+}
+.btn-small-blue:hover { background: #2472a4; }
+.btn-small-red {
+  background: #e74c3c; color: white; border: none;
+  padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;
+}
+.btn-small-red:hover { background: #c0392b; }
+#no-history { color: #aaa; font-size: 13px; padding: 8px 0; }
+
+/* ===== 明細書 ===== */
+#statements { display: none; }
+
+.stmt {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 8mm 13mm 6mm;
+  background: white;
+  font-family: 'Hiragino Mincho ProN', 'MS Mincho', 'Yu Mincho', serif;
+  font-size: 8.5pt;
+  color: #000;
+}
+
+.stmt-title {
+  text-align: center;
+  font-size: 15pt;
+  font-weight: bold;
+  margin-bottom: 3mm;
+  letter-spacing: 4px;
+}
+
+.stmt-header {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10pt;
+  margin-bottom: 2mm;
+}
+.stmt-header .hbox {
+  border: 1px solid #000;
+  padding: 2px 8px;
+  min-width: 38px;
+  text-align: center;
+  font-size: 12pt;
+}
+.stmt-header .spacer { flex: 1; }
+
+.stmt-name {
+  text-align: center;
+  font-size: 12pt;
+  margin-bottom: 3mm;
+  letter-spacing: 2px;
+}
+
+.stmt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 3mm;
+}
+.stmt-table th, .stmt-table td {
+  border: 0.5pt solid #000;
+  padding: 0px 2px;
+  text-align: center;
+  white-space: nowrap;
+  height: 4.3mm;
+  line-height: 1.0;
+  font-size: 7.2pt;
+}
+.stmt-table th {
+  background: #efefef;
+  font-weight: bold;
+  font-size: 8pt;
+}
+.stmt-table td.r   { text-align: right; padding-right: 4px; }
+.stmt-table td.l   { text-align: left;  padding-left:  4px; }
+.stmt-table td.dim { color: #bbb; }
+.stmt-table .sp-row td { background: #f7f7f7; font-size: 7.5pt; }
+
+.stmt-summary {
+  width: 58%;
+  margin-left: auto;
+  border-collapse: collapse;
+  margin-bottom: 3mm;
+}
+.stmt-summary td {
+  border: 0.5pt solid #000;
+  padding: 2px 6px;
+  font-size: 8.5pt;
+}
+.stmt-summary td.lbl { background: #efefef; font-weight: bold; width: 42%; }
+.stmt-summary td.val { text-align: right; }
+.stmt-summary .total-row td { font-weight: bold; font-size: 9.5pt; }
+
+.cert { font-size: 8.5pt; margin-bottom: 3mm; }
+.footer-info { font-size: 8.5pt; line-height: 1.8; }
+
+.sign-row {
+  margin-top: 4mm;
+  display: flex;
+  align-items: flex-end;
+  gap: 6mm;
+  font-size: 10pt;
+}
+.sign-underline { flex: 1; border-bottom: 0.5pt solid #000; min-width: 60mm; }
+
+/* ===== 修正ボタン ===== */
+.btn-adjust {
+  background: #f39c12; color: white; border: none;
+  padding: 5px 12px; border-radius: 4px; font-size: 12px;
+  cursor: pointer; white-space: nowrap;
+}
+.btn-adjust:hover { background: #d68910; }
+
+/* ===== 印刷 ===== */
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  body { background: white; }
+  #ui, #result-area, #history-area { display: none !important; }
+  #statements { display: block !important; }
+  .stmt { page-break-after: always; }
+  .stmt:last-child { page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 操作UI ===== -->
+<div id="ui">
+  <h1>工賃明細書 生成ツール</h1>
+  <p class="subtitle">作業時間：15分単位切り捨て</p>
+  <div id="drop-zone" onclick="document.getElementById('fileInput').click()">
+    <p>ノウビーの作業時間Excelをここにドロップ</p>
+    <small>（作業時間_YYYY_MM_DD-YYYY_MM_DD.xlsx）</small><br>
+    <button class="btn-white" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+      ファイルを選択
+    </button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+  </div>
+  <div id="status"></div>
+  <div id="action-bar">
+    <button class="btn-green" onclick="window.print()">全員分をPDF印刷</button>
+    <button class="btn-purple" id="btn-pdf-dl" onclick="downloadPdf()">📥 PDFダウンロード</button>
+    <button class="btn-blue" onclick="saveCurrentToHistory()">この月を履歴に保存</button>
+    <button class="btn-orange" id="btn-finance-sync" onclick="syncToFinance()">💴 収支表に反映</button>
+    <span id="save-msg"></span>
+    <span id="finance-msg"></span>
+  </div>
+  <div id="transfer-bar">
+    <button class="btn-orange" onclick="exportHistory()">📤 履歴をエクスポート</button>
+    <button class="btn-orange" onclick="document.getElementById('import-file').click()">📥 履歴をインポート</button>
+    <input type="file" id="import-file" accept=".json" onchange="importHistory(this)">
+    <button class="btn-orange" onclick="migrateFromLocalStorage()" id="btn-migrate" title="このブラウザに残っている旧データをクラウドへ移行">🔄 旧データを移行</button>
+    <button class="btn-orange" onclick="initBackupTable()" id="btn-init-backup" title="バックアップテーブルを初期化">🛡️ バックアップ初期化</button>
+    <span id="transfer-msg"></span>
+  </div>
+</div>
+
+<!-- ===== 生成結果プレビュー ===== -->
+<div id="result-area"></div>
+
+<!-- ===== 履歴 ===== -->
+<div id="history-area">
+  <h2>保存済み履歴</h2>
+  <div id="history-list"></div>
+</div>
+
+<!-- ===== 印刷用明細書 ===== -->
+<div id="statements"></div>
+
+<!-- ===== 時間修正モーダル ===== -->
+<div id="adjust-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:white; border-radius:12px; padding:24px 28px; min-width:320px; max-width:440px; max-height:80vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+    <div id="adjust-title" style="font-size:16px; font-weight:bold; color:#1a5276; margin-bottom:14px;"></div>
+    <div style="margin-bottom:14px; padding:10px 14px; background:#f0f4f8; border-radius:8px; font-size:13px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <span>全日を</span>
+      <input type="number" id="bulk-hours" step="0.25" min="0" max="12"
+        style="width:65px; padding:4px 6px; border:1px solid #ccc; border-radius:4px; text-align:center; font-size:13px;">
+      <span>時間に一括設定</span>
+      <button onclick="bulkSet()" style="padding:5px 14px; background:#2e86c1; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">設定</button>
+    </div>
+    <div id="adjust-days" style="display:flex; flex-direction:column; gap:4px;"></div>
+    <div style="margin-top:18px; display:flex; gap:10px;">
+      <button onclick="applyAdjust()" style="flex:1; padding:11px; background:#27ae60; color:white; border:none; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer;">✅ 適用して再計算</button>
+      <button onclick="closeAdjustModal()" style="padding:11px 20px; background:#eee; color:#555; border:none; border-radius:8px; font-size:14px; cursor:pointer;">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const WAGE      = 350;
+const ADDR      = '大分県大分市毛井５５３－１';
+const FACILITY  = 'ANELLA CAFE 大分店　就労継続支援B型';
+const DIRECTOR  = '平迫　孝子';
+const DOW       = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+
+const SUPABASE_URL = 'https://abeekodehorlwsmnhoza.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// 現在生成中のデータ
+let currentData = null;
+let currentTotal = 0;
+let overrides = {};       // { [name]: { [day]: mins } } 手動上書き
+let adjustingName = null;
+
+// ===== ファイル読み込み =====
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); processFile(e.dataTransfer.files[0]); });
+document.getElementById('fileInput').addEventListener('change', e => processFile(e.target.files[0]));
+
+function setStatus(msg) { document.getElementById('status').textContent = msg; }
+
+function processFile(file) {
+  if (!file) return;
+  setStatus('読み込み中: ' + file.name + ' ...');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const ws = wb.Sheets['利用者サマリ'];
+      if (!ws) throw new Error('「利用者サマリ」シートが見つかりません');
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+      const data = parseSheet(rows);
+      currentData = data;
+      document.getElementById('save-msg').textContent = '';
+      render(data);
+    } catch (err) {
+      setStatus('エラー: ' + err.message);
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ===== Excel解析 =====
+function parseSheet(rows) {
+  let summaryHdr = -1, detailHdr = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (r[0] === '利用者名' && r[2] === '対象期間') summaryHdr = i;
+    if (r[0] === '利用者名' && r[2] === '日付')     { detailHdr = i; break; }
+  }
+  if (summaryHdr < 0 || detailHdr < 0)
+    throw new Error('データ形式が想定と異なります。正しいファイルか確認してください。');
+
+  const users = {}, order = [];
+  for (let i = summaryHdr + 1; i < detailHdr; i++) {
+    const r = rows[i];
+    if (!r[0] || String(r[0]).startsWith('<')) continue;
+    const name   = String(r[0]).trim();
+    const period = r[2] ? String(r[2]) : '';
+    const m = period.match(/(\d{4})\/(\d{2})\/\d{2}/);
+    if (!m) continue;
+    users[name] = { name, year: +m[1], month: +m[2], records: {} };
+    order.push(name);
+  }
+
+  for (let i = detailHdr + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r[0]) continue;
+    const name   = String(r[0]).trim();
+    const status = r[3] ? String(r[3]).trim() : '';
+    if (!users[name] || status !== '通所') continue;
+
+    const ds = r[2] ? String(r[2]) : '';
+    const dm = ds.match(/\d+\/(\d+)/);
+    if (!dm) continue;
+    const day = +dm[1];
+
+    users[name].records[day] = {
+      start: toTimeStr(r[7]),
+      end:   toTimeStr(r[5]),   // 通所終了時間を使用
+      brk:   toTimeStr(r[10]),
+      total: toTimeStr(r[9]),
+    };
+  }
+
+  return { users, order };
+}
+
+// ===== 時刻変換 =====
+function toTimeStr(v) {
+  if (v === null || v === undefined || v === '-' || v === '') return '';
+  const s = String(v).trim();
+  if (/^\d{1,3}:\d{2}$/.test(s)) return s;
+  const n = parseFloat(s);
+  if (!isNaN(n) && n >= 0 && n < 2) {
+    const totalMin = Math.round(n * 24 * 60);
+    const h = Math.floor(totalMin / 60), mn = totalMin % 60;
+    return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
+  }
+  return s;
+}
+
+function toMinutes(ts) {
+  if (!ts) return 0;
+  const p = ts.split(':');
+  if (p.length !== 2) return 0;
+  return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+}
+
+// 15分単位切り捨て（分）
+function roundDown15(minutes) {
+  return Math.floor(minutes / 15) * 15;
+}
+
+// 終了時刻の丸め
+//   x:50〜x:59 → 次の時台の:00に切り上げ（例: 14:50〜14:59 → 15:00）
+//   上記以外で次の15分区切りまで5分以内 → 切り上げ（例: 14:55 → 15:00 ← 上のルールで処理済）
+//   それ以外 → 切り捨て（例: 16:07 → 16:00）
+function roundEndTime15(ts) {
+  if (!ts) return '';
+  const totalMins = toMinutes(ts);
+  const remainder = totalMins % 15;
+  if (remainder === 0) return ts;
+
+  // x:50〜x:59 は次の時台（:00）へ切り上げ
+  if (totalMins % 60 >= 50) {
+    const nextHour = Math.ceil(totalMins / 60) * 60;
+    const h = Math.floor(nextHour / 60), m = nextHour % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+
+  // それ以外：5分以内なら切り上げ、それ以外は切り捨て
+  const toNext  = 15 - remainder;
+  const rounded = toNext <= 5 ? totalMins + toNext : totalMins - remainder;
+  const h = Math.floor(rounded / 60), m = rounded % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+// 開始時刻：直前の15分区切りから5分以内なら区切りにスナップ
+// 例）10:02 → 10:00、10:05 → 10:00、10:06 → そのまま
+function applyStartGrace(ts) {
+  if (!ts) return ts;
+  const totalMins = toMinutes(ts);
+  const remainder = totalMins % 15;   // 直前の15分区切りからの経過分
+  if (remainder <= 5) {
+    const snapped = totalMins - remainder;
+    const h = Math.floor(snapped / 60), m = snapped % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+  return ts;
+}
+
+function fmtHours(mins) {
+  if (mins === 0) return '0.0';
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (m === 0) return `${h}.0`;
+  return `${h}${(m / 60).toFixed(2).slice(1)}`;
+}
+
+function fmtYen(n) {
+  return '¥' + n.toLocaleString('ja-JP');
+}
+
+// ===== 明細書HTML生成 =====
+function buildStatement(user) {
+  const { name, year, month, records } = user;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let totalMins = 0;
+  const dailyAmounts = [];
+
+  const trs = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = DOW[new Date(year, month - 1, d).getDay()];
+    const mm  = String(month).padStart(2, '0');
+    const dd  = String(d).padStart(2, '0');
+    const rec = records[d];
+
+    let cols;
+    if (rec) {
+      const startSnapped = applyStartGrace(rec.start);
+      const endRounded   = roundEndTime15(rec.end);
+      const uOvr = overrides[name] || {};
+      const mins = (uOvr[d] !== undefined) ? uOvr[d] : calcDayMins(rec);
+      totalMins += mins;
+      const dayAmt = Math.round(mins / 60 * WAGE);
+      dailyAmounts.push(dayAmt);
+      if (mins > 0) {
+        cols = `
+          <td>${startSnapped}</td>
+          <td>${endRounded}</td>
+          <td>${rec.brk}</td>
+          <td class="r">${fmtHours(mins)}</td>
+          <td class="r">${fmtYen(dayAmt)}</td>
+          <td></td>`;
+      } else {
+        cols = `
+          <td></td><td></td><td></td>
+          <td class="r dim">0.0</td>
+          <td class="r dim">¥0</td>
+          <td></td>`;
+        dailyAmounts.pop();
+      }
+    } else {
+      cols = `
+        <td></td><td></td><td></td>
+        <td class="r dim">0.0</td>
+        <td class="r dim">¥0</td>
+        <td></td>`;
+    }
+
+    trs.push(`<tr><td>${year}/${mm}/${dd}</td><td>${dow}</td>${cols}</tr>`);
+  }
+
+  const totalHoursStr = fmtHours(totalMins);
+  const totalAmt = dailyAmounts.reduce((sum, amt) => sum + amt, 0);
+  const totalAmtStr   = fmtYen(totalAmt);
+
+  return `
+<div class="stmt">
+  <div class="stmt-title">工賃明細表</div>
+  <div class="stmt-header">
+    <span class="hbox">${year}</span><span>年</span>
+    <span class="hbox">${month}</span><span>月</span>
+    <span class="spacer"></span>
+    <span>時給</span>
+    <span class="hbox">${WAGE}</span><span>円</span>
+  </div>
+  <div class="stmt-name">${name}&nbsp;&nbsp;<span style="font-size:10pt;">様</span></div>
+  <table class="stmt-table">
+    <thead>
+      <tr>
+        <th style="width:14%">日付</th>
+        <th style="width:10%">曜日</th>
+        <th style="width:9%">開始時間</th>
+        <th style="width:9%">終了時間</th>
+        <th style="width:9%">休憩時間</th>
+        <th style="width:9%">作業時間</th>
+        <th style="width:11%">金額</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${trs.join('\n')}
+      <tr class="sp-row"><td colspan="2" class="l">特別工賃</td><td colspan="6"></td></tr>
+      <tr class="sp-row"><td colspan="2" class="l">特別工賃</td><td colspan="6"></td></tr>
+    </tbody>
+  </table>
+  <table class="stmt-summary">
+    <tr>
+      <td class="lbl">合計</td>
+      <td class="val">${totalHoursStr}</td>
+      <td class="val">${totalAmtStr}</td>
+    </tr>
+    <tr class="total-row">
+      <td class="lbl">工賃総額（円）</td>
+      <td class="val" colspan="2">${totalAmtStr}</td>
+    </tr>
+  </table>
+  <div class="cert">上記の通り相違ないことを証明します。</div>
+  <div class="footer-info">
+    ${year}　年　${month}　月　20　日<br>
+    所在地：${ADDR}<br>
+    施設・事業所名：${FACILITY}<br>
+    施設長・事業所長：${DIRECTOR}
+  </div>
+  <div class="sign-row">
+    <span>署名:</span>
+    <div class="sign-underline"></div>
+    <span>様</span>
+  </div>
+</div>`;
+}
+
+// ===== 1日分の計算（分）=====
+function calcDayMins(r) {
+  if (!r.start) return 0; // 作業開始時間が未入力なら0分
+  const startSnapped = applyStartGrace(r.start);
+  const endRounded   = roundEndTime15(r.end);
+  const workRaw      = Math.max(0, toMinutes(endRounded) - toMinutes(startSnapped) - toMinutes(r.brk));
+  return roundDown15(workRaw);
+}
+
+// ===== 各利用者の工賃計算（共通）=====
+function calcAmt(u, ovr) {
+  let totalMins = 0;
+  const uOvr = (ovr || {})[u.name] || {};
+  for (const [dayStr, r] of Object.entries(u.records)) {
+    const day = parseInt(dayStr, 10);
+    totalMins += (uOvr[day] !== undefined) ? uOvr[day] : calcDayMins(r);
+  }
+  return Math.round(totalMins / 60 * WAGE);
+}
+
+// ===== 画面に反映 =====
+function render({ users, order }) {
+  const sample = users[order[0]];
+  const { year, month } = sample;
+
+  // 個別金額と合計を計算
+  const amts = {};
+  currentTotal = 0;
+  for (const n of order) {
+    amts[n] = calcAmt(users[n], overrides);
+    currentTotal += amts[n];
+  }
+
+  // 印刷用：明細書＋月合計サマリページ
+  document.getElementById('statements').innerHTML =
+    order.map(n => buildStatement(users[n])).join('') +
+    buildSummaryPage(year, month, order, amts, currentTotal);
+
+  // 画面カード
+  const cards = order.map(n =>
+    `<div class="card">
+      <span class="uname">${n}</span>
+      <span class="uamt">工賃総額: ${fmtYen(amts[n])}</span>
+      <button class="btn-adjust" onclick="openAdjustModal('${n.replace(/'/g, "\\'")}')">✏️ 修正</button>
+    </div>`
+  ).join('');
+
+  const totalCard = `<div class="card" style="background:#1a5276;color:white;margin-top:8px;">
+    <span class="uname" style="color:white;">月合計</span>
+    <span class="uamt" style="color:#f9e79f;font-size:16px;font-weight:bold;">${fmtYen(currentTotal)}</span>
+  </div>`;
+
+  const label = `${year}年${month}月`;
+  document.getElementById('result-area').innerHTML =
+    `<h2>${label}　${order.length}名分の明細書が生成されました</h2>${cards}${totalCard}`;
+
+  document.getElementById('action-bar').style.display = 'flex';
+  setStatus(`✅ ${order.length}名分を生成しました。月合計: ${fmtYen(currentTotal)}`);
+}
+
+// ===== 月合計サマリページ（印刷用）=====
+function buildSummaryPage(year, month, order, amts, total) {
+  const rows = order.map(n =>
+    `<tr><td style="text-align:left;padding:3px 8px;">${n}</td><td style="text-align:right;padding:3px 8px;">${fmtYen(amts[n])}</td></tr>`
+  ).join('');
+  return `
+<div class="stmt" style="font-family:'Hiragino Kaku Gothic ProN','Meiryo',sans-serif;">
+  <div class="stmt-title" style="margin-bottom:8mm;">工賃支払一覧</div>
+  <div style="text-align:center;font-size:13pt;margin-bottom:6mm;">${year}年${month}月分</div>
+  <table style="width:60%;margin:0 auto;border-collapse:collapse;font-size:10pt;">
+    <thead>
+      <tr style="background:#efefef;">
+        <th style="border:0.5pt solid #000;padding:4px 8px;text-align:left;">氏名</th>
+        <th style="border:0.5pt solid #000;padding:4px 8px;text-align:right;">工賃</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+      <tr style="font-weight:bold;font-size:11pt;border-top:1pt solid #000;">
+        <td style="border:0.5pt solid #000;padding:5px 8px;text-align:left;background:#efefef;">合計</td>
+        <td style="border:0.5pt solid #000;padding:5px 8px;text-align:right;background:#efefef;">${fmtYen(total)}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+// ===== PDFダウンロード =====
+function downloadPdf() {
+  if (!currentData) return;
+  const { users, order } = currentData;
+  const sample = users[order[0]];
+  if (!sample) return;
+  const { year, month } = sample;
+
+  const stmtsHtml = document.getElementById('statements').innerHTML;
+
+  const fullHtml = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>工賃明細書_${year}年${month}月</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: white; }
+@page { size: A4 portrait; margin: 0; }
+.stmt {
+  width: 210mm; min-height: 297mm; padding: 10mm 13mm 8mm;
+  background: white; font-family: 'Hiragino Mincho ProN', 'MS Mincho', 'Yu Mincho', serif;
+  font-size: 8.5pt; color: #000; page-break-after: always;
+}
+.stmt:last-child { page-break-after: auto; }
+.stmt-title { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 5mm; letter-spacing: 6px; }
+.stmt-header { display: flex; align-items: center; gap: 3px; font-size: 11pt; margin-bottom: 4mm; }
+.stmt-header .hbox { border: 1px solid #000; padding: 2px 8px; min-width: 38px; text-align: center; font-size: 12pt; }
+.stmt-header .spacer { flex: 1; }
+.stmt-name { text-align: center; font-size: 13pt; margin-bottom: 5mm; letter-spacing: 3px; }
+.stmt-table { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
+.stmt-table th, .stmt-table td { border: 0.5pt solid #000; padding: 1px 2px; text-align: center; white-space: nowrap; height: 5.3mm; line-height: 1.15; font-size: 7.8pt; }
+.stmt-table th { background: #efefef; font-weight: bold; font-size: 8pt; }
+.stmt-table td.r { text-align: right; padding-right: 4px; }
+.stmt-table td.l { text-align: left; padding-left: 4px; }
+.stmt-table td.dim { color: #bbb; }
+.stmt-table .sp-row td { background: #f7f7f7; font-size: 7.5pt; }
+.stmt-summary { width: 58%; margin-left: auto; border-collapse: collapse; margin-bottom: 5mm; }
+.stmt-summary td { border: 0.5pt solid #000; padding: 2px 6px; font-size: 8.5pt; }
+.stmt-summary td.lbl { background: #efefef; font-weight: bold; width: 42%; }
+.stmt-summary td.val { text-align: right; }
+.stmt-summary .total-row td { font-weight: bold; font-size: 9.5pt; }
+.cert { font-size: 8.5pt; margin-bottom: 5mm; }
+.footer-info { font-size: 8.5pt; line-height: 2; }
+.sign-row { margin-top: 6mm; display: flex; align-items: flex-end; gap: 6mm; font-size: 10pt; }
+.sign-underline { flex: 1; border-bottom: 0.5pt solid #000; min-width: 60mm; }
+</style>
+</head>
+<body>
+${stmtsHtml}
+<script>
+window.addEventListener('load', function() {
+  setTimeout(function() { window.print(); }, 400);
+});
+<\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (!win) {
+    alert('ポップアップがブロックされとるっちゃ！\nブラウザのアドレスバー右側でポップアップを許可してなあ。');
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  setStatus('新しいタブで印刷ダイアログが開くっちゃ。「PDFに保存」を選んでなあ！');
+}
+
+// ===== 履歴保存（Supabase）=====
+async function saveCurrentToHistory() {
+  if (!currentData) return;
+  const { users, order } = currentData;
+  const sample = users[order[0]];
+  if (!sample) return;
+
+  const { year, month } = sample;
+  const key = `${year}-${String(month).padStart(2, '0')}`;
+  const savedAt = new Date().toLocaleDateString('ja-JP');
+
+  // 保存対象月を保存し、その月の手修正だけを保存
+  const saveOverrides = {};
+  for (const name in overrides) {
+    saveOverrides[name] = overrides[name];
+  }
+
+  // 1. 現在のレコードを取得（バックアップ用）
+  const { data: existing, error: fetchError } = await db.from('kotin_history').select('*').eq('id', key).single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    document.getElementById('save-msg').textContent = 'データ取得エラーっちゃ: ' + fetchError.message;
+    return;
+  }
+
+  // 2. 既存データがあれば、バックアップに保存
+  if (existing) {
+    const newAmt = order.reduce((sum, n) => sum + calcAmt(users[n], saveOverrides), 0);
+    const oldAmt = existing.data.order.reduce((sum, n) => sum + calcAmt(existing.data.users[n], existing.data.overrides), 0);
+
+    // 金額が変わる場合は確認
+    if (newAmt !== oldAmt) {
+      const confirmed = confirm(
+        `${year}年${month}月の月合計が変わります。\n\n` +
+        `変更前: ¥${oldAmt.toLocaleString()}\n` +
+        `変更後: ¥${newAmt.toLocaleString()}\n` +
+        `差額: ${newAmt > oldAmt ? '+' : ''}¥${(newAmt - oldAmt).toLocaleString()}\n\n` +
+        `このまま保存しますか？`
+      );
+      if (!confirmed) return;
+    }
+
+    // バックアップを保存
+    await db.from('kotin_history_backup').insert({
+      history_id: key, year, month, data: existing.data
+    });
+  }
+
+  // 3. メインテーブルに保存
+  const { error } = await db.from('kotin_history').upsert({
+    id: key, year, month, saved_at: savedAt, data: { users, order, overrides: saveOverrides }
+  });
+
+  if (error) {
+    document.getElementById('save-msg').textContent = '保存エラーっちゃ: ' + error.message;
+    return;
+  }
+  document.getElementById('save-msg').textContent = `${year}年${month}月を保存しましたっちゃ！`;
+  renderHistoryList();
+}
+
+async function renderHistoryList() {
+  const container = document.getElementById('history-list');
+  container.innerHTML = '<div id="no-history" style="color:#aaa;font-size:13px;padding:8px 0">読み込み中っちゃ...</div>';
+
+  const { data, error } = await db.from('kotin_history').select('id,year,month,saved_at,data').order('id', { ascending: false });
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<div id="no-history">保存された履歴はまだありませんっちゃ</div>';
+    return;
+  }
+
+  container.innerHTML = data.map(h => {
+    const total = h.data.order.reduce((sum, n) => sum + calcAmt(h.data.users[n], h.data.overrides), 0);
+    return `
+    <div class="hist-card">
+      <div class="hinfo">
+        ${h.year}年${h.month}月
+        <span>保存日: ${h.saved_at} / ${h.data.order.length}名</span>
+        <span style="color:#1a5276;font-weight:bold;margin-left:10px;">月合計: ${fmtYen(total)}</span>
+      </div>
+      <div class="hbtns">
+        <button class="btn-small-blue" onclick="loadHistory('${h.id}')">表示・印刷</button>
+        <button class="btn-small-red"  onclick="deleteHistory('${h.id}', ${h.year}, ${h.month})">削除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadHistory(key) {
+  const { data, error } = await db.from('kotin_history').select('year,month,data').eq('id', key).single();
+  if (error || !data) return;
+  currentData = { users: data.data.users, order: data.data.order };
+  overrides = data.data.overrides || {};
+  document.getElementById('save-msg').textContent = '';
+  render(currentData);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setStatus(`📂 ${data.year}年${data.month}月の履歴を読み込みましたっちゃ`);
+}
+
+async function deleteHistory(key, year, month) {
+  if (!confirm(`${year}年${month}月の履歴を削除しますか？`)) return;
+  await db.from('kotin_history').delete().eq('id', key);
+  renderHistoryList();
+}
+
+// ===== 履歴エクスポート / インポート =====
+async function exportHistory() {
+  const { data, error } = await db.from('kotin_history').select('*').order('id');
+  if (error || !data || data.length === 0) {
+    document.getElementById('transfer-msg').textContent = '保存された履歴がありませんっちゃ';
+    return;
+  }
+  const out = {};
+  data.forEach(h => {
+    out[h.id] = { key: h.id, year: h.year, month: h.month, savedAt: h.saved_at, ...h.data };
+  });
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kotin_history_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  document.getElementById('transfer-msg').textContent = 'エクスポートしたっちゃ！';
+}
+
+async function importHistory(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      const rows = Object.entries(imported).map(([id, h]) => ({
+        id, year: h.year, month: h.month, saved_at: h.savedAt,
+        data: { users: h.users, order: h.order, overrides: h.overrides || {} }
+      }));
+      const { error } = await db.from('kotin_history').upsert(rows);
+      if (error) throw error;
+      input.value = '';
+      renderHistoryList();
+      document.getElementById('transfer-msg').textContent = `${rows.length}件インポートしたっちゃ！`;
+    } catch {
+      document.getElementById('transfer-msg').textContent = 'ファイルの読み込みに失敗したっちゃ';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ===== localStorage → Supabase 移行 =====
+async function migrateFromLocalStorage() {
+  const raw = localStorage.getItem('kotin_meisai_history');
+  if (!raw) {
+    document.getElementById('transfer-msg').textContent = 'このブラウザに旧データはなかったっちゃ';
+    return;
+  }
+  try {
+    const old = JSON.parse(raw);
+    const keys = Object.keys(old);
+    if (keys.length === 0) {
+      document.getElementById('transfer-msg').textContent = 'このブラウザに旧データはなかったっちゃ';
+      return;
+    }
+    const rows = keys.map(id => {
+      const h = old[id];
+      return { id, year: h.year, month: h.month, saved_at: h.savedAt, data: { users: h.users, order: h.order } };
+    });
+    const { error } = await db.from('kotin_history').upsert(rows);
+    if (error) throw error;
+    document.getElementById('transfer-msg').textContent = `✅ ${keys.length}件をクラウドへ移行したっちゃ！`;
+    renderHistoryList();
+  } catch (e) {
+    document.getElementById('transfer-msg').textContent = '移行エラーっちゃ: ' + e.message;
+  }
+}
+
+// ===== バックアップテーブル初期化 =====
+async function initBackupTable() {
+  const msg = document.getElementById('transfer-msg');
+  msg.textContent = 'バックアップテーブルを確認中...';
+
+  const { data, error } = await db.from('kotin_history_backup').select('id').limit(1);
+
+  if (!error && data !== null) {
+    msg.textContent = '✅ バックアップテーブルは初期化済みっちゃ！';
+    return;
+  }
+
+  msg.innerHTML = `⚠️ バックアップテーブルが見つかりません。<br>以下の SQL を Supabase 管理画面で実行してください：<br><br>
+  <code style="background:#f0f0f0;padding:8px;display:block;white-space:pre-wrap;word-wrap:break-word;font-size:11px;">
+create table if not exists kotin_history_backup (
+  id bigserial primary key,
+  history_id text not null,
+  year int, month int,
+  data jsonb not null,
+  backed_up_at timestamptz not null default now()
+);
+create index idx_kotin_backup_hist on kotin_history_backup (history_id, backed_up_at desc);
+alter table kotin_history_backup enable row level security;
+create policy "backup_select" on kotin_history_backup for select using (true);
+create policy "backup_insert" on kotin_history_backup for insert with check (true);
+  </code>`;
+}
+
+// ===== 収支表（anella_monthly_finance）へ工賃合計を反映 =====
+async function syncToFinance() {
+  if (!currentData || currentTotal === 0) return;
+  const { users, order } = currentData;
+  const sample = users[order[0]];
+  if (!sample) return;
+  const { year, month } = sample;
+
+  const totalAmt = currentTotal; // 画面に表示済みの合計をそのまま使う
+
+  // 工賃は翌月払いなので、Excelの翌月を収支表に反映する
+  const payDate = new Date(year, month, 1); // month は0始まりなので +1 = 翌月
+  const payYear  = payDate.getFullYear();
+  const payMonth = payDate.getMonth() + 1;
+  const yearMonth = `${payYear}-${String(payMonth).padStart(2, '0')}`;
+  const btn = document.getElementById('btn-finance-sync');
+  const msg = document.getElementById('finance-msg');
+  btn.disabled = true;
+  msg.textContent = '反映中...';
+  msg.style.color = '#f9e79f';
+
+  const { error } = await db.from('anella_monthly_finance').upsert(
+    { year_month: yearMonth, roshu_kocho: totalAmt, updated_at: new Date().toISOString() },
+    { onConflict: 'year_month' }
+  );
+
+  btn.disabled = false;
+  if (error) {
+    msg.textContent = '❌ 反映失敗: ' + error.message;
+    msg.style.color = '#ff6b6b';
+  } else {
+    msg.textContent = `✅ ${year}年${month}月分の工賃 ¥${totalAmt.toLocaleString()} を${payYear}年${payMonth}月の収支表に反映したっちゃ！`;
+    msg.style.color = '#a9dfbf';
+  }
+}
+
+// ===== 時間修正モーダル =====
+function openAdjustModal(name) {
+  adjustingName = name;
+  const u = currentData.users[name];
+  const uOvr = overrides[name] || {};
+  document.getElementById('adjust-title').textContent = name + ' さんの作業時間修正';
+
+  const rows = Object.entries(u.records)
+    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+    .filter(([, r]) => r.end || r.start || r.total)
+    .map(([dayStr, r]) => {
+      const day  = parseInt(dayStr);
+      const mins = (uOvr[day] !== undefined) ? uOvr[day] : calcDayMins(r);
+      const hrs  = (mins / 60).toFixed(2);
+      const edited = uOvr[day] !== undefined ? ' style="background:#fff8e1;"' : '';
+      return `<div style="display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #eee;"${edited}>
+        <span style="width:36px; font-size:13px; color:#555;">${day}日</span>
+        <input type="number" id="adj-${day}" step="0.25" min="0" max="12" value="${hrs}"
+          style="width:72px; padding:4px 6px; border:1px solid #bbb; border-radius:4px; text-align:center; font-size:13px;">
+        <span style="font-size:12px; color:#888;">時間</span>
+      </div>`;
+    }).join('');
+
+  document.getElementById('adjust-days').innerHTML = rows;
+  document.getElementById('adjust-modal').style.display = 'flex';
+}
+
+function bulkSet() {
+  const hours = parseFloat(document.getElementById('bulk-hours').value);
+  if (isNaN(hours) || hours < 0) return;
+  const u = currentData.users[adjustingName];
+  Object.entries(u.records)
+    .filter(([, r]) => r.end || r.start || r.total)
+    .forEach(([dayStr]) => {
+      const el = document.getElementById('adj-' + dayStr);
+      if (el) el.value = hours.toFixed(2);
+    });
+}
+
+function applyAdjust() {
+  const u = currentData.users[adjustingName];
+  overrides[adjustingName] = overrides[adjustingName] || {};
+  Object.entries(u.records)
+    .filter(([, r]) => r.end || r.start || r.total)
+    .forEach(([dayStr]) => {
+      const day = parseInt(dayStr);
+      const el  = document.getElementById('adj-' + day);
+      if (!el) return;
+      const hours = parseFloat(el.value);
+      if (!isNaN(hours) && hours >= 0) {
+        overrides[adjustingName][day] = Math.round(hours * 60);
+      }
+    });
+  closeAdjustModal();
+  render(currentData);
+}
+
+function closeAdjustModal() {
+  document.getElementById('adjust-modal').style.display = 'none';
+  adjustingName = null;
+}
+
+// ページ読み込み時に履歴表示
+renderHistoryList();
+</script>
+</body>
+</html>

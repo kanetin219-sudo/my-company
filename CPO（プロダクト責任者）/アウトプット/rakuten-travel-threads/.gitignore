@@ -13,3 +13,4 @@ posted-hotels.json
 .idea/
 dist/
 build/
+.vercel

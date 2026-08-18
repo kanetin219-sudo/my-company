@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threads API 認証 | ANELLA CAFE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f5f0eb; font-family: 'Noto Sans JP', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #fff; border-radius: 16px; padding: 40px 36px; max-width: 500px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+    h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 8px; }
+    .sub { font-size: 13px; color: #888; margin-bottom: 32px; }
+    .btn {
+      display: block; width: 100%; padding: 16px; background: #000; color: #fff;
+      border: none; border-radius: 10px; font-size: 16px; font-weight: 700;
+      cursor: pointer; text-decoration: none; text-align: center; margin-bottom: 12px;
+    }
+    .btn:hover { opacity: 0.85; }
+    .step { background: #f9f6f2; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+    .step-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 8px; }
+    .code-box {
+      background: #1a1a1a; color: #00ff88; border-radius: 8px;
+      padding: 16px; font-family: monospace; font-size: 13px;
+      word-break: break-all; min-height: 48px; margin-top: 8px;
+    }
+    .copy-btn {
+      margin-top: 8px; padding: 8px 16px; background: #4A7C6F; color: #fff;
+      border: none; border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    .success { color: #4A7C6F; font-size: 13px; margin-top: 6px; display: none; }
+    .warn { color: #C96A3B; font-size: 12px; margin-top: 16px; line-height: 1.6; }
+    #resultSection { display: none; }
+    #authSection { display: block; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🔗 Threads API 認証</h1>
+  <p class="sub">プレ花嫁アカウントの自動投稿設定</p>
+
+  <!-- 認証前 -->
+  <div id="authSection">
+    <div class="step">
+      <div class="step-title">STEP 1 — Threadsアカウントで認証する</div>
+      <p style="font-size:13px; color:#555; line-height:1.7;">下のボタンをクリックして、<strong>自動投稿したいThreadsアカウント</strong>（プレ花嫁アカウント）でログインしてください。</p>
+    </div>
+    <a class="btn" id="authBtn" href="#">🔑 Threadsアカウントで認証する</a>
+    <p class="warn">※ このページのURLをMeta AppのリダイレクトURIに登録してから使ってください。</p>
+  </div>
+
+  <!-- 認証後（codeが返ってきたとき） -->
+  <div id="resultSection">
+    <div class="step">
+      <div class="step-title">✅ 認証コード取得完了！</div>
+      <p style="font-size:13px; color:#555; margin-bottom:8px;">下のコードをコピーして、次のステップへ進んでください。</p>
+      <div class="code-box" id="codeDisplay">取得中...</div>
+      <button class="copy-btn" onclick="copyCode()">コードをコピー</button>
+      <div class="success" id="copySuccess">✅ コピーしました！</div>
+    </div>
+    <div class="step">
+      <div class="step-title">STEP 2 — このコードをClaude（AI）に貼り付ける</div>
+      <p style="font-size:13px; color:#555; line-height:1.7;">
+        コピーしたコードを Claude Code に貼り付けてください。<br>
+        アクセストークンへの変換は自動で行います。
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const APP_ID       = '1456635602805840';
+  const REDIRECT_URI = encodeURIComponent(window.location.href.split('?')[0]);
+  const SCOPE        = 'threads_basic,threads_content_publish';
+  const AUTH_URL     = `https://www.threads.net/oauth/authorize?client_id=${APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${SCOPE}&response_type=code`;
+
+  document.getElementById('authBtn').href = AUTH_URL;
+
+  // リダイレクト後にcodeを取得
+  const params = new URLSearchParams(window.location.search);
+  const code   = params.get('code');
+
+  if (code) {
+    document.getElementById('authSection').style.display  = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('codeDisplay').textContent    = code;
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText(document.getElementById('codeDisplay').textContent).then(() => {
+      document.getElementById('copySuccess').style.display = 'block';
+      setTimeout(() => document.getElementById('copySuccess').style.display = 'none', 2000);
+    });
+  }
+</script>
+</body>
+</html>

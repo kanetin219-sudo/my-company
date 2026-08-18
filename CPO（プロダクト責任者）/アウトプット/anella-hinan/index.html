@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANELLA CAFE 大分店 災害時避難経路</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+    font-size: 10.5pt;
+    color: #1a1a1a;
+    background: #f0f0f0;
+  }
+
+  /* ツールバー */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #00ACC1;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .toolbar-title { font-weight: bold; font-size: 10pt; flex: 1; }
+  .toolbar-hint { font-size: 8.5pt; opacity: 0.85; }
+  .toolbar-save-status { font-size: 8.5pt; opacity: 0.8; min-width: 120px; text-align: right; }
+  .btn {
+    padding: 5px 14px; border-radius: 4px; border: none;
+    cursor: pointer; font-size: 9pt; font-weight: bold;
+    font-family: inherit; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-print { background: white; color: #00838F; }
+  .btn-clear { background: rgba(255,255,255,0.2); color: white; }
+  .btn-pdf { background: #e74c3c; color: white; }
+  .btn-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* 編集可能 */
+  [contenteditable="true"] {
+    outline: none; border-radius: 3px; padding: 1px 3px;
+    min-width: 20px; display: inline-block; cursor: text;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  [contenteditable="true"]:hover {
+    background: rgba(0,172,193,0.08);
+    box-shadow: 0 0 0 1px rgba(0,172,193,0.3);
+  }
+  [contenteditable="true"]:focus {
+    background: #fff;
+    box-shadow: 0 0 0 2px #00ACC1;
+  }
+  .on-color [contenteditable="true"]:hover {
+    background: rgba(255,255,255,0.18);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.5);
+  }
+  .on-color [contenteditable="true"]:focus {
+    background: rgba(255,255,255,0.28);
+    box-shadow: 0 0 0 2px white;
+  }
+  .empty-hint::before {
+    content: attr(data-placeholder);
+    color: #bbb; font-weight: normal; font-style: italic; pointer-events: none;
+  }
+  .on-color .empty-hint::before { color: rgba(255,255,255,0.55); }
+
+  /* ページ */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10mm auto;
+    background: white;
+    padding: 11mm 13mm;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+
+  /* ヘッダー */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid #00ACC1;
+    padding-bottom: 8px; margin-bottom: 12px;
+  }
+  .header-left h1 { font-size: 19pt; font-weight: 900; color: #00ACC1; letter-spacing: 1.5px; }
+  .header-left .subtitle { font-size: 9pt; color: #555; margin-top: 2px; }
+  .header-right { text-align: right; font-size: 9pt; color: #555; line-height: 1.8; }
+  .confidential-badge {
+    display: inline-block; background: #e74c3c; color: white;
+    font-size: 8pt; font-weight: bold; padding: 2px 8px;
+    border-radius: 3px; margin-bottom: 3px; letter-spacing: 1px;
+  }
+
+  .section-title {
+    font-size: 10.5pt; font-weight: bold; color: white;
+    background: #00ACC1; padding: 4px 10px;
+    margin-bottom: 8px; border-radius: 3px;
+  }
+
+  /* 2カラムレイアウト */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .one-col { margin-bottom: 10px; }
+
+  /* 地図 */
+  .map-wrap {
+    position: relative; margin-bottom: 10px;
+    border: 2px solid #00ACC1; border-radius: 6px; overflow: hidden;
+  }
+  #leaflet-map {
+    width: 100%; height: 200px;
+  }
+  .map-legend {
+    display: flex; gap: 12px; align-items: center;
+    background: #E0F7FA; padding: 4px 10px; font-size: 8.5pt;
+    border-top: 1px solid #B2EBF2;
+  }
+  .map-legend-item { display: flex; align-items: center; gap: 4px; }
+  .map-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .map-dot.red { background: #e74c3c; }
+  .map-dot.green { background: #27ae60; }
+  .map-print-note { display: none; }
+
+  @media print {
+    .map-print-note { display: none; }
+  }
+
+  /* 避難場所カード */
+  .evac-cards { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .evac-card {
+    border: 2px solid #00ACC1; border-radius: 6px; padding: 8px 10px;
+  }
+  .evac-card.primary { background: #00ACC1; color: white; }
+  .evac-card.secondary { background: #E0F7FA; }
+  .evac-card .evac-label {
+    font-size: 8pt; font-weight: bold; letter-spacing: 1px;
+    margin-bottom: 4px; opacity: 0.85;
+  }
+  .evac-card .evac-name { font-size: 13pt; font-weight: 900; margin-bottom: 3px; }
+  .evac-card .evac-addr { font-size: 8.5pt; }
+  .evac-card.secondary .evac-addr { color: #444; }
+  .evac-card .evac-note { font-size: 8pt; margin-top: 4px; opacity: 0.8; }
+  .evac-card .evac-dist {
+    font-size: 8.5pt; font-weight: bold; margin-top: 4px;
+    background: rgba(255,255,255,0.25); display: inline-block;
+    padding: 1px 6px; border-radius: 3px;
+  }
+  .evac-card.secondary .evac-dist {
+    background: rgba(0,172,193,0.12); color: #00838F;
+  }
+
+  /* 避難経路 */
+  .route-box {
+    border: 1.5px solid #00ACC1; border-radius: 6px;
+    overflow: hidden;
+  }
+  .route-header {
+    background: #E0F7FA; padding: 5px 10px;
+    font-size: 9pt; font-weight: bold; color: #006064;
+    display: flex; align-items: center; gap: 6px;
+    border-bottom: 1px solid #B2EBF2;
+  }
+  .route-steps { padding: 8px 10px; }
+  .route-step {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-bottom: 6px;
+  }
+  .route-step:last-child { margin-bottom: 0; }
+  .route-icon {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #00ACC1; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11pt; flex-shrink: 0; margin-top: 1px;
+  }
+  .route-icon.start { background: #e74c3c; }
+  .route-icon.end { background: #27ae60; }
+  .route-icon.arrow { background: #B2EBF2; color: #006064; font-size: 13pt; }
+  .route-desc { font-size: 9.5pt; line-height: 1.5; flex: 1; }
+  .route-desc strong { color: #006064; }
+  .route-desc .route-note { font-size: 8pt; color: #888; display: block; margin-top: 1px; }
+
+  /* 役割分担 */
+  .role-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  .role-table thead tr { background: #00ACC1; color: white; }
+  .role-table thead th { padding: 4px 8px; text-align: center; font-size: 8.5pt; }
+  .role-table tbody tr:nth-child(even) { background: #E0F7FA; }
+  .role-table tbody td { padding: 4px 8px; border-bottom: 1px solid #B2EBF2; vertical-align: middle; }
+  .role-badge {
+    display: inline-block; padding: 1px 7px; border-radius: 10px;
+    font-size: 8pt; font-weight: bold; color: white;
+  }
+  .role-badge.r1 { background: #e74c3c; }
+  .role-badge.r2 { background: #00ACC1; }
+  .role-badge.r3 { background: #f39c12; color: #fff; }
+  .role-name { font-weight: bold; }
+  .role-duty { font-size: 8.5pt; color: #333; }
+
+  /* 災害別手順 */
+  .disaster-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .disaster-card { border-radius: 5px; overflow: hidden; }
+  .disaster-head {
+    padding: 5px 8px; font-size: 9pt; font-weight: bold; color: white;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .disaster-head.quake { background: #8e44ad; }
+  .disaster-head.fire { background: #e74c3c; }
+  .disaster-head.flood { background: #2980b9; }
+  .disaster-body { border: 1.5px solid #ddd; border-top: none; padding: 6px 8px; }
+  .disaster-body ol { padding-left: 16px; }
+  .disaster-body li { font-size: 8.5pt; line-height: 1.6; color: #333; }
+
+  /* チェックリスト */
+  .checklist { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+  .check-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 8.5pt; color: #333; padding: 3px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .check-box {
+    width: 14px; height: 14px; border: 1.5px solid #00ACC1;
+    border-radius: 2px; flex-shrink: 0;
+  }
+
+  /* 改訂欄・フッター */
+  .revision-box {
+    border: 1px solid #ccc; border-radius: 4px; padding: 4px 10px;
+    margin-bottom: 10px; display: flex; gap: 16px;
+    font-size: 8.5pt; color: #666; align-items: center;
+  }
+  .revision-box span { font-weight: bold; color: #333; }
+  .footer {
+    border-top: 1px solid #ccc; padding-top: 5px;
+    display: flex; justify-content: space-between;
+    font-size: 8pt; color: #888;
+  }
+
+  /* 印刷 */
+  @media print {
+    body { background: white; }
+    .toolbar { display: none !important; }
+    .page { margin: 0; padding: 9mm 12mm; box-shadow: none; width: 100%; }
+    [contenteditable="true"] { box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+    .empty-hint::before { content: ""; }
+    @page { size: A4 portrait; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ツールバー -->
+<div class="toolbar">
+  <div class="toolbar-title">✏️ ANELLA CAFE 大分店 — 災害時避難経路 編集モード</div>
+  <div class="toolbar-hint">クリックして直接入力できます。入力内容は自動保存されます</div>
+  <div class="toolbar-save-status" id="saveStatus">💾 読み込み中…</div>
+  <button class="btn btn-clear" onclick="clearAll()">リセット</button>
+  <button class="btn btn-print" onclick="window.print()">🖨️ 印刷</button>
+  <button class="btn btn-pdf" onclick="downloadPDF()" id="pdfBtn">📄 PDFダウンロード</button>
+</div>
+
+<div class="page">
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="header-left">
+      <div class="confidential-badge">施設掲示用</div>
+      <h1>災害時避難経路</h1>
+      <div class="subtitle">
+        就労継続支援B型 ANELLA CAFE 大分店 ／
+        所在地：<span contenteditable="true" data-id="facility-addr">大分市毛井553-1</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div>作成日：2026年6月4日</div>
+      <div>改訂日：<span contenteditable="true" data-id="rev-date" data-placeholder="年月日"></span></div>
+      <div>掲示場所：事務所・各フロア出入口</div>
+    </div>
+  </div>
+
+  <!-- 避難場所 -->
+  <div class="section-title">■ 避難場所</div>
+  <div class="evac-cards" style="margin-bottom:10px;">
+    <div class="evac-card primary on-color">
+      <div class="evac-label">🏃 一次避難場所（まず集合）</div>
+      <div class="evac-name">松岡小学校</div>
+      <div class="evac-addr">大分市松岡</div>
+
+      <div class="evac-dist">📍 徒歩 <span contenteditable="true" data-id="evac1-dist" data-placeholder="〇〇分"></span></div>
+      <div class="evac-note">建物から出たら全員ここに集合してください</div>
+    </div>
+  </div>
+
+  <!-- 地図 -->
+  <div class="section-title">■ 避難経路マップ（施設 → 松岡小学校）</div>
+  <div class="map-wrap">
+    <div id="leaflet-map"></div>
+    <div class="map-print-note">
+      📍 避難経路：大分県大分市毛井553-1 → 松岡小学校（大分市）
+    </div>
+    <div class="map-legend">
+      <span style="font-weight:bold; color:#006064;">凡例：</span>
+      <div class="map-legend-item"><div class="map-dot red"></div>出発地：ANELLA CAFE 大分店（大分市毛井553-1）</div>
+      <div class="map-legend-item"><div class="map-dot green"></div>目的地：松岡小学校（一次避難場所）</div>
+    </div>
+  </div>
+
+  <!-- 避難経路と役割 横並び -->
+  <div class="two-col">
+
+    <!-- 避難経路 -->
+    <div>
+      <div class="section-title">■ 避難経路（一次避難場所まで）</div>
+      <div class="route-box">
+        <div class="route-header">🗺️ 施設 → 松岡小学校</div>
+        <div class="route-steps">
+          <div class="route-step">
+            <div class="route-icon start">🏠</div>
+            <div class="route-desc">
+              <strong>施設出口</strong>（正面玄関 または 非常口）<br>
+              <span class="route-note">利用者を誘導・人数確認してから出発</span>
+            </div>
+          </div>
+          <div class="route-step">
+            <div class="route-icon arrow">↓</div>
+            <div class="route-desc">
+              <span contenteditable="true" data-id="route1" data-placeholder="例：正面出口を出て左折、〇〇通りへ進む"></span>
+            </div>
+          </div>
+          <div class="route-step">
+            <div class="route-icon arrow">↓</div>
+            <div class="route-desc">
+              <span contenteditable="true" data-id="route2" data-placeholder="例：〇〇交差点を右折、〇〇沿いを直進"></span>
+            </div>
+          </div>
+          <div class="route-step">
+            <div class="route-icon arrow">↓</div>
+            <div class="route-desc">
+              <span contenteditable="true" data-id="route3" data-placeholder="例：〇〇橋を渡り、そのまま直進"></span>
+            </div>
+          </div>
+          <div class="route-step">
+            <div class="route-icon arrow">↓</div>
+            <div class="route-desc">
+              <span contenteditable="true" data-id="route4" data-placeholder="例：〇〇公園の前を左折"></span>
+            </div>
+          </div>
+          <div class="route-step">
+            <div class="route-icon end">🏫</div>
+            <div class="route-desc">
+              <strong>松岡小学校 到着</strong><br>
+              <span class="route-note">正門前に集合・点呼を実施してください</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 役割分担 -->
+    <div>
+      <div class="section-title">■ 避難時の役割分担</div>
+      <table class="role-table">
+        <thead>
+          <tr>
+            <th style="width:22%">役割</th>
+            <th style="width:28%">担当者</th>
+            <th>主な任務</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="role-badge r1">指揮者</span></td>
+            <td class="role-name" contenteditable="true" data-id="role1-name" data-placeholder="氏名"></td>
+            <td class="role-duty">全体指揮・避難完了確認・行政報告</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge r2">誘導①</span></td>
+            <td class="role-name" contenteditable="true" data-id="role2-name" data-placeholder="氏名"></td>
+            <td class="role-duty">先頭誘導・経路の安全確認</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge r2">誘導②</span></td>
+            <td class="role-name" contenteditable="true" data-id="role3-name" data-placeholder="氏名"></td>
+            <td class="role-duty">後方確認・最後尾で取り残し防止</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge r3">介助</span></td>
+            <td class="role-name" contenteditable="true" data-id="role4-name" data-placeholder="氏名"></td>
+            <td class="role-duty">移動困難な利用者の個別介助</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge r3">連絡</span></td>
+            <td class="role-name" contenteditable="true" data-id="role5-name" data-placeholder="氏名"></td>
+            <td class="role-duty">119・110通報・家族・行政へ連絡</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge r2">設備</span></td>
+            <td class="role-name" contenteditable="true" data-id="role6-name" data-placeholder="氏名"></td>
+            <td class="role-duty">ガス・電気遮断・施錠・備品確保</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- 災害別手順 -->
+  <div class="section-title">■ 災害種別 対応手順</div>
+  <div class="disaster-grid" style="margin-bottom:10px;">
+    <div class="disaster-card">
+      <div class="disaster-head quake">🌏 地震</div>
+      <div class="disaster-body">
+        <ol>
+          <li>机の下・壁際で身を守る</li>
+          <li>揺れが収まったら出口確保</li>
+          <li>ガス・電気を遮断する</li>
+          <li>全員を外へ誘導・点呼</li>
+          <li>余震に備え建物から離れる</li>
+          <li>松岡小学校へ避難・報告</li>
+        </ol>
+      </div>
+    </div>
+    <div class="disaster-card">
+      <div class="disaster-head fire">🔥 火災</div>
+      <div class="disaster-body">
+        <ol>
+          <li>大声で「火事だ！」と知らせる</li>
+          <li>119通報・初期消火（30秒以内）</li>
+          <li>煙を吸わないよう姿勢を低く</li>
+          <li>非常口から全員誘導・点呼</li>
+          <li>エレベーター使用禁止</li>
+          <li>松岡小学校へ避難・報告</li>
+        </ol>
+      </div>
+    </div>
+    <div class="disaster-card">
+      <div class="disaster-head flood">🌊 水害・土砂</div>
+      <div class="disaster-body">
+        <ol>
+          <li>気象情報・避難指示を確認</li>
+          <li>警戒レベル3で避難開始</li>
+          <li>川・斜面・低地を避けて移動</li>
+          <li>必要書類・薬・備品を持出し</li>
+          <li>松岡小学校へ避難・報告</li>
+          <li>状況により上階への垂直避難</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- 避難チェックリスト -->
+  <div class="section-title">■ 避難前チェックリスト（出発前に確認）</div>
+  <div class="checklist" style="margin-bottom:10px;">
+    <div class="check-item"><div class="check-box"></div>全利用者の人数確認・点呼完了</div>
+    <div class="check-item"><div class="check-box"></div>利用者名簿・緊急連絡先リスト持出し</div>
+    <div class="check-item"><div class="check-box"></div>ガス元栓を閉めた</div>
+    <div class="check-item"><div class="check-box"></div>必要な薬・医療器具の持出し</div>
+    <div class="check-item"><div class="check-box"></div>電気のブレーカーを落とした</div>
+    <div class="check-item"><div class="check-box"></div>携帯電話・充電器を持出し</div>
+    <div class="check-item"><div class="check-box"></div>出入口の施錠確認</div>
+    <div class="check-item"><div class="check-box"></div>119 / 110 / 管理者への通報済み</div>
+    <div class="check-item"><div class="check-box"></div>移動困難な利用者の介助者を確認</div>
+    <div class="check-item"><div class="check-box"></div>保護者・家族への連絡開始</div>
+  </div>
+
+  <!-- 改訂欄 -->
+  <div class="revision-box">
+    <div>改訂履歴：</div>
+    <div>第1版 <span>2026年6月4日</span> 作成</div>
+    <div>第2版 <span contenteditable="true" data-id="rev2" data-placeholder="年月日"></span> 改訂</div>
+    <div>第3版 <span contenteditable="true" data-id="rev3" data-placeholder="年月日"></span> 改訂</div>
+    <div style="margin-left:auto; color:#c0392b; font-weight:bold; font-size:9pt;">
+      ※毎年4月に内容を見直すこと
+    </div>
+  </div>
+
+  <!-- フッター -->
+  <div class="footer">
+    <div>ANELLA CAFE 大分店（就労継続支援B型）｜災害時避難経路</div>
+    <div>更新の都度、旧版と差し替えること</div>
+    <div>ver.1.0 / 2026-06-04</div>
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'anella_hinan_v1';
+  let saveTimer = null;
+
+  function getAllEditable() {
+    return document.querySelectorAll('[contenteditable="true"][data-id]');
+  }
+
+  function updatePlaceholders() {
+    getAllEditable().forEach(el => {
+      el.classList.toggle('empty-hint', el.textContent.trim() === '');
+    });
+  }
+
+  function saveData() {
+    const data = {};
+    getAllEditable().forEach(el => { data[el.dataset.id] = el.textContent; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('saveStatus').textContent = `💾 自動保存 ${hh}:${mm}`;
+    updatePlaceholders();
+  }
+
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      document.getElementById('saveStatus').textContent = '📝 未保存（入力してね）';
+      updatePlaceholders();
+      return;
+    }
+    const data = JSON.parse(raw);
+    getAllEditable().forEach(el => {
+      if (data[el.dataset.id] !== undefined) el.textContent = data[el.dataset.id];
+    });
+    document.getElementById('saveStatus').textContent = '✅ 保存済みデータを読み込みました';
+    updatePlaceholders();
+  }
+
+  function clearAll() {
+    if (!confirm('入力した内容をすべてリセットしますか？')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    getAllEditable().forEach(el => { el.textContent = ''; });
+    document.getElementById('saveStatus').textContent = '🗑️ リセットしました';
+    updatePlaceholders();
+  }
+
+  getAllEditable().forEach(el => {
+    el.addEventListener('input', () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveData, 800);
+      document.getElementById('saveStatus').textContent = '✏️ 入力中…';
+      updatePlaceholders();
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const els = Array.from(getAllEditable());
+        const idx = els.indexOf(el);
+        const next = els[e.shiftKey ? idx - 1 : idx + 1];
+        if (next) {
+          next.focus();
+          const r = document.createRange(); r.selectNodeContents(next); r.collapse(false);
+          const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        }
+      }
+    });
+  });
+
+  loadData();
+
+  // Leafletマップ初期化
+  const facilityLatLng  = [33.193626, 131.673218];
+  const schoolLatLng    = [33.187019, 131.664948];
+  const mapCenter       = [(facilityLatLng[0] + schoolLatLng[0]) / 2, (facilityLatLng[1] + schoolLatLng[1]) / 2];
+
+  const map = L.map('leaflet-map', { zoomControl: true, attributionControl: false, renderer: L.canvas() }).setView(mapCenter, 15);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    crossOrigin: 'anonymous'
+  }).addTo(map);
+
+  const redIcon = L.divIcon({ html: '<div style="background:#e74c3c;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>', iconAnchor:[7,7], className:'' });
+  const greenIcon = L.divIcon({ html: '<div style="background:#27ae60;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>', iconAnchor:[7,7], className:'' });
+
+  L.marker(facilityLatLng, { icon: redIcon }).addTo(map).bindPopup('🏠 ANELLA CAFE 大分店<br>大分市毛井553-1').openPopup();
+  L.marker(schoolLatLng, { icon: greenIcon }).addTo(map).bindPopup('🏫 松岡小学校（一次避難場所）');
+  L.polyline([facilityLatLng, schoolLatLng], { color: '#00ACC1', weight: 3, dashArray: '6,4' }).addTo(map);
+
+  async function downloadPDF() {
+    const btn = document.getElementById('pdfBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ 生成中…';
+    const toolbar = document.querySelector('.toolbar');
+    toolbar.style.display = 'none';
+    // タイルが完全に読み込まれるまで少し待つ
+    map.invalidateSize();
+    await new Promise(r => setTimeout(r, 800));
+    try {
+      const page = document.querySelector('.page');
+      const canvas = await html2canvas(page, {
+        scale: 2, useCORS: true, allowTaint: false, logging: false,
+        ignoreElements: el => el.classList && el.classList.contains('map-print-note')
+      });
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfMaxH = pdf.internal.pageSize.getHeight();
+      const contentH = (canvas.height * pdfW) / canvas.width;
+      const scale = contentH > pdfMaxH ? pdfMaxH / contentH : 1;
+      const finalW = pdfW * scale;
+      const finalH = contentH * scale;
+      const offsetX = (pdfW - finalW) / 2;
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', offsetX, 0, finalW, finalH);
+      pdf.save('ANELLA_CAFE大分店_災害時避難経路.pdf');
+    } finally {
+      toolbar.style.display = 'flex';
+      btn.disabled = false;
+      btn.textContent = '📄 PDFダウンロード';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マスター合宿2026 ナレッジまとめ</title>
+<style>
+  :root {
+    --primary: #f4f6fb;
+    --secondary: #ffffff;
+    --accent: #e94560;
+    --accent2: #f5a623;
+    --accent3: #4ecdc4;
+    --accent4: #6c63ff;
+    --accent5: #2ecc71;
+    --text: #1a1a2e;
+    --text-muted: #5a5a7a;
+    --card-bg: #ffffff;
+    --card-border: rgba(0,0,0,0.08);
+    --tag-bg: rgba(0,0,0,0.05);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    background: var(--primary);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ヘッダー */
+  header {
+    background: linear-gradient(135deg, #ffffff 0%, #eef2ff 50%, #fce4ec 100%);
+    padding: 60px 20px 40px;
+    text-align: center;
+    border-bottom: 2px solid var(--accent);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(233,69,96,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(108,99,255,0.06) 0%, transparent 50%);
+  }
+  header .badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+    position: relative;
+    color: #1a1a2e;
+  }
+  header h1 span { color: var(--accent); }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  header .meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+  header .meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ナビゲーション */
+  nav {
+    background: var(--secondary);
+    border-bottom: 1px solid var(--card-border);
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  nav ul {
+    display: flex;
+    list-style: none;
+    overflow-x: auto;
+    gap: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  nav ul::-webkit-scrollbar { display: none; }
+  nav ul li a {
+    display: block;
+    padding: 16px 18px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  nav ul li a:hover {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  /* メインコンテンツ */
+  main { max-width: 1200px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  /* セクション */
+  .section {
+    margin-bottom: 60px;
+    scroll-margin-top: 70px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  .section-header .count {
+    margin-left: auto;
+    background: var(--tag-bg);
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  /* カード */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: rgba(0,0,0,0.16);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .card-title .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .card p { font-size: 14px; color: var(--text-muted); line-height: 1.8; }
+  .card ul { padding-left: 18px; }
+  .card ul li { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.7; }
+  .card ul li strong { color: var(--text); }
+
+  /* グリッド */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+
+  /* 順位表 */
+  .ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+    font-size: 14px;
+  }
+  .ranking-table th {
+    background: rgba(0,0,0,0.04);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .ranking-table td {
+    padding: 13px 16px;
+    border-top: 1px solid var(--card-border);
+    color: var(--text-muted);
+  }
+  .ranking-table td:first-child { color: var(--text); font-weight: 700; }
+  .ranking-table tr:hover td { background: rgba(0,0,0,0.02); }
+  .rank-1 { color: #ffd700 !important; }
+  .rank-2 { color: #c0c0c0 !important; }
+  .rank-3 { color: #cd7f32 !important; }
+  .score-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .score-bar .bar {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.08);
+    flex: 1;
+    overflow: hidden;
+  }
+  .score-bar .fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent4), var(--accent));
+  }
+  .score-val { font-size: 13px; font-weight: 700; color: var(--text); min-width: 32px; }
+
+  /* タグ */
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .tag-red { background: rgba(233,69,96,0.15); color: #ff8fa0; border: 1px solid rgba(233,69,96,0.3); }
+  .tag-blue { background: rgba(108,99,255,0.15); color: #a09cff; border: 1px solid rgba(108,99,255,0.3); }
+  .tag-green { background: rgba(46,204,113,0.15); color: #6ee89b; border: 1px solid rgba(46,204,113,0.3); }
+  .tag-yellow { background: rgba(245,166,35,0.15); color: #f5c97a; border: 1px solid rgba(245,166,35,0.3); }
+  .tag-teal { background: rgba(78,205,196,0.15); color: #7de8e2; border: 1px solid rgba(78,205,196,0.3); }
+
+  /* ハイライトボックス */
+  .highlight-box {
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 14px;
+    border-left: 4px solid;
+  }
+  .highlight-red { background: rgba(233,69,96,0.08); border-color: var(--accent); }
+  .highlight-blue { background: rgba(108,99,255,0.08); border-color: var(--accent4); }
+  .highlight-green { background: rgba(46,204,113,0.08); border-color: var(--accent5); }
+  .highlight-yellow { background: rgba(245,166,35,0.08); border-color: var(--accent2); }
+  .highlight-teal { background: rgba(78,205,196,0.08); border-color: var(--accent3); }
+  .highlight-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .highlight-box p, .highlight-box li { font-size: 14px; color: var(--text-muted); line-height: 1.8; }
+  .highlight-box ul { padding-left: 18px; }
+  .highlight-box li { margin-bottom: 5px; }
+  .highlight-box li strong { color: var(--text); }
+
+  /* NG警告ボックス */
+  .warning-box {
+    background: rgba(233,69,96,0.06);
+    border: 1px solid rgba(233,69,96,0.25);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+  }
+  .warning-box .warning-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #ff8fa0;
+    margin-bottom: 10px;
+  }
+  .warning-box ul { padding-left: 18px; }
+  .warning-box li { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; }
+
+  /* AI ツール比較テーブル */
+  .tool-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .tool-table th {
+    background: rgba(0,0,0,0.04);
+    padding: 10px 14px;
+    text-align: left;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .tool-table td {
+    padding: 11px 14px;
+    border-top: 1px solid var(--card-border);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .tool-table td:first-child { color: var(--text); font-weight: 600; }
+
+  /* クレド */
+  .credo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .credo-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 26px 24px;
+    text-align: center;
+    transition: transform 0.15s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .credo-card:hover { transform: translateY(-3px); }
+  .credo-card .credo-num {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .credo-card .credo-en {
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .credo-card .credo-ja {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .credo-card .credo-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* フッター */
+  footer {
+    background: #eef2ff;
+    border-top: 1px solid var(--card-border);
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ステータスバッジ */
+  .new-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* 引用 */
+  .quote {
+    border-left: 4px solid var(--accent4);
+    padding: 16px 20px;
+    background: rgba(108,99,255,0.07);
+    border-radius: 0 12px 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--text);
+    margin: 20px 0;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 40px 16px 30px; }
+    main { padding: 24px 16px 60px; }
+    .ranking-table { font-size: 12px; }
+    .ranking-table th, .ranking-table td { padding: 10px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">MASTER CAMP 2026</div>
+  <h1>箱根マスター合宿<br><span>全ナレッジまとめ</span></h1>
+  <div class="subtitle">2026年5月 箱根・天成園</div>
+  <div class="meta">
+    <span>📍 箱根 天成園</span>
+    <span>👥 約70名参加</span>
+    <span>🏆 16チームが発表</span>
+    <span>🎯 テーマ：エンパシーエコー</span>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#follower">📈 フォロワー施策</a></li>
+    <li><a href="#monetize">💰 マネタイズ</a></li>
+    <li><a href="#ai">🤖 AI活用</a></li>
+    <li><a href="#organize">🏢 組織化</a></li>
+    <li><a href="#bs">📊 BS/PL思考</a></li>
+    <li><a href="#brand">🌐 ブランド戦略</a></li>
+    <li><a href="#newservice">🚀 新サービス</a></li>
+    <li><a href="#credo">🎯 クレド</a></li>
+    <li><a href="#ng">⚠️ NGリスク</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<!-- ====== フォロワー増加施策 ====== -->
+<section class="section" id="follower">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(78,205,196,0.15);">📈</div>
+    <h2>フォロワー増加施策</h2>
+    <span class="count">全チーム共有</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">🎬</span>トライアルリール × ABテスト</div>
+      <ul>
+        <li>フィードを汚さず<strong>非フォロワー層だけに届く</strong>裏道機能</li>
+        <li>冒頭だけ変えた<strong>3パターンを先行テスト</strong>→伸びたものを本投稿</li>
+        <li>1コンテンツを4回分活用。2週間で<strong>3万人増</strong>の事例</li>
+        <li>同じ動画を連続で出すと「類似」扱いになるので間を空ける</li>
+      </ul>
+      <div class="tags"><span class="tag tag-teal">再現性◎</span><span class="tag tag-blue">コスト0</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🔄</span>バズった動画の再掲戦略</div>
+      <ul>
+        <li>同じ動画を<strong>4回投稿</strong>：400万→300万→50万→82万再生の実例</li>
+        <li>フォロワー層が入れ替わっているので見ていない人に届く</li>
+        <li>冒頭カット・CTA変更で微調整するとAI重複判定を回避</li>
+        <li>5〜6回目で<strong>一気に7万人フォロワー増</strong>の事例</li>
+      </ul>
+      <div class="tags"><span class="tag tag-green">実績あり</span><span class="tag tag-teal">資産活用</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📖</span>漫画の連載形式</div>
+      <ul>
+        <li>単発だとフォロワーが増えない→<strong>連載にしたら1万人増</strong></li>
+        <li>「続きが気になる人しかフォローしない」=質の高いフォロワーが集まる</li>
+        <li>一度止めて再開しただけで<strong>2,000人増</strong>の事例</li>
+        <li>幽霊体験談・占い漫画など「次回が気になる」設計が重要</li>
+      </ul>
+      <div class="tags"><span class="tag tag-blue">ファン化</span><span class="tag tag-teal">LTV◎</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🌍</span>海外トレンドの先取りローカライズ</div>
+      <ul>
+        <li>TikTokが最先端→<strong>1〜2ヶ月遅れでインスタに展開</strong>すると効果的</li>
+        <li>海外のダイナミックなフォーマット＋後半を教育リールに切り替え</li>
+        <li>Xのトレンドを「日本に上陸しました」と投稿→<strong>9,800人増</strong></li>
+        <li>1投稿で<strong>4.4万人フォロワー増</strong>の事例（料理系）</li>
+      </ul>
+      <div class="tags"><span class="tag tag-red">インパクト大</span><span class="tag tag-yellow">先行者利益</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🧵</span>Threads（スレッツ）活用</div>
+      <ul>
+        <li>冒頭に「ボディメイクをしている〇〇な女性へ」→<strong>キーワードベースで届く</strong></li>
+        <li>連続投稿で引き上げ効果：2投稿目が出るたびに1投稿目も浮上</li>
+        <li>スレッツ経由でインスタ<strong>1,000〜2,000人増</strong>、LINEリストも増加</li>
+        <li>インスタよりリンクのクリック率が高い（ブログ誘導に有効）</li>
+        <li>Claude Code＋Manusで<strong>1日2投稿を完全自動化</strong>済みの事例</li>
+      </ul>
+      <div class="tags"><span class="tag tag-green">競合少ない</span><span class="tag tag-blue">自動化可</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">💡</span>コンテンツのフック設計</div>
+      <ul>
+        <li><strong>ビフォーアフター</strong>：「ビフォー」の文字だけで視聴者が引き戻される</li>
+        <li><strong>一歩踏み込んだ悩み</strong>：「あるある」より「言われたら私も！」レベルが拡散</li>
+        <li><strong>ネガティブ感情の開示</strong>：「ブチ切れてます」「正直しんどかった」が大幅増</li>
+        <li><strong>権威性の冒頭挿入</strong>：「建築士の私が」で183万再生・2万人増</li>
+        <li>他ジャンルのフック輸入：料理系の冒頭を自ジャンルに転用→100万再生</li>
+      </ul>
+      <div class="tags"><span class="tag tag-red">即実践可</span><span class="tag tag-teal">全ジャンル対応</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📣</span>インスタ広告でフォロワーを増やす <span class="new-badge">最新</span></div>
+      <ul>
+        <li><strong>フォロワー単価50円以下</strong>が継続判断の基準</li>
+        <li><strong>PCのWebブラウザから出稿</strong>→手数料10〜20%節約（アプリは割高）</li>
+        <li>10枚以上の投稿も広告OK（<strong>2026年5月から解禁</strong>）</li>
+        <li>1週間は学習期間として出し続ける（1日1,000〜2,000円から始める）</li>
+        <li>外注費を減らして広告費に回す選択肢も検討する価値あり</li>
+        <li>楽天アフィリエイターはLTVが高いフォロワーが広告で獲得できる</li>
+      </ul>
+      <div class="tags"><span class="tag tag-yellow">ROI測定可</span><span class="tag tag-blue">スケール可</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🗺️</span>地域特化戦略</div>
+      <ul>
+        <li>大阪全体より<strong>「何々市」に絞る</strong>と競合がいない→無双状態</li>
+        <li>地域特化×メタ広告：広告1,800円で<strong>2,000人増・単価10円/人</strong></li>
+        <li>岐阜県の何々市に絞った受講生：2,000人→5,000人→市長・観光協会と繋がった</li>
+        <li>地方でお出かけアカウント→自治体案件→観光大使就任→テレビ出演の流れ</li>
+      </ul>
+      <div class="tags"><span class="tag tag-green">ブルーオーシャン</span><span class="tag tag-yellow">高単価案件</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🎯</span>その他の注目施策</div>
+      <ul>
+        <li><strong>7DAYチャレンジ</strong>：音声DM企画→アルゴリズム評価上昇→直後のローンチで成約率激増</li>
+        <li><strong>シーズナルエンドピーク</strong>：クリスマスは12/23に投稿→再生数が劇的に跳ね上がる（常識破壊）</li>
+        <li><strong>新幹線ネタ×コメント誘導</strong>：365万再生・コメント4.8万・1.7万人増（ただしターゲット外も含む）</li>
+        <li><strong>ストーリーラジオ</strong>：毎日1分の音声をハイライトに蓄積→滞在時間増・閲覧率安定</li>
+        <li><strong>ポッドキャスト</strong>：Spotify・Apple Musicで未知層を獲得。LINEより濃いファンが集まる</li>
+      </ul>
+      <div class="tags"><span class="tag tag-teal">多様な手法</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== マネタイズ施策 ====== -->
+<section class="section" id="monetize">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(245,166,35,0.15);">💰</div>
+    <h2>マネタイズ施策</h2>
+    <span class="count">全チーム共有</span>
+  </div>
+
+  <h3 style="font-size:14px; font-weight:700; color:var(--text-muted); letter-spacing:1px; margin-bottom:16px; text-transform:uppercase;">▼ 固定PR案件</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">💼</span>PR案件の単価を上げる4つの方法</div>
+      <ul>
+        <li><strong>先に高い金額を言う（アンカリング）</strong>：「30万から受けてます」と先出しで倍以上で通る</li>
+        <li><strong>提案資料の差別化</strong>：タイアップ実績のリンク・楽天売上金額・購買動線セットで提案</li>
+        <li><strong>PR後の報告書</strong>：インサイト・層分析・改善提案→「ここまでする人いない」で即リピート</li>
+        <li><strong>リピート提案</strong>：初速良かった翌日に「他の製品は？」と提案。熱が冷める前が鉄則</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🏛️</span>自治体・B2B案件の獲得</div>
+      <ul>
+        <li>受付から入り<strong>地域振興課・地域アピール課</strong>に繋いでもらう</li>
+        <li><strong>しつこく3回以上</strong>訪問。担当者が変わっても同じことを言い続ける</li>
+        <li>顔出しの方が選ばれやすい（行政は怪しい人に頼みたくない）</li>
+        <li>過疎地域の町おこし・婚活・移住促進は<strong>行政が予算を持っている</strong></li>
+        <li>コンサル級の事後報告書を提出→単価3倍・継続案件確定の事例</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:14px; font-weight:700; color:var(--text-muted); letter-spacing:1px; margin:24px 0 16px; text-transform:uppercase;">▼ アフィリエイト</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">🔮</span>占い師アフィリエイト（複数チームで共有）</div>
+      <ul>
+        <li>全員に実際に鑑定を受けて<strong>厳選した占い師</strong>を紹介（信頼性◎）</li>
+        <li>直接交渉で<strong>フォロワー限定5,000円ポイント特典</strong>を獲得</li>
+        <li>CVR実績を見せて<strong>報酬率を通常より高く</strong>交渉</li>
+        <li>投稿タイミング：<strong>日曜夜8〜9時</strong>（月曜への不安が最高潮）</li>
+        <li>7〜8月レジャーシーズンは売れない→ノートなど別商品に切り替え</li>
+        <li><strong>1件2万円・月1回企画で月40万円</strong>設計</li>
+      </ul>
+      <div class="tags"><span class="tag tag-yellow">月40万設計</span><span class="tag tag-red">季節あり</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📝</span>インスタ→ブログ→CV設計</div>
+      <ul>
+        <li>リールで理想の未来を見せる→エルグラムで理由付け→<strong>ブログで購買理由を作りCV</strong></li>
+        <li>ブログCVR：<strong>10%→40%に改善</strong>した事例。3案件合計350万円</li>
+        <li>LINEに直接アフィリエイトリンクを貼るとBAN対象→<strong>ブログを挟む</strong>ことが鉄則</li>
+        <li>悩みが深いジャンル（住宅・医療・保険）はブログ経由のCVR向上効果が高い</li>
+      </ul>
+      <div class="tags"><span class="tag tag-blue">CVR改善</span><span class="tag tag-teal">BAN対策</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🛒</span>楽天アフィリエイト × 広告の組み合わせ</div>
+      <ul>
+        <li>楽天はLTVが高い→<strong>1フォロワー獲得に50円かけても余裕でペイ</strong></li>
+        <li>ROAS（費用対効果）：通常200〜300%でOK、自社商品と組み合わせると<strong>1,000%超え</strong></li>
+        <li>広告でLTVの高いフォロワーを獲得→ストーリーで楽天リンクを踏ませ続けると長期収益化</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🏠</span>不動産クラウドファンディングアフィリエイト</div>
+      <ul>
+        <li>ターゲット：30〜50代ママ（初心者・怖いけどやりたい層）</li>
+        <li><strong>安心材料を徹底的に出す</strong>（リーマンショック相当でも守られる劣後出資割合）</li>
+        <li>金額でなく「〇〇の時の暴落があっても大丈夫」と<strong>例え話で説明</strong></li>
+        <li>最初は<strong>半年以内の短期商品</strong>を選ぶ（成功体験を積ませる）</li>
+        <li>1万円から始められる→「パパに内緒で」できる金額感が重要</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:14px; font-weight:700; color:var(--text-muted); letter-spacing:1px; margin:24px 0 16px; text-transform:uppercase;">▼ 自社商品販売</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">🎯</span>ローンチ設計の核心</div>
+      <ul>
+        <li><strong>ストーリーズローンチ</strong>は投稿ローンチより成約率が高い（ファン化している場所）</li>
+        <li>特典作成中を<strong>2ヶ月かけて見せる</strong>→「みんなのためにやってる感」で成約率2倍</li>
+        <li><strong>価格先出し</strong>で冷やかし層を排除→個別相談を「審査の場」に再定義</li>
+        <li>セミナー「締めなし」移行：ノウハウ直後にシームレスにセールスへ→成約率30%→50%</li>
+        <li>個性心理学（動物占い）で相手のタイプを事前把握→成約率向上</li>
+      </ul>
+      <div class="tags"><span class="tag tag-red">成約率直結</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">💎</span>既存資産の活用</div>
+      <ul>
+        <li>過去リール台本<strong>600〜700本をPDFに→期限付き特典</strong>→通常の1.5〜2倍の売上</li>
+        <li><strong>ネーミング変更だけで単価4倍</strong>：「甘酒米粉おやつ」→「麹蜜メソッド」→月商300万円</li>
+        <li>「わらしべ長者型」：地元実績→無償企画→有償コンサル→プレスリリース→行政直契約</li>
+        <li>行政セミナーを<strong>低単価で受けて権威性を獲得</strong>→高単価本業の成約率が激増</li>
+      </ul>
+      <div class="tags"><span class="tag tag-teal">資産活用</span><span class="tag tag-green">ブランド構築</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📊</span>セールストークの権威性設計</div>
+      <ul>
+        <li>「<strong>累計1,500人以上と面談</strong>」「31ジャンルで100名以上が成果達成」の数字を自己紹介に組み込む</li>
+        <li>マネタイズ診断（A・B・Cパターン）で<strong>課題を自覚させてから提案</strong></li>
+        <li>「3年やらなかった場合の機会損失額を数値化」→損失の見える化が刺さる</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📧</span>メルマガ基盤の整備</div>
+      <ul>
+        <li><strong>宴（Yan）は迷惑メールに入りやすい→MySPの方が開封率が高い</strong></li>
+        <li>LINE＝ストーリーズの役割（興味ある人はこのボタンを押してね）</li>
+        <li>メルマガ＝購買の場（ブログ経由でCV）</li>
+        <li>インスタがBANになっても<strong>「入り口がなくなっただけ」</strong>で収益は続く</li>
+      </ul>
+      <div class="tags"><span class="tag tag-red">BAN対策</span><span class="tag tag-blue">基盤整備</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== AI活用 ====== -->
+<section class="section" id="ai">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(108,99,255,0.15);">🤖</div>
+    <h2>AI活用ナレッジ</h2>
+    <span class="count">全チーム共有</span>
+  </div>
+
+  <div class="highlight-box highlight-blue" style="margin-bottom:24px;">
+    <h3>🧠 AIを使う上での最重要原則</h3>
+    <p>「<strong>AIができること（情報収集・整理・要約・型化）</strong>」と「<strong>AIができないこと（現場で試す・失敗する・悩む・熱量を持つ・背景を語る）</strong>」を明確に分けることが最も重要。一次情報・実体験・エピソードは人間が担当する。</p>
+  </div>
+
+  <h3 style="font-size:14px; font-weight:700; color:var(--text-muted); letter-spacing:1px; margin-bottom:16px; text-transform:uppercase;">▼ ツール別の使い分け</h3>
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table class="tool-table">
+      <thead>
+        <tr>
+          <th>ツール</th>
+          <th>得意用途</th>
+          <th>コスト感</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Claude Code</td>
+          <td>システム開発・アプリ作成・業務自動化・多タスク並行処理（5エージェント同時）</td>
+          <td>Max：月100ドル（年間契約推奨）</td>
+        </tr>
+        <tr>
+          <td>Manus（マナス）</td>
+          <td>インスタ・スレッツのAPI連携・インサイト分析・スレッツ自動投稿</td>
+          <td>メタ社買収済み・連携しやすい</td>
+        </tr>
+        <tr>
+          <td>ChatGPT / GPTs</td>
+          <td>カスタムGPT作成・ナレッジ学習・Canvaとの連携（マジックレイヤー）</td>
+          <td>月3,000円〜</td>
+        </tr>
+        <tr>
+          <td>Gemini</td>
+          <td>大量テキスト処理（YouTube1時間分の文字起こし等）・図表データ</td>
+          <td>無料枠あり</td>
+        </tr>
+        <tr>
+          <td>GenSpark</td>
+          <td>高品質スライド作成（無料でもOK）</td>
+          <td>無料〜年間4万円</td>
+        </tr>
+        <tr>
+          <td>Claude Design</td>
+          <td>スライド・特典資料作成</td>
+          <td>Claudeに含む</td>
+        </tr>
+        <tr>
+          <td>NotebookLM</td>
+          <td>資料の整理・インプット整理</td>
+          <td>無料</td>
+        </tr>
+        <tr>
+          <td>AquaVoice / Typeless</td>
+          <td>音声入力でAIへの指示出し（タイピングゼロ化）</td>
+          <td>月10〜12ドル</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-size:14px; font-weight:700; color:var(--text-muted); letter-spacing:1px; margin:24px 0 16px; text-transform:uppercase;">▼ 重要な活用事例</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">🧬</span>自分の脳のクローン化（最重要）</div>
+      <ul>
+        <li>過去の音声・動画・テキストを文字起こし→Claudeに学習</li>
+        <li>GPTsの<strong>Web検索をOFF</strong>→自分の一次情報のみ参照させると精度激増</li>
+        <li>ノウハウナレッジとパーソナルナレッジを<strong>分けて管理</strong>してから掛け合わせる</li>
+        <li>スタンドFM540本・Voicy90本・ライブ講義全て文字起こしてナレッジ化した事例</li>
+        <li>160本の音声データを学習→自分の思考・口調を完全再現</li>
+      </ul>
+      <div class="tags"><span class="tag tag-blue">最重要</span><span class="tag tag-red">差別化</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">⚡</span>Claude Code × Manus 連携（スレッツ自動化）</div>
+      <ul>
+        <li>Manusで過去インスタコンテンツを読み取る</li>
+        <li>Claude Codeでスレッツ自動投稿システムを開発</li>
+        <li><strong>1日2投稿を完全自動化</strong>（文章生成→投稿まで）</li>
+        <li>楽天ルーム・楽天トラベルリンクも自動投稿で収益化</li>
+      </ul>
+      <div class="tags"><span class="tag tag-green">完全自動</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🎨</span>ChatGPT × Canva（マジックレイヤー）</div>
+      <ul>
+        <li>ChatGPTに「マジックレイヤー」と打つ→<strong>Canvaのリンクが生成</strong></li>
+        <li>外注さんのサムネをChatGPT Image-2に読み込ませて複製→Canvaで編集</li>
+        <li><strong>外注費ゼロでサムネ修正・複製が可能</strong></li>
+        <li>サイズ変更・文言変更・色変更もCanvaで自分でできる</li>
+      </ul>
+      <div class="tags"><span class="tag tag-yellow">外注費削減</span><span class="tag tag-teal">即実践可</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🤝</span>Claude Codeで5タスク同時並行</div>
+      <ul>
+        <li>「入力お願い→コンテンツ作成お願い→システム開発お願い」を<strong>同時指示</strong></li>
+        <li>5人のAIエージェントに仕事を依頼しながら自分は戦略タスクに集中</li>
+        <li>Zoom中・旅行中も業務が回り続ける</li>
+        <li>朝に指示を出して1日放置→夕方に完了している</li>
+      </ul>
+      <div class="tags"><span class="tag tag-blue">革命的</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span>GAS連携で数値入力を自動化</div>
+      <ul>
+        <li>広告消化金額・LINE登録数を<strong>毎朝7時に自動でスプシに入力</strong></li>
+        <li>エルメ・エルステップ・メタ広告の数値を自動集計</li>
+        <li>複数クライアント分も全自動で管理</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📄</span>報告書をHTMLページ化</div>
+      <ul>
+        <li>資料PDFではなくWebページとして報告書を作成</li>
+        <li>来店数・広告費・成約率・ROAS などを<strong>見やすく一元表示</strong></li>
+        <li>クライアントから「見やすい」と高評価→継続確定</li>
+        <li>ネクストアクションもページ内に記載してプロ感が出る</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🛡️</span>AIでBANリスクを事前チェック</div>
+      <ul>
+        <li>インスタ規約をClaudeに学習させ、台本をスクリーニング</li>
+        <li>「この文言は煽りと判定されるかも」と事前に指摘してくれる</li>
+        <li>金融系・誘導系・締め切り煽りなどがリスク対象</li>
+      </ul>
+      <div class="tags"><span class="tag tag-red">BAN対策</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🎙️</span>Zoom録画の完全自動化（Gチーム事例）</div>
+      <ul>
+        <li>Zoom終了後→雑談部分を自動カット→文字起こし</li>
+        <li>→YouTubeとNotionに自動アップ→完了をChatworkに自動連絡</li>
+        <li>録画にタイトル・概要を自動付与</li>
+        <li>DiscordをClaude Codeで自動化：告知・Googleカレンダーからリマインド・NotionへAI整理</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warning-box" style="margin-top:16px;">
+    <div class="warning-title">⚠️ AIにやらせない方がいいこと</div>
+    <ul>
+      <li>セールス・セミナーの感情的な文章（AIっぽい言葉遣いが出る）</li>
+      <li>断言・感情表現・体験談・一次情報ベースのコンテンツ</li>
+      <li>流行り・トレンド（先祖返りしやすい）</li>
+      <li>トークリールの「間」（人間の感情・熱量が必要）</li>
+      <li>自社サムネの写真生成（AIっぽくなる→人が撮った写真を入れる必要あり）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ====== 組織化 ====== -->
+<section class="section" id="organize">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(46,204,113,0.15);">🏢</div>
+    <h2>組織化・ビジネス戦略</h2>
+    <span class="count">全チーム共有</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">👔</span>ディレクター制の導入（最良フロー）</div>
+      <ul>
+        <li>①リサーチでネタ探し（ディレクター）→②台本作成（発信者）</li>
+        <li>→③編集指示（ディレクター）→④編集（編集者）→⑤チェック（ディレクター）→⑥最終確認（発信者）</li>
+        <li>発信者が編集者と直接やり取りすると<strong>連絡過多で疲弊</strong>→ディレクターを挟む体制が最良</li>
+        <li>外注コスト：小規模2〜3万円/月、本格体制25万円程度/月</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">❤️</span>ファンからのスタッフ採用</div>
+      <ul>
+        <li><strong>採用コストゼロ</strong>＋理念共有済みで即戦力化しやすい</li>
+        <li>MVV（ミッション・ビジョン・バリュー）を面談で共有</li>
+        <li>振り返りシート＋成果ボーナスで<strong>自発的なAI提案</strong>が生まれた事例</li>
+        <li>長文回答の採用テストで意欲の低い層を事前に排除</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🤖</span>AIで外注費を削減</div>
+      <ul>
+        <li>スライド・特典・LPのデザイン→AIで作成後Canvaで微修正→外注費ゼロ</li>
+        <li>議事録・カウンセリング記録→Claude Code＋Notionで自動管理</li>
+        <li>ライターはAIで代替→PM・ディレクターの4〜5人体制で回せる</li>
+        <li><strong>動画・リール制作はまだ人間が必要</strong>（AIっぽくなるため）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🏆</span>18名規模の完全自走組織化事例</div>
+      <ul>
+        <li>オーナーは各事業の<strong>ディレクターとのみ連絡</strong></li>
+        <li>稼働固定報酬＋成果連動ボーナス（20%）でメンバーのモチベーション確保</li>
+        <li>オーナーの空き時間で<strong>法人タイアップ案件を獲得</strong>できるように</li>
+        <li>「外注化の目的は時間を作るため」→作った時間で最大化できる仕事をする</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📲</span>Discordコミュニティ管理</div>
+      <ul>
+        <li>期ごとにグループを変えて少人数グルコンを実施（発言しやすくなる）</li>
+        <li>AIメンターBotで24時間対応→運営コストゼロ化</li>
+        <li>ゲーミフィケーション（ポイント付与）でコミュニティを活性化</li>
+        <li>卒業生も含めた全体グルコンだと発言しにくくなる</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">⚖️</span>レベシェア（収益分配）の注意点</div>
+      <ul>
+        <li>レベシェアメンバーは<strong>1〜2人が上限</strong>（経験則）</li>
+        <li>業務が明確でない形でのレベシェアは避ける</li>
+        <li>ガッツリ組む人とは<strong>必ず契約書を交わす</strong>（トラブル事例あり）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ====== BS/PL思考 ====== -->
+<section class="section" id="bs">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(233,69,96,0.15);">📊</div>
+    <h2>BS / PL思考への転換</h2>
+    <span class="count">セミナー内容</span>
+  </div>
+
+  <div class="highlight-box highlight-red">
+    <h3>PLとBSの違い</h3>
+    <ul>
+      <li><strong>PL（損益計算書）</strong>：今月・今年いくら稼いでいくら残ったかを見るもの</li>
+      <li><strong>BS（貸借対照表）</strong>：今その会社に何が残っているかを見るもの</li>
+    </ul>
+    <p style="margin-top:12px;">月100万円前後のレンジまではPL視点でOK。それ以上を目指すにはBS視点が必須。</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">⚠️</span>講座販売のBS的な正しい理解</div>
+      <ul>
+        <li>60万円の6ヶ月コンサルを売った瞬間→<strong>資産60万＋負債（役務提供6ヶ月）</strong>が発生</li>
+        <li>純資産はまだゼロ。毎月役務提供が完了するたびに純資産が増える</li>
+        <li><strong>永久サポート・未使用面談チケット = 目に見えない負債</strong>として残り続ける</li>
+        <li>アフィリエイト・固定PRは成果発生の瞬間に純資産だけが入る（シンプル）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">📦</span>インフルエンサーのBS資産（目に見えない）</div>
+      <ul>
+        <li>ブランド・顧客リスト（LINE・メルマガ）・エバー動線・商品群</li>
+        <li>コンテンツ資産（過去動画・投稿・音声）</li>
+        <li>AI活用力・組織・信頼残高・人脈・コミュニティ</li>
+        <li><strong>思い出と歴史</strong>（福利で増え続ける最強の資産）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-title">⚠️ PL視点だけだとなりやすいこと</div>
+    <ul>
+      <li>今月の売上だけを追い、ローンチを繰り返す</li>
+      <li>フォロワーの信頼を早く切り売りする</li>
+      <li><strong>売上があるのにずっと忙しい状態</strong>（負債が溜まり続けるから）</li>
+      <li>今月稼げても来月も稼げるかどうかが不明な状態</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ====== ブランド戦略 ====== -->
+<section class="section" id="brand">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(78,205,196,0.15);">🌐</div>
+    <h2>次の時代のブランド戦略</h2>
+    <span class="count">セミナー内容</span>
+  </div>
+
+  <div class="quote">
+    「情報の価値が下がると、一次情報・実体験・歴史・思い出の価値が上がる」<br>
+    — 普通の情報はAIで誰でも作れる。だから現場で試した・失敗した・悩んだ体験が最大の資産になる
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">📈</span>発信者が選ばれる基準の3段階変化</div>
+      <ul>
+        <li><strong>段階1（過去）</strong>：どんな情報・ノウハウを発信しているか</li>
+        <li><strong>段階2（今）</strong>：誰が成果を出しているか・再現性があるか</li>
+        <li><strong>段階3（これから）</strong>：誰が作っているか・誰と組んでいるか・どんな歴史があるか</li>
+      </ul>
+      <p style="margin-top:12px; font-size:13px;">→ 今後は<strong>ブランドの背景</strong>が選ばれる基準になる</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🏅</span>ブランドは「何を積み上げているか」で決まる</div>
+      <ul>
+        <li>お客さんをどこからどこに変化させたか（変化の量）</li>
+        <li>何人に起こしたか（変化の数）</li>
+        <li>変化の質・受講生の質</li>
+        <li><strong>誰を変化させているか</strong>（フォロワーの集め方・質）</li>
+        <li><strong>どう売っているか</strong>（強引なセールスはブランドを傷つける）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">💡</span>価値が上がるもの・下がるもの</div>
+      <ul>
+        <li>価値が<strong>下がる</strong>：ただの情報・理論だけのノウハウ・マネできる施策</li>
+        <li>価値が<strong>上がる</strong>：一次情報・実体験・失敗談・エピソード・背景・熱量</li>
+        <li>価値が<strong>上がる</strong>：顧客とのやりとり・現場データ・検証結果・ブランド・人との歴史</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🤝</span>個人から信頼経済圏の時代へ</div>
+      <ul>
+        <li>個人の実力だけで突き抜けるのが難しくなってきた</li>
+        <li><strong>誰と仕事をしているか・誰に認められているか</strong>が重要になる</li>
+        <li>信頼できる人との歴史を持つことが後々聞いてくる</li>
+        <li>思い出は福利で増え続ける→合宿・オフ会が意味を持つ</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 新サービス ====== -->
+<section class="section" id="newservice">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(233,69,96,0.15);">🚀</div>
+    <h2>新サービス・事業展開計画（2026年発表）</h2>
+    <span class="count">合宿限定発表</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="highlight-box highlight-red">
+      <h3>① AIブースト</h3>
+      <p>IGマスター・バズブースト・社内アカウントを含む膨大な一次情報を詰め込んだAI講座。ブーストシリーズのAIバージョンとして提供予定。</p>
+      <div class="tags" style="margin-top:12px;"><span class="tag tag-red">新講座</span></div>
+    </div>
+    <div class="highlight-box highlight-blue">
+      <h3>② バズブースト公認プロモーターアカウント</h3>
+      <p>裸足夫婦陣営が運営するアカウントにチームメンバーとして参加。「市場を細切れにするより、バズブーストのプロモーターになった方がいい」という人向け。少数精鋭で厳選。</p>
+      <div class="tags" style="margin-top:12px;"><span class="tag tag-blue">人選あり</span></div>
+    </div>
+    <div class="highlight-box highlight-yellow">
+      <h3>③ IGマスタープレミア（仮称）</h3>
+      <p>月100万円以上のフェーズで「一手で覆るか覆らないか」の個別性の高いアドバイスができる場。顧問グループ的なイメージ。直接介在できるパートを増やした高単価プラン。</p>
+      <div class="tags" style="margin-top:12px;"><span class="tag tag-yellow">高単価</span><span class="tag tag-red">個別対応</span></div>
+    </div>
+    <div class="highlight-box highlight-green">
+      <h3>④ 裸足ファミリープロジェクト</h3>
+      <p>歴史・実力・信頼がある人とのパートナーシップで商品を出していく。誰でも彼でもではなく厳選した人と一緒に。原氏経済圏として信頼を預けられる経済圏の構築。</p>
+      <div class="tags" style="margin-top:12px;"><span class="tag tag-green">パートナー制</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title"><span class="icon">🎪</span>カンファレンス（2026年）</div>
+    <ul>
+      <li>6月1日から追加募集開始（50席限定）</li>
+      <li>既に650席程度埋まっている大規模イベント</li>
+      <li>リールコンテストあり</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ====== クレド ====== -->
+<section class="section" id="credo">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(108,99,255,0.15);">🎯</div>
+    <h2>マスター講座 クレド（新発表）</h2>
+    <span class="count">行動指針</span>
+  </div>
+
+  <div class="highlight-box highlight-blue" style="margin-bottom:24px;">
+    <h3>🌟 ビジョン（不変）</h3>
+    <p>生き方に誇りを持つ。あらゆる才を集結したSNS新時代をつくる<strong>真心の共同体</strong></p>
+    <p style="margin-top:10px; color:var(--text);">理念：<strong>好きな人と好きな場所で生きていく</strong></p>
+  </div>
+
+  <div class="credo-grid">
+    <div class="credo-card">
+      <div class="credo-num">CREDO 01</div>
+      <div class="credo-en" style="color:#e94560;">On The Choice</div>
+      <div class="credo-ja">選ぶ</div>
+      <div class="credo-desc">自ら選び、自ら引き受ける。未来を誰かに任せず自分の意思で現場に行く。どのマネタイズ方法も自分で選べる自分になること。</div>
+    </div>
+    <div class="credo-card">
+      <div class="credo-num">CREDO 02</div>
+      <div class="credo-en" style="color:#6c63ff;">Build The Circle</div>
+      <div class="credo-ja">気づく</div>
+      <div class="credo-desc">一度きりの売り上げではなく信頼の輪を築く。ブランド・信頼・仲間・思い出を残す。BSを全員で構築していく。</div>
+    </div>
+    <div class="credo-card">
+      <div class="credo-num">CREDO 03</div>
+      <div class="credo-en" style="color:#2ecc71;">Give The Story</div>
+      <div class="credo-ja">語り継ぐ</div>
+      <div class="credo-desc">学びを自分だけで止めず場に渡す。実践・失敗・背景・熱量が集合知を作る。ギブの文化を続けていく。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== NGリスク ====== -->
+<section class="section" id="ng">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(233,69,96,0.15);">⚠️</div>
+    <h2>NGリスク警告</h2>
+    <span class="count">やってはいけないこと</span>
+  </div>
+  <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">AIが採点で減点した事例・議論の中で出たリスクある手法をまとめました。短期的には効果があっても長期的にブランドや収益を傷つけます。</p>
+
+  <div class="grid-2">
+    <div class="warning-box">
+      <div class="warning-title">🔴 プラットフォーム規約違反系</div>
+      <ul>
+        <li><strong>トライアルリールの無限ループ</strong>（消して再投稿を繰り返す）→BAN</li>
+        <li><strong>8分に1回の超高頻度自動投稿</strong>→スパム判定・凍結</li>
+        <li><strong>Threadsでの意図的な自己リプライ</strong>→スパム判定</li>
+        <li><strong>GW中に全く同じ動画を大量投下</strong>→シャドウバン</li>
+        <li>リンクをボタンに巧みに隠す手法→規約違反</li>
+        <li>全く同じ動画を間を置かずに連続投稿→「類似」判定</li>
+      </ul>
+    </div>
+    <div class="warning-box">
+      <div class="warning-title">🔴 信頼・ブランド毀損系</div>
+      <ul>
+        <li><strong>逃げ道を塞いで強制クロージング</strong>→クレーム・ブランド毀損</li>
+        <li><strong>過度な危機感煽り</strong>（「まさかまだ〇〇してないよね？」）→品格の低下</li>
+        <li><strong>過去PR投稿を隠して数値偽装</strong>→クライアントとの信頼喪失</li>
+        <li><strong>意図的な炎上</strong>でエンゲージメント獲得→諸刃の剣</li>
+        <li>DIY動画に意図的な欠陥を残して炎上させる→品格を下げる</li>
+        <li>「すでに記載されているのにフォローしないともらえない」という釣りCTA</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight-box highlight-yellow" style="margin-top:16px;">
+    <h3>💡 リスクを避けるための原則</h3>
+    <p>エンパシーエコー（共感の連鎖）をテーマにした合宿の精神に則り、<strong>顧客との深い共感と誠実な価値提供</strong>をベースにしたセールス・発信を心がけることが長期的なブランド構築につながります。短期的な数字のハネより、信頼残高の積み上げを優先する。</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>箱根マスター合宿 2026年5月 — 全ナレッジまとめ</p>
+  <p style="margin-top:6px; font-size:12px;">このドキュメントは合宿で共有された一次情報をまとめたものです。会社全体の事業推進と生徒・クライアントの支援に積極的に活用してください。</p>
+</footer>
+
+</body>
+</html>

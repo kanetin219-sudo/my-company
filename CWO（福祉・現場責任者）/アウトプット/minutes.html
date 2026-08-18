@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐾 アネラカフェ 議事録作成</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/docx@8/build/index.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --text: #2C1F14;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(44,31,20,0.08);
+    }
+    body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Top */
+    .top-header { text-align: center; padding: 36px 20px 20px; }
+    .top-header h1 { font-family: 'DM Serif Display', serif; font-size: 1.7rem; color: var(--primary); line-height: 1.3; }
+    .top-header p { color: var(--text-soft); font-size: 0.85rem; margin-top: 8px; }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px 20px 40px; max-width: 600px; margin: 0 auto; }
+    .card-grid .card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px 16px; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
+    .card:hover, .card:active { border-color: var(--primary-light); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(201,106,59,0.15); }
+    .card .card-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .card .card-category { font-size: 0.68rem; color: var(--text-soft); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .card h2 { font-size: 0.98rem; font-weight: 700; line-height: 1.4; }
+
+    /* Form */
+    .form-screen { max-width: 700px; margin: 0 auto; padding-bottom: 120px; }
+    .form-header { background: var(--primary); color: white; padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+    .form-header .back-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 2px 6px; line-height: 1; }
+    .form-header h2 { font-size: 1rem; font-weight: 700; }
+    .form-body { padding: 16px 20px; }
+    .section-title { font-size: 0.75rem; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 2px solid var(--accent); padding-bottom: 4px; margin: 24px 0 14px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-soft); margin-bottom: 5px; }
+    .form-group label .req { color: var(--primary); }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 9px 11px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 0.93rem; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Task table */
+    .task-table-wrap { overflow-x: auto; border: 1.5px solid var(--border); border-radius: 8px; }
+    .task-table { width: 100%; border-collapse: collapse; min-width: 400px; }
+    .task-table th { background: var(--primary); color: white; font-size: 0.76rem; font-weight: 600; padding: 8px 6px; text-align: center; }
+    .task-table td { padding: 5px 4px; border-top: 1px solid var(--border); vertical-align: top; }
+    .task-table td input { width: 100%; padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.83rem; font-family: inherit; background: var(--surface); outline: none; }
+    .task-table td input:focus { border-color: var(--primary); }
+    .btn-add-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; background: none; border: 1.5px dashed var(--border); border-radius: 8px; color: var(--text-soft); font-size: 0.83rem; padding: 8px; cursor: pointer; width: 100%; font-family: inherit; transition: all 0.2s; }
+    .btn-add-row:hover { border-color: var(--primary-light); color: var(--primary); }
+
+    /* Next date */
+    .next-date-wrap { display: flex; align-items: center; gap: 12px; }
+    .next-date-wrap input[type="date"] { flex: 1; }
+    .check-label { display: flex; align-items: center; gap: 5px; font-size: 0.84rem; color: var(--text-soft); white-space: nowrap; cursor: pointer; }
+
+    /* Action bar */
+    .action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; box-shadow: 0 -4px 12px rgba(44,31,20,0.08); max-width: 700px; margin: 0 auto; }
+    .btn { padding: 11px 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; font-family: inherit; cursor: pointer; border: none; transition: all 0.2s; text-align: center; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--primary); }
+    .btn-accent { background: var(--accent); color: white; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(44,31,20,0.55); z-index: 100; overflow-y: auto; padding: 20px; align-items: flex-start; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: white; border-radius: var(--radius); max-width: 640px; width: 100%; overflow: hidden; margin: auto; }
+    .modal-header { background: var(--accent); color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 1rem; }
+    .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+    .modal-body { padding: 20px; font-size: 0.87rem; line-height: 1.8; }
+    .preview-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    .preview-table th { background: #f5f0ea; font-weight: 600; text-align: left; padding: 7px 10px; border: 1px solid #ddd; width: 28%; vertical-align: top; white-space: nowrap; }
+    .preview-table td { padding: 7px 10px; border: 1px solid #ddd; vertical-align: top; }
+    .prev-section { font-weight: 700; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 4px; margin: 16px 0 8px; font-size: 0.88rem; }
+    .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--accent); color: white; padding: 9px 20px; border-radius: 20px; font-size: 0.84rem; opacity: 0; transition: all 0.3s; z-index: 200; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== TOP SCREEN ===== -->
+<div id="screen-top" class="screen active">
+  <div class="top-header">
+    <h1>🐾 アネラカフェ<br>議事録作成</h1>
+    <p>種類を選んでフォームに入力してください</p>
+  </div>
+  <div class="card-grid">
+    <div class="card" onclick="openForm('infection-committee')">
+      <div class="card-icon">🦠</div>
+      <div class="card-category">委員会</div>
+      <h2>感染症対策<br>委員会</h2>
+    </div>
+    <div class="card" onclick="openForm('abuse-committee')">
+      <div class="card-icon">🛡️</div>
+      <div class="card-category">委員会</div>
+      <h2>虐待防止<br>委員会</h2>
+    </div>
+    <div class="card" onclick="openForm('restraint-committee')">
+      <div class="card-icon">🤝</div>
+      <div class="card-category">委員会</div>
+      <h2>身体拘束<br>委員会</h2>
+    </div>
+    <div class="card" onclick="openForm('bcp-training')">
+      <div class="card-icon">📋</div>
+      <div class="card-category">訓練</div>
+      <h2>BCP訓練<br>議事録</h2>
+    </div>
+    <div class="card" onclick="openForm('infection-training')">
+      <div class="card-icon">💉</div>
+      <div class="card-category">訓練</div>
+      <h2>感染症対策<br>訓練議事録</h2>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COMMITTEE FORM ===== -->
+<div id="screen-committee" class="screen">
+  <div class="form-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <h2 id="committee-title">感染症対策委員会 議事録</h2>
+  </div>
+  <div class="form-screen">
+    <div class="form-body">
+      <div class="section-title">基本情報</div>
+      <div class="form-group">
+        <label>事業所名 <span class="req">*</span></label>
+        <input type="text" id="c-facility" placeholder="例：アネラカフェ" oninput="saveFacilityName('c-facility')">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>開催日 <span class="req">*</span></label>
+          <input type="date" id="c-date" onchange="updateWeekday('c-date','c-weekday')">
+        </div>
+        <div class="form-group">
+          <label>曜日</label>
+          <input type="text" id="c-weekday" readonly placeholder="自動入力">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>開始時間 <span class="req">*</span></label>
+          <select id="c-start"></select>
+        </div>
+        <div class="form-group">
+          <label>終了時間 <span class="req">*</span></label>
+          <select id="c-end"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>会場 <span class="req">*</span></label>
+        <input type="text" id="c-venue" value="事務所">
+      </div>
+      <div class="form-group">
+        <label>出席者 <span class="req">*</span></label>
+        <input type="text" id="c-attendees" placeholder="スペース区切り（例：田中 鈴木 佐藤）">
+      </div>
+      <div class="form-group">
+        <label>欠席者</label>
+        <input type="text" id="c-absent" placeholder="任意">
+      </div>
+      <div class="form-group">
+        <label>議題・報告 <span class="req">*</span></label>
+        <textarea id="c-agenda" placeholder="箇条書きで入力&#10;例：・訓練の振り返り&#10;・マニュアルの確認"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>司会 <span class="req">*</span></label>
+          <input type="text" id="c-chair" placeholder="氏名">
+        </div>
+        <div class="form-group">
+          <label>書記 <span class="req">*</span></label>
+          <input type="text" id="c-secretary" placeholder="氏名">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>決定事項・協議内容 <span class="req">*</span></label>
+        <textarea id="c-decisions" placeholder="協議内容・決定事項を入力" style="min-height:120px"></textarea>
+      </div>
+
+      <div class="section-title">課題・行動目標</div>
+      <div class="task-table-wrap">
+        <table class="task-table">
+          <thead>
+            <tr>
+              <th style="width:30%">課題</th>
+              <th style="width:30%">行動目標</th>
+              <th style="width:20%">担当</th>
+              <th style="width:20%">期日</th>
+            </tr>
+          </thead>
+          <tbody id="task-body">
+            <tr>
+              <td><input type="text" placeholder="課題"></td>
+              <td><input type="text" placeholder="行動目標"></td>
+              <td><input type="text" placeholder="担当者"></td>
+              <td><input type="date"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn-add-row" id="btn-add-task" onclick="addTaskRow()">＋ 行を追加（最大4行）</button>
+
+      <div class="section-title">その他</div>
+      <div class="form-group">
+        <label>配布先</label>
+        <input type="text" id="c-distribution" value="参加者全員">
+      </div>
+      <div class="form-group">
+        <label>次回開催日</label>
+        <div class="next-date-wrap">
+          <input type="date" id="c-next-date">
+          <label class="check-label">
+            <input type="checkbox" id="c-next-tbd" onchange="toggleNextDate()"> 未定
+          </label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>作成日 <span class="req">*</span></label>
+          <input type="date" id="c-created">
+        </div>
+        <div class="form-group">
+          <label>作成者 <span class="req">*</span></label>
+          <input type="text" id="c-author" placeholder="氏名">
+        </div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-secondary" onclick="saveDraft()">💾 下書き保存</button>
+      <button class="btn btn-secondary" onclick="resetForm()">🔄 リセット</button>
+      <button class="btn btn-secondary" onclick="showPreview()">👁 プレビュー</button>
+      <button class="btn btn-primary" onclick="generateWord()">📄 Word生成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TRAINING FORM ===== -->
+<div id="screen-training" class="screen">
+  <div class="form-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <h2 id="training-title">BCP訓練 議事録</h2>
+  </div>
+  <div class="form-screen">
+    <div class="form-body">
+      <div class="section-title">基本情報</div>
+      <div class="form-group">
+        <label>事業所名 <span class="req">*</span></label>
+        <input type="text" id="t-facility" placeholder="例：アネラカフェ" oninput="saveFacilityName('t-facility')">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>訓練日 <span class="req">*</span></label>
+          <input type="date" id="t-date">
+        </div>
+        <div class="form-group">
+          <label>場所 <span class="req">*</span></label>
+          <input type="text" id="t-venue" value="1階デイルーム">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>開始時間 <span class="req">*</span></label>
+          <select id="t-start"></select>
+        </div>
+        <div class="form-group">
+          <label>終了時間 <span class="req">*</span></label>
+          <select id="t-end"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>参加者 <span class="req">*</span></label>
+        <input type="text" id="t-attendees" placeholder="スペース区切りで入力">
+      </div>
+      <div class="form-group">
+        <label>訓練方法 <span class="req">*</span></label>
+        <select id="t-method">
+          <option>机上訓練</option>
+          <option>ワークショップ型</option>
+          <option>実地訓練</option>
+          <option>その他</option>
+        </select>
+      </div>
+
+      <div class="section-title">訓練内容</div>
+      <div class="form-group">
+        <label>目的・目標 <span class="req">*</span></label>
+        <textarea id="t-purpose" placeholder="訓練の目的・目標を入力"></textarea>
+      </div>
+      <div class="form-group">
+        <label>テーマ <span class="req">*</span></label>
+        <textarea id="t-theme" placeholder="訓練のテーマを入力"></textarea>
+      </div>
+      <div class="form-group">
+        <label>被害想定<span id="t-damage-req"></span></label>
+        <input type="text" id="t-damage" placeholder="BCP訓練：必須 / 感染症訓練：任意（想定なし等）">
+      </div>
+      <div class="form-group">
+        <label>シナリオ</label>
+        <textarea id="t-scenario" placeholder="箇条書きで入力（任意）"></textarea>
+      </div>
+      <div class="form-group">
+        <label>課題・内容 <span class="req">*</span></label>
+        <textarea id="t-issues" placeholder="箇条書きで入力" style="min-height:120px"></textarea>
+      </div>
+
+      <div class="section-title">写真・総括</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>写真①キャプション</label>
+          <input type="text" id="t-photo1" placeholder="任意">
+        </div>
+        <div class="form-group">
+          <label>写真②キャプション</label>
+          <input type="text" id="t-photo2" placeholder="任意">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>総括 <span class="req">*</span></label>
+        <textarea id="t-summary" placeholder="訓練の総括を入力" style="min-height:100px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>参考文献</label>
+        <textarea id="t-references" placeholder="任意"></textarea>
+      </div>
+
+      <div class="section-title">作成情報</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>作成日 <span class="req">*</span></label>
+          <input type="date" id="t-created">
+        </div>
+        <div class="form-group">
+          <label>作成者 <span class="req">*</span></label>
+          <input type="text" id="t-author" placeholder="氏名">
+        </div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-secondary" onclick="saveDraft()">💾 下書き保存</button>
+      <button class="btn btn-secondary" onclick="resetForm()">🔄 リセット</button>
+      <button class="btn btn-secondary" onclick="showPreview()">👁 プレビュー</button>
+      <button class="btn btn-primary" onclick="generateWord()">📄 Word生成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PREVIEW MODAL ===== -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>📄 プレビュー</h3>
+      <button class="modal-close" onclick="closeModal('preview-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="preview-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('preview-modal')">閉じる</button>
+      <button class="btn btn-primary" onclick="closeModal('preview-modal');generateWord()">📄 Wordでダウンロード</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DRAFT MODAL ===== -->
+<div class="modal-overlay" id="draft-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>💾 下書きを復元しますか？</h3>
+      <button class="modal-close" onclick="closeModal('draft-modal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:24px 20px">
+      <p>前回の入力内容が保存されています。<br>復元して続きから入力しますか？</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('draft-modal')">新規入力</button>
+      <button class="btn btn-primary" onclick="restoreDraft()">復元する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+let currentType = '';
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  buildTimeOptions();
+  loadFacilityName();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('c-created').value = today;
+  document.getElementById('t-created').value = today;
+});
+
+// ==================== TIME OPTIONS ====================
+function buildTimeOptions() {
+  const times = [];
+  for (let h = 7; h <= 22; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      times.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+    }
+  }
+  ['c-start','c-end','t-start','t-end'].forEach((id, i) => {
+    const sel = document.getElementById(id);
+    times.forEach(t => {
+      const o = document.createElement('option');
+      o.value = o.textContent = t;
+      sel.appendChild(o);
+    });
+    sel.value = (i % 2 === 0) ? '13:00' : '14:00';
+  });
+}
+
+// ==================== WAREKI ====================
+function toWareki(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  const y = d.getFullYear(), mo = d.getMonth()+1, da = d.getDate();
+  const dows = ['日','月','火','水','木','金','土'];
+  const dow = dows[d.getDay()];
+  let era, ey;
+  if (y >= 2019 && (y > 2019 || mo > 4)) { era='令和'; ey=y-2018; }
+  else if (y >= 1989) { era='平成'; ey=y-1988; }
+  else { era=String(y); ey=''; }
+  const eyStr = ey === 1 ? '元' : String(ey);
+  return {
+    full: `${era}${eyStr}年${mo}月${da}日（${dow}）`,
+    short: `${era}${eyStr}年${mo}月${da}日`,
+    era, ey, mo, da, dow
+  };
+}
+
+function updateWeekday(dateId, wdId) {
+  const v = document.getElementById(dateId).value;
+  const w = toWareki(v);
+  document.getElementById(wdId).value = w ? w.dow + '曜日' : '';
+}
+
+// ==================== FACILITY ====================
+function saveFacilityName(id) {
+  const v = document.getElementById(id).value;
+  if (v) localStorage.setItem('anella_facility', v);
+}
+function loadFacilityName() {
+  const n = localStorage.getItem('anella_facility');
+  if (n) {
+    document.getElementById('c-facility').value = n;
+    document.getElementById('t-facility').value = n;
+  }
+}
+
+// ==================== NAVIGATION ====================
+const FORM_NAMES = {
+  'infection-committee': '感染症対策委員会 議事録',
+  'abuse-committee':     '虐待防止委員会 議事録',
+  'restraint-committee': '身体拘束委員会 議事録',
+  'bcp-training':        'BCP訓練 議事録',
+  'infection-training':  '感染症対策訓練 議事録',
+};
+
+function openForm(type) {
+  currentType = type;
+  const isTraining = type.includes('training');
+  if (isTraining) {
+    document.getElementById('training-title').textContent = FORM_NAMES[type];
+    showScreen('screen-training');
+  } else {
+    document.getElementById('committee-title').textContent = FORM_NAMES[type];
+    showScreen('screen-committee');
+  }
+  const draftKey = `anella_draft_${type}`;
+  if (localStorage.getItem(draftKey)) {
+    openModal('draft-modal');
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  showScreen('screen-top');
+}
+
+// ==================== TASK ROWS ====================
+function addTaskRow() {
+  const tbody = document.getElementById('task-body');
+  const count = tbody.querySelectorAll('tr').length;
+  if (count >= 4) { showToast('最大4行までやが！'); return; }
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="課題"></td>
+    <td><input type="text" placeholder="行動目標"></td>
+    <td><input type="text" placeholder="担当者"></td>
+    <td><input type="date"></td>`;
+  tbody.appendChild(tr);
+  if (tbody.querySelectorAll('tr').length >= 4) {
+    document.getElementById('btn-add-task').style.display = 'none';
+  }
+}
+
+function getTaskData() {
+  return Array.from(document.getElementById('task-body').querySelectorAll('tr')).map(row => {
+    const inp = row.querySelectorAll('input');
+    return { issue: inp[0].value, goal: inp[1].value, person: inp[2].value, date: inp[3].value };
+  });
+}
+
+function toggleNextDate() {
+  const tbd = document.getElementById('c-next-tbd').checked;
+  const nd = document.getElementById('c-next-date');
+  nd.disabled = tbd;
+  if (tbd) nd.value = '';
+}
+
+// ==================== FORM DATA ====================
+function getCommitteeData() {
+  return {
+    facility: document.getElementById('c-facility').value,
+    date:     document.getElementById('c-date').value,
+    start:    document.getElementById('c-start').value,
+    end:      document.getElementById('c-end').value,
+    venue:    document.getElementById('c-venue').value,
+    attendees:document.getElementById('c-attendees').value,
+    absent:   document.getElementById('c-absent').value,
+    agenda:   document.getElementById('c-agenda').value,
+    chair:    document.getElementById('c-chair').value,
+    secretary:document.getElementById('c-secretary').value,
+    decisions:document.getElementById('c-decisions').value,
+    distribution: document.getElementById('c-distribution').value,
+    nextDate: document.getElementById('c-next-date').value,
+    nextTbd:  document.getElementById('c-next-tbd').checked,
+    created:  document.getElementById('c-created').value,
+    author:   document.getElementById('c-author').value,
+    tasks:    getTaskData(),
+  };
+}
+
+function getTrainingData() {
+  return {
+    facility:   document.getElementById('t-facility').value,
+    date:       document.getElementById('t-date').value,
+    start:      document.getElementById('t-start').value,
+    end:        document.getElementById('t-end').value,
+    venue:      document.getElementById('t-venue').value,
+    attendees:  document.getElementById('t-attendees').value,
+    method:     document.getElementById('t-method').value,
+    purpose:    document.getElementById('t-purpose').value,
+    theme:      document.getElementById('t-theme').value,
+    damage:     document.getElementById('t-damage').value,
+    scenario:   document.getElementById('t-scenario').value,
+    issues:     document.getElementById('t-issues').value,
+    photo1:     document.getElementById('t-photo1').value,
+    photo2:     document.getElementById('t-photo2').value,
+    summary:    document.getElementById('t-summary').value,
+    references: document.getElementById('t-references').value,
+    created:    document.getElementById('t-created').value,
+    author:     document.getElementById('t-author').value,
+  };
+}
+
+// ==================== DRAFT ====================
+function saveDraft() {
+  const isTraining = currentType.includes('training');
+  const data = isTraining ? getTrainingData() : getCommitteeData();
+  localStorage.setItem(`anella_draft_${currentType}`, JSON.stringify(data));
+  showToast('下書きを保存したっちゃ 💾');
+}
+
+function restoreDraft() {
+  closeModal('draft-modal');
+  const raw = localStorage.getItem(`anella_draft_${currentType}`);
+  if (!raw) return;
+  const d = JSON.parse(raw);
+  const isTraining = currentType.includes('training');
+  if (isTraining) applyTrainingData(d);
+  else applyCommitteeData(d);
+  showToast('前回の入力内容を復元したっちゃ！');
+}
+
+function applyCommitteeData(d) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  set('c-facility', d.facility); set('c-date', d.date);
+  if (d.date) updateWeekday('c-date','c-weekday');
+  set('c-start', d.start || '13:00'); set('c-end', d.end || '14:00');
+  set('c-venue', d.venue || '事務所'); set('c-attendees', d.attendees);
+  set('c-absent', d.absent); set('c-agenda', d.agenda);
+  set('c-chair', d.chair); set('c-secretary', d.secretary);
+  set('c-decisions', d.decisions); set('c-distribution', d.distribution || '参加者全員');
+  set('c-next-date', d.nextDate); set('c-created', d.created); set('c-author', d.author);
+  document.getElementById('c-next-tbd').checked = !!d.nextTbd;
+  if (d.nextTbd) document.getElementById('c-next-date').disabled = true;
+  if (d.tasks && d.tasks.length) {
+    const tbody = document.getElementById('task-body');
+    tbody.innerHTML = '';
+    d.tasks.forEach(t => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" value="${esc(t.issue)}" placeholder="課題"></td>
+        <td><input type="text" value="${esc(t.goal)}" placeholder="行動目標"></td>
+        <td><input type="text" value="${esc(t.person)}" placeholder="担当者"></td>
+        <td><input type="date" value="${t.date||''}"></td>`;
+      tbody.appendChild(tr);
+    });
+    if (d.tasks.length >= 4) document.getElementById('btn-add-task').style.display = 'none';
+  }
+}
+
+function applyTrainingData(d) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  set('t-facility', d.facility); set('t-date', d.date);
+  set('t-start', d.start || '13:00'); set('t-end', d.end || '14:00');
+  set('t-venue', d.venue || '1階デイルーム'); set('t-attendees', d.attendees);
+  set('t-method', d.method || '机上訓練'); set('t-purpose', d.purpose);
+  set('t-theme', d.theme); set('t-damage', d.damage); set('t-scenario', d.scenario);
+  set('t-issues', d.issues); set('t-photo1', d.photo1); set('t-photo2', d.photo2);
+  set('t-summary', d.summary); set('t-references', d.references);
+  set('t-created', d.created); set('t-author', d.author);
+}
+
+// ==================== RESET ====================
+function resetForm() {
+  if (!confirm('入力内容をすべてリセットしますか？')) return;
+  const today = new Date().toISOString().split('T')[0];
+  const facility = localStorage.getItem('anella_facility') || '';
+  const isTraining = currentType.includes('training');
+  if (!isTraining) {
+    document.getElementById('c-facility').value = facility;
+    ['c-date','c-absent','c-attendees','c-agenda','c-chair','c-secretary','c-decisions','c-next-date','c-author'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('c-start').value = '13:00';
+    document.getElementById('c-end').value = '14:00';
+    document.getElementById('c-venue').value = '事務所';
+    document.getElementById('c-distribution').value = '参加者全員';
+    document.getElementById('c-next-tbd').checked = false;
+    document.getElementById('c-next-date').disabled = false;
+    document.getElementById('c-created').value = today;
+    document.getElementById('c-weekday').value = '';
+    document.getElementById('task-body').innerHTML = `<tr>
+      <td><input type="text" placeholder="課題"></td>
+      <td><input type="text" placeholder="行動目標"></td>
+      <td><input type="text" placeholder="担当者"></td>
+      <td><input type="date"></td></tr>`;
+    document.getElementById('btn-add-task').style.display = '';
+  } else {
+    document.getElementById('t-facility').value = facility;
+    ['t-date','t-attendees','t-purpose','t-theme','t-damage','t-scenario','t-issues','t-photo1','t-photo2','t-summary','t-references','t-author'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('t-start').value = '13:00';
+    document.getElementById('t-end').value = '14:00';
+    document.getElementById('t-venue').value = '1階デイルーム';
+    document.getElementById('t-method').value = '机上訓練';
+    document.getElementById('t-created').value = today;
+  }
+  showToast('リセットしたっちゃ');
+}
+
+// ==================== PREVIEW ====================
+function showPreview() {
+  const isTraining = currentType.includes('training');
+  let html = '';
+  if (!isTraining) {
+    const d = getCommitteeData();
+    const dW = toWareki(d.date), nW = toWareki(d.nextDate), cW = toWareki(d.created);
+    const cname = committeeShortName(currentType);
+    html = `<div class="prev-section">${FORM_NAMES[currentType]}</div>
+      <table class="preview-table">
+        <tr><th>名称</th><td>${esc(d.facility)} ${cname}</td></tr>
+        <tr><th>日時</th><td>${dW?dW.full:''} ${esc(d.start)}～${esc(d.end)}</td></tr>
+        <tr><th>会場</th><td>${esc(d.venue)}</td></tr>
+        <tr><th>出席者</th><td>${esc(d.attendees)}</td></tr>
+        <tr><th>欠席者</th><td>${esc(d.absent)}</td></tr>
+        <tr><th>議題・報告</th><td style="white-space:pre-wrap">${esc(d.agenda)}</td></tr>
+      </table>
+      <div class="prev-section">決定事項・協議内容</div>
+      <p>司会：${esc(d.chair)}　書記：${esc(d.secretary)}</p>
+      <p style="white-space:pre-wrap;margin-top:6px">${esc(d.decisions)}</p>`;
+    const tasks = d.tasks.filter(t => t.issue || t.goal || t.person);
+    if (tasks.length) {
+      html += `<div class="prev-section">課題・行動目標</div>
+        <table class="preview-table">
+          <tr><th style="width:28%">課題</th><th style="width:28%">行動目標</th><th style="width:22%">担当</th><th style="width:22%">期日</th></tr>
+          ${tasks.map(t => `<tr><td>${esc(t.issue)}</td><td>${esc(t.goal)}</td><td>${esc(t.person)}</td><td>${t.date?(toWareki(t.date)||{short:''}).short:''}</td></tr>`).join('')}
+        </table>`;
+    }
+    html += `<div class="prev-section">その他</div>
+      <table class="preview-table">
+        <tr><th>配布先</th><td>${esc(d.distribution)}</td></tr>
+        <tr><th>次回開催</th><td>${d.nextTbd?'未定':nW?nW.short:''}</td></tr>
+        <tr><th>作成日</th><td>${cW?cW.short:''}</td></tr>
+        <tr><th>作成者</th><td>${esc(d.author)}</td></tr>
+      </table>`;
+  } else {
+    const d = getTrainingData();
+    const dW = toWareki(d.date), cW = toWareki(d.created);
+    html = `<div class="prev-section">${FORM_NAMES[currentType]}</div>
+      <table class="preview-table">
+        <tr><th>事業所名</th><td>${esc(d.facility)}</td></tr>
+        <tr><th>訓練日時</th><td>${dW?dW.full:''} ${esc(d.start)}～${esc(d.end)}</td></tr>
+        <tr><th>場所</th><td>${esc(d.venue)}</td></tr>
+        <tr><th>参加者</th><td>${esc(d.attendees)}</td></tr>
+        <tr><th>訓練方法</th><td>${esc(d.method)}</td></tr>
+      </table>
+      <div class="prev-section">訓練内容</div>
+      <table class="preview-table">
+        <tr><th>目的・目標</th><td style="white-space:pre-wrap">${esc(d.purpose)}</td></tr>
+        <tr><th>テーマ</th><td style="white-space:pre-wrap">${esc(d.theme)}</td></tr>
+        ${d.damage?`<tr><th>被害想定</th><td>${esc(d.damage)}</td></tr>`:''}
+        ${d.scenario?`<tr><th>シナリオ</th><td style="white-space:pre-wrap">${esc(d.scenario)}</td></tr>`:''}
+        <tr><th>課題・内容</th><td style="white-space:pre-wrap">${esc(d.issues)}</td></tr>
+      </table>
+      ${d.photo1||d.photo2?`<div class="prev-section">写真</div><p>${d.photo1?'写真①：'+esc(d.photo1)+'<br>':''}${d.photo2?'写真②：'+esc(d.photo2):''}</p>`:''}
+      <div class="prev-section">総括</div>
+      <p style="white-space:pre-wrap">${esc(d.summary)}</p>
+      ${d.references?`<div class="prev-section">参考文献</div><p style="white-space:pre-wrap">${esc(d.references)}</p>`:''}
+      <div class="prev-section">作成情報</div>
+      <table class="preview-table">
+        <tr><th>作成日</th><td>${cW?cW.short:''}</td></tr>
+        <tr><th>作成者</th><td>${esc(d.author)}</td></tr>
+      </table>`;
+  }
+  document.getElementById('preview-content').innerHTML = html;
+  openModal('preview-modal');
+}
+
+// ==================== WORD GENERATION ====================
+function committeeShortName(type) {
+  const m = {'infection-committee':'感染症対策委員会','abuse-committee':'虐待防止委員会','restraint-committee':'身体拘束委員会'};
+  return m[type] || '';
+}
+
+async function generateWord() {
+  try {
+    if (currentType.includes('training')) await buildTrainingWord();
+    else await buildCommitteeWord();
+  } catch(e) {
+    console.error(e);
+    alert('Word生成中にエラーが発生したっちゃ：' + e.message);
+  }
+}
+
+async function buildCommitteeWord() {
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          AlignmentType, WidthType, BorderStyle, VerticalAlign,
+          convertMillimetersToTwip } = docx;
+
+  const d = getCommitteeData();
+  const dW   = toWareki(d.date)    || { full:'', short:'' };
+  const nW   = toWareki(d.nextDate) || { short:'　年　月　日' };
+  const cW   = toWareki(d.created)  || { short:'' };
+  const cname = committeeShortName(currentType);
+
+  const bAll = (color='000000', sz=4) => ({
+    top:    { style: BorderStyle.SINGLE, size: sz, color },
+    bottom: { style: BorderStyle.SINGLE, size: sz, color },
+    left:   { style: BorderStyle.SINGLE, size: sz, color },
+    right:  { style: BorderStyle.SINGLE, size: sz, color },
+  });
+
+  const mm = convertMillimetersToTwip;
+  const JP = 'MS Mincho';
+  const sz = 20; // 10pt
+
+  const mkLabel = (lines) => new TableCell({
+    children: (Array.isArray(lines) ? lines : [lines]).map(t =>
+      new Paragraph({ children: [new TextRun({ text: t, bold: true, size: sz, font: JP })], alignment: AlignmentType.CENTER })
+    ),
+    borders: bAll(),
+    width: { size: 2200, type: WidthType.DXA },
+    verticalAlign: VerticalAlign.CENTER,
+    shading: { fill: 'EEEEEE' },
+  });
+
+  const mkValue = (text, multiline = false) => {
+    const lines = multiline ? (text || '').split('\n') : [text || ''];
+    return new TableCell({
+      children: lines.map(l => new Paragraph({ children: [new TextRun({ text: l, size: sz, font: JP })] })),
+      borders: bAll(),
+      width: { size: 7200, type: WidthType.DXA },
+      verticalAlign: VerticalAlign.CENTER,
+    });
+  };
+
+  const infoTable = new Table({
+    width: { size: 9400, type: WidthType.DXA },
+    rows: [
+      new TableRow({ children: [mkLabel('名　称'), mkValue(`${d.facility}　${cname}`)] }),
+      new TableRow({ children: [mkLabel('日　時'), mkValue(`${dW.full}　${d.start}～${d.end}`)] }),
+      new TableRow({ children: [mkLabel('会　場'), mkValue(d.venue)] }),
+      new TableRow({ children: [mkLabel('出席者'), mkValue(d.attendees)] }),
+      new TableRow({ children: [mkLabel('欠席者'), mkValue(d.absent || '')] }),
+      new TableRow({ children: [mkLabel(['議題及び','報　告']), mkValue(d.agenda, true)] }),
+    ],
+  });
+
+  const minutesTitle = new Paragraph({
+    children: [new TextRun({ text: '議　事　録', bold: true, size: 28, font: JP })],
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 240, after: 120 },
+    border: {
+      bottom: { style: BorderStyle.SINGLE, size: 6, color: '000000' },
+    },
+  });
+
+  const decisionsHeader = new Paragraph({
+    children: [new TextRun({ text: '◆ 決定事項及び協議', bold: true, size: 22, font: JP })],
+    spacing: { before: 160, after: 60 },
+  });
+
+  const chairLine = new Paragraph({
+    children: [new TextRun({ text: `司会：${d.chair}　　書記：${d.secretary}`, size: sz, font: JP })],
+    spacing: { after: 60 },
+  });
+
+  const agendaLabel = new Paragraph({
+    children: [new TextRun({ text: '【議　題】', bold: true, size: sz, font: JP })],
+    spacing: { before: 80, after: 40 },
+  });
+
+  const decisionParas = (d.decisions || '').split('\n').map(line =>
+    new Paragraph({ children: [new TextRun({ text: line, size: sz, font: JP })] })
+  );
+
+  const taskHdrRow = new TableRow({
+    children: ['課　題','行動目標','担　当','期　日'].map((label, i) => new TableCell({
+      children: [new Paragraph({ children: [new TextRun({ text: label, bold: true, size: 18, font: JP })], alignment: AlignmentType.CENTER })],
+      borders: bAll(),
+      shading: { fill: 'D8D8D8' },
+      width: { size: [2820,2820,1880,1880][i], type: WidthType.DXA },
+    })),
+  });
+
+  const tasks = [...d.tasks];
+  while (tasks.length < 2) tasks.push({ issue:'', goal:'', person:'', date:'' });
+  const taskDataRows = tasks.map(t => {
+    const tdW = toWareki(t.date);
+    return new TableRow({
+      children: [
+        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: t.issue||'', size: 18, font: JP })] })], borders: bAll(), width: { size: 2820, type: WidthType.DXA } }),
+        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: t.goal||'', size: 18, font: JP })] })], borders: bAll(), width: { size: 2820, type: WidthType.DXA } }),
+        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: t.person||'', size: 18, font: JP })], alignment: AlignmentType.CENTER })], borders: bAll(), width: { size: 1880, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER }),
+        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: tdW?tdW.short:'', size: 18, font: JP })], alignment: AlignmentType.CENTER })], borders: bAll(), width: { size: 1880, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER }),
+      ],
+    });
+  });
+
+  const taskTable = new Table({
+    width: { size: 9400, type: WidthType.DXA },
+    rows: [taskHdrRow, ...taskDataRows],
+  });
+
+  const nextStr = d.nextTbd ? '未定' : (nW.short || '　　年　月　日');
+  const footerParas = [
+    new Paragraph({ children: [new TextRun({ text: `配布先：${d.distribution||'参加者全員'}`, size: sz, font: JP })], spacing: { before: 240 } }),
+    new Paragraph({ children: [new TextRun({ text: `次回開催：${nextStr}`, size: sz, font: JP })] }),
+    new Paragraph({ children: [new TextRun({ text: `作成日：${cW.short||''}`, size: sz, font: JP })] }),
+    new Paragraph({ children: [new TextRun({ text: `作成者：${d.author||''}`, size: sz, font: JP })] }),
+  ];
+
+  const doc = new Document({
+    sections: [{
+      properties: { page: { margin: { top: mm(20), right: mm(18), bottom: mm(20), left: mm(25) } } },
+      children: [
+        new Paragraph({ children: [new TextRun({ text: '', size: sz })], spacing: { after: 80 } }),
+        infoTable,
+        minutesTitle,
+        decisionsHeader,
+        chairLine,
+        agendaLabel,
+        ...decisionParas,
+        new Paragraph({ children: [new TextRun({ text: '', size: sz })], spacing: { before: 240 } }),
+        taskTable,
+        ...footerParas,
+      ],
+    }],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const ds = d.date ? d.date.replace(/-/g,'') : 'nodate';
+  dlBlob(blob, `${cname}_議事録_${ds}.docx`);
+  showToast(`「${cname}_議事録_${ds}.docx」を生成したっちゃ！`);
+}
+
+async function buildTrainingWord() {
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          AlignmentType, WidthType, BorderStyle, VerticalAlign,
+          convertMillimetersToTwip } = docx;
+
+  const d = getTrainingData();
+  const dW = toWareki(d.date)    || { full:'' };
+  const cW = toWareki(d.created) || { short:'' };
+  const tname = currentType === 'bcp-training' ? 'BCP訓練' : '感染症対策訓練';
+  const mm = convertMillimetersToTwip;
+  const JP = 'MS Mincho';
+  const sz = 20;
+
+  const bAll = (color='000000', siz=4) => ({
+    top: { style: BorderStyle.SINGLE, size: siz, color },
+    bottom: { style: BorderStyle.SINGLE, size: siz, color },
+    left: { style: BorderStyle.SINGLE, size: siz, color },
+    right: { style: BorderStyle.SINGLE, size: siz, color },
+  });
+
+  const mkRow = (label, text, multiline=false) => {
+    const lines = multiline ? (text||'').split('\n') : [text||''];
+    return new TableRow({
+      children: [
+        new TableCell({
+          children: [new Paragraph({ children: [new TextRun({ text: label, bold: true, size: sz, font: JP })], alignment: AlignmentType.CENTER })],
+          borders: bAll(), shading: { fill: 'EEEEEE' }, width: { size: 2300, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
+        }),
+        new TableCell({
+          children: lines.map(l => new Paragraph({ children: [new TextRun({ text: l, size: sz, font: JP })] })),
+          borders: bAll(), width: { size: 7100, type: WidthType.DXA },
+        }),
+      ],
+    });
+  };
+
+  const mkTable = (rows) => new Table({ width: { size: 9400, type: WidthType.DXA }, rows });
+  const mkH = (text) => new Paragraph({
+    children: [new TextRun({ text, bold: true, size: 22, font: JP })],
+    spacing: { before: 240, after: 80 },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '000000' } },
+  });
+
+  const children = [
+    new Paragraph({
+      children: [new TextRun({ text: `${d.facility}　${tname} 議事録`, bold: true, size: 28, font: JP })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 240 },
+    }),
+    mkH('【基本情報】'),
+    mkTable([
+      mkRow('事業所名', d.facility),
+      mkRow('訓練日時', `${dW.full}　${d.start}～${d.end}`),
+      mkRow('場　所', d.venue),
+      mkRow('参加者', d.attendees),
+      mkRow('訓練方法', d.method),
+    ]),
+    mkH('【訓練内容】'),
+  ];
+
+  const contentRows = [
+    mkRow('目的・目標', d.purpose, true),
+    mkRow('テーマ', d.theme, true),
+  ];
+  if (d.damage) contentRows.push(mkRow('被害想定', d.damage));
+  if (d.scenario) contentRows.push(mkRow('シナリオ', d.scenario, true));
+  contentRows.push(mkRow('課題・内容', d.issues, true));
+  children.push(mkTable(contentRows));
+
+  if (d.photo1 || d.photo2) {
+    children.push(mkH('【写真】'));
+    const photoRows = [];
+    if (d.photo1) photoRows.push(mkRow('写真①', d.photo1));
+    if (d.photo2) photoRows.push(mkRow('写真②', d.photo2));
+    children.push(mkTable(photoRows));
+  }
+
+  children.push(mkH('【総括】'));
+  const summaryRows = [mkRow('総　括', d.summary, true)];
+  if (d.references) summaryRows.push(mkRow('参考文献', d.references, true));
+  children.push(mkTable(summaryRows));
+
+  children.push(mkH('【作成情報】'));
+  children.push(mkTable([mkRow('作成日', cW.short||''), mkRow('作成者', d.author||'')]));
+
+  const doc = new Document({
+    sections: [{
+      properties: { page: { margin: { top: mm(20), right: mm(18), bottom: mm(20), left: mm(25) } } },
+      children,
+    }],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const ds = d.date ? d.date.replace(/-/g,'') : 'nodate';
+  dlBlob(blob, `${tname}_議事録_${ds}.docx`);
+  showToast(`「${tname}_議事録_${ds}.docx」を生成したっちゃ！`);
+}
+
+// ==================== UTILS ====================
+function dlBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>トリミング予約 | ANELLA CAFE 大分店</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --accent-light: #6FA898;
+      --text: #2C1F14;
+      --text-mid: #6B4F3A;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --shadow: rgba(150, 80, 30, 0.12);
+      --warn: #D4502A;
+      --warn-bg: #FFF3EE;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 16px; line-height: 1.7; min-height: 100vh; }
+
+    /* ── ヘッダー ── */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px var(--shadow); }
+    .header-logo { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--primary); letter-spacing: 0.08em; }
+    .header-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+
+    /* ── プログレス ── */
+    .progress-bar { display: flex; align-items: center; justify-content: center; padding: 16px 12px 8px; gap: 4px; overflow-x: auto; }
+    .progress-step { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 44px; }
+    .progress-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); color: var(--text-soft); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .progress-dot.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .progress-dot.done { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .progress-label { font-size: 10px; color: var(--text-soft); text-align: center; white-space: nowrap; }
+    .progress-label.active { color: var(--primary); font-weight: 700; }
+    .progress-connector { width: 20px; height: 2px; background: var(--border); margin-bottom: 16px; flex-shrink: 0; }
+    .progress-connector.done { background: var(--accent); }
+
+    /* ── コンテナ ── */
+    .container { max-width: 640px; margin: 0 auto; padding: 20px 16px 80px; }
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* ── カード ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 16px; box-shadow: 0 2px 8px var(--shadow); }
+    .step-heading { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--primary); margin-bottom: 6px; }
+    .step-desc { font-size: 13px; color: var(--text-soft); margin-bottom: 20px; }
+
+    /* ── フィールド ── */
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    label.field-label { display: block; font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 6px; }
+    .req { color: var(--warn); font-size: 11px; margin-left: 4px; }
+    .opt { color: var(--text-soft); font-size: 11px; margin-left: 4px; font-weight: 400; }
+    select, input[type="text"], input[type="tel"], input[type="email"], textarea {
+      width: 100%; padding: 13px 14px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Noto Sans JP', sans-serif; font-size: 16px; color: var(--text);
+      appearance: none; -webkit-appearance: none; outline: none; transition: border-color 0.2s;
+    }
+    select:focus, input:focus, textarea:focus { border-color: var(--primary-light); }
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '▼'; position: absolute; right: 13px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-soft); pointer-events: none; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* ── コース選択ボタン ── */
+    .course-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .course-btn { border: 2px solid var(--border); border-radius: 14px; padding: 22px 14px; background: var(--surface); cursor: pointer; text-align: center; transition: all 0.2s; }
+    .course-btn:hover { border-color: var(--primary-light); }
+    .course-btn.selected { border-color: var(--primary); background: var(--warn-bg); }
+    .course-btn-icon { font-size: 36px; margin-bottom: 8px; }
+    .course-btn-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .course-btn-price { font-size: 12px; color: var(--text-soft); }
+    .course-btn-tag { display: inline-block; font-size: 11px; background: var(--accent-light); color: #fff; border-radius: 4px; padding: 1px 6px; margin-top: 4px; }
+    .course-btn-includes { margin-top: 10px; text-align: left; font-size: 11px; color: var(--text-mid); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 8px; }
+
+    /* ── 料金表示 ── */
+    .price-display { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-top: 10px; display: none; }
+    .price-display.visible { display: block; }
+    .price-label { font-size: 12px; color: var(--text-soft); }
+    .price-value { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+    /* ── オプション ── */
+    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .option-item { display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+    .option-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+    .option-item:has(input:checked) { border-color: var(--primary); background: var(--warn-bg); }
+    .option-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+    .option-price { font-size: 12px; color: var(--primary); font-weight: 700; }
+
+    /* ── 合計金額 ── */
+    .total-bar { background: var(--primary); color: #fff; border-radius: 12px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+    .total-bar-label { font-size: 14px; opacity: 0.9; }
+    .total-bar-amount { font-size: 22px; font-weight: 700; }
+
+    /* ── スタッフ選択 ── */
+    .staff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .staff-btn { border: 2px solid var(--border); border-radius: 12px; padding: 14px 8px; background: var(--surface); cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
+    .staff-btn:hover { border-color: var(--primary-light); }
+    .staff-btn.selected { border-color: var(--primary); background: var(--warn-bg); color: var(--primary); }
+    .staff-btn-sub { font-size: 11px; color: var(--text-soft); font-weight: 400; margin-top: 3px; }
+    .staff-btn.selected .staff-btn-sub { color: var(--primary-light); }
+
+    /* ── カレンダー ── */
+    .calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .cal-nav-btn { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); cursor: pointer; font-size: 16px; color: var(--text-mid); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .cal-nav-btn:hover { background: var(--bg); }
+    .cal-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .cal-month { font-size: 16px; font-weight: 700; color: var(--text); }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-weekday { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-soft); padding: 4px 0; }
+    .cal-weekday.sun { color: #D4502A; }
+    .cal-weekday.sat { color: #4A7C6F; }
+    .cal-day { text-align: center; padding: 8px 4px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text); transition: all 0.2s; border: 2px solid transparent; min-height: 38px; display: flex; align-items: center; justify-content: center; }
+    .cal-day:hover:not(.disabled):not(.empty) { background: var(--warn-bg); border-color: var(--primary-light); }
+    .cal-day.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cal-day.today { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    .cal-day.today.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cal-day.disabled { color: var(--border); cursor: not-allowed; }
+    .cal-day.empty { cursor: default; }
+    .cal-day.sun:not(.disabled):not(.empty) { color: #D4502A; }
+    .cal-day.sat:not(.disabled):not(.empty) { color: #4A7C6F; }
+
+    /* ── 時間スロット ── */
+    .time-slots { margin-top: 14px; }
+    .time-slots-title { font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 8px; }
+    .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .time-btn { border: 2px solid var(--border); border-radius: 10px; padding: 12px 8px; background: var(--surface); cursor: pointer; text-align: center; font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); transition: all 0.2s; }
+    .time-btn:hover:not(.disabled) { border-color: var(--primary-light); }
+    .time-btn.selected { border-color: var(--primary); background: var(--warn-bg); color: var(--primary); }
+    .time-btn.disabled { background: var(--bg); color: var(--border); cursor: not-allowed; border-color: var(--border); text-decoration: line-through; }
+    .time-loading { text-align: center; color: var(--text-soft); font-size: 13px; padding: 16px; }
+
+    /* ── 注意事項 ── */
+    .notice-box { background: var(--warn-bg); border: 1px solid #F0C4B0; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+    .notice-item { font-size: 14px; color: var(--text); margin-bottom: 8px; line-height: 1.7; }
+    .notice-item:last-child { margin-bottom: 0; }
+    .notice-check { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+    .notice-check input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0; margin-top: 2px; }
+    .notice-check label { font-size: 14px; color: var(--text); line-height: 1.6; cursor: pointer; }
+    .privacy-box { background: #F0F8F6; border: 1px solid #C8E0DB; border-radius: 12px; padding: 16px; margin-bottom: 14px; font-size: 13px; color: var(--text-mid); line-height: 1.8; }
+    .privacy-box dt { font-weight: 700; color: var(--accent); margin-top: 6px; }
+    .privacy-agree { display: flex; gap: 10px; align-items: flex-start; }
+    .privacy-agree input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); flex-shrink: 0; margin-top: 2px; }
+    .privacy-agree label { font-size: 14px; color: var(--text); line-height: 1.6; cursor: pointer; }
+
+    /* ── ワクチン警告 ── */
+    .vaccine-warn { display: none; background: var(--warn-bg); border: 1px solid #F0C4B0; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn); margin-top: 8px; }
+    .vaccine-warn.active { display: block; }
+
+    /* ── 確認画面 ── */
+    .confirm-table { width: 100%; border-collapse: collapse; }
+    .confirm-table tr { border-bottom: 1px solid var(--border); }
+    .confirm-table tr:last-child { border-bottom: none; }
+    .confirm-table th { padding: 10px 12px; font-size: 13px; color: var(--text-soft); font-weight: 500; text-align: left; white-space: nowrap; width: 40%; }
+    .confirm-table td { padding: 10px 12px; font-size: 14px; color: var(--text); font-weight: 500; }
+    .confirm-total { margin-top: 16px; }
+
+    /* ── 完了画面 ── */
+    .complete-wrap { text-align: center; padding: 32px 16px; }
+    .complete-icon { font-size: 64px; margin-bottom: 16px; }
+    .complete-title { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--accent); margin-bottom: 8px; }
+    .complete-number { font-size: 14px; color: var(--text-soft); margin-bottom: 4px; }
+    .complete-number strong { font-size: 20px; color: var(--primary); font-weight: 700; letter-spacing: 0.05em; }
+    .complete-summary { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 20px 0; text-align: left; }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { color: var(--text-soft); }
+    .summary-value { font-weight: 700; color: var(--text); }
+    .line-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: #06C755; color: #fff; border: none; border-radius: 12px; font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; text-decoration: none; margin-top: 12px; }
+    .line-btn svg { width: 24px; height: 24px; fill: #fff; }
+
+    /* ── ナビボタン ── */
+    .nav-btns { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-back { flex: 1; padding: 15px; background: var(--surface); border: 2px solid var(--border); border-radius: 12px; font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-mid); cursor: pointer; transition: all 0.2s; }
+    .btn-back:hover { border-color: var(--primary-light); }
+    .btn-next { flex: 2; padding: 15px; background: var(--primary); border: none; border-radius: 12px; font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer; transition: all 0.1s; box-shadow: 0 4px 12px rgba(201, 106, 59, 0.3); }
+    .btn-next:active { transform: scale(0.98); }
+    .btn-next:disabled { background: #D0B49E; box-shadow: none; cursor: not-allowed; }
+    .btn-next.full { flex: 1; }
+
+    /* ── ローディング ── */
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(253, 246, 238, 0.88); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 15px; color: var(--text-mid); }
+
+    /* ── エラー ── */
+    .err-msg { display: none; background: var(--warn-bg); border: 1px solid #F0C4B0; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn); margin-top: 10px; }
+    .err-msg.active { display: block; }
+
+    /* ── 来店回数選択 ── */
+    .visit-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .visit-type-btn { border: 2px solid var(--border); border-radius: 14px; padding: 28px 14px; background: var(--surface); cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'Noto Sans JP', sans-serif; width: 100%; }
+    .visit-type-btn:hover { border-color: var(--primary-light); }
+    .visit-type-btn.selected { border-color: var(--primary); background: var(--warn-bg); }
+    .visit-type-icon { font-size: 36px; margin-bottom: 8px; }
+    .visit-type-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .visit-type-sub { font-size: 11px; color: var(--accent); background: #F0F8F6; border-radius: 4px; padding: 2px 8px; display: inline-block; margin-top: 4px; }
+    .lookup-result { background: #F0F8F6; border: 1px solid #C8E0DB; border-radius: 10px; padding: 14px; margin-top: 14px; font-size: 13px; display: none; }
+    .lookup-result.active { display: block; }
+    .returning-banner { background: #F0F8F6; border: 1px solid #C8E0DB; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: var(--accent); display: none; }
+    .returning-banner.active { display: block; }
+
+    @media (max-width: 420px) {
+      .course-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .option-grid { grid-template-columns: 1fr; }
+      .time-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">送信中...</div>
+</div>
+
+<div class="header">
+  <div class="header-logo">ANELLA CAFE</div>
+  <div class="header-sub">大分店 — トリミング予約</div>
+</div>
+
+<!-- プログレスバー -->
+<div class="progress-bar" id="progressBar" style="display:none;">
+  <div class="progress-step">
+    <div class="progress-dot active" id="dot1">1</div>
+    <div class="progress-label active" id="lbl1">コース</div>
+  </div>
+  <div class="progress-connector" id="con1"></div>
+  <div class="progress-step">
+    <div class="progress-dot" id="dot2">2</div>
+    <div class="progress-label" id="lbl2">犬種</div>
+  </div>
+  <div class="progress-connector" id="con2"></div>
+  <div class="progress-step">
+    <div class="progress-dot" id="dot3">3</div>
+    <div class="progress-label" id="lbl3">オプション</div>
+  </div>
+  <div class="progress-connector" id="con3"></div>
+  <div class="progress-step">
+    <div class="progress-dot" id="dot4">4</div>
+    <div class="progress-label" id="lbl4">日時</div>
+  </div>
+  <div class="progress-connector" id="con4"></div>
+  <div class="progress-step">
+    <div class="progress-dot" id="dot5">5</div>
+    <div class="progress-label" id="lbl5">情報</div>
+  </div>
+  <div class="progress-connector" id="con5"></div>
+  <div class="progress-step">
+    <div class="progress-dot" id="dot6">6</div>
+    <div class="progress-label" id="lbl6">確認</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ===== STEP 0: 来店回数選択 ===== -->
+  <div class="step active" id="step0">
+    <div class="step-heading">予約システム２回目以降の方は過去の情報を自動入力できます</div>
+    <div class="visit-type-grid">
+      <button type="button" class="visit-type-btn" id="btnNew" onclick="selectVisitType('new')">
+        <div class="visit-type-icon">🐾</div>
+        <div class="visit-type-name">初めての方</div>
+      </button>
+      <button type="button" class="visit-type-btn" id="btnReturn" onclick="selectVisitType('return')">
+        <div class="visit-type-icon">✨</div>
+        <div class="visit-type-name">2回目以降の方</div>
+        <div class="visit-type-sub">情報を自動入力</div>
+      </button>
+    </div>
+
+    <div id="returnLookup" style="display:none;">
+      <div class="card">
+        <div class="field">
+          <label class="field-label">ご登録の電話番号 <span class="req">必須</span></label>
+          <input type="tel" id="lookupPhone" placeholder="例：09012345678" maxlength="13">
+        </div>
+        <button type="button" class="btn-next full" id="lookupBtn" onclick="lookupPastReservation()" style="margin-top:0;">履歴を検索する 🔍</button>
+        <div class="err-msg" id="errLookup"></div>
+        <div class="lookup-result" id="lookupResult"></div>
+      </div>
+    </div>
+
+    <div class="err-msg" id="err0"></div>
+    <div id="step0Next" style="display:none;">
+      <div class="nav-btns" style="margin-bottom:10px;">
+        <button type="button" class="btn-next full" id="btnSameAsLast" onclick="goNextSameAsLast()" style="background:var(--accent);">前回と同じ内容で予約 → 日時選択へ</button>
+      </div>
+      <div class="nav-btns">
+        <button type="button" class="btn-next full" onclick="goNext(0)" style="background:var(--surface); color:var(--text-mid); border:2px solid var(--border); box-shadow:none;">コース・内容を変更して予約する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 1: コース選択 ===== -->
+  <div class="step" id="step1">
+    <div class="step-heading">コースを選択</div>
+    <div class="step-desc">ご希望のコースをお選びください</div>
+    <div class="course-grid">
+      <button type="button" class="course-btn" id="btnShampoo" onclick="selectCourse('シャンプーコース')">
+        <div class="course-btn-icon">🛁</div>
+        <div class="course-btn-name">シャンプー</div>
+        <div class="course-btn-price">コース</div>
+        <div class="course-btn-tag">全犬種・猫対応</div>
+        <div class="course-btn-includes">
+          ✓ シャンプー<br>
+          ✓ 足切り<br>
+          ✓ 足回りカット<br>
+          ✓ 耳掃除<br>
+          ✓ 肛門腺絞り<br>
+          ✓ 足裏バリカン
+        </div>
+      </button>
+      <button type="button" class="course-btn" id="btnCut" onclick="selectCourse('カットコース')">
+        <div class="course-btn-icon">✂️</div>
+        <div class="course-btn-name">カット</div>
+        <div class="course-btn-price">コース</div>
+        <div class="course-btn-tag">対応犬種あり</div>
+        <div class="course-btn-includes">
+          ✓ シャンプー<br>
+          ✓ 全身カット<br>
+          ✓ 足切り<br>
+          ✓ 足回りカット<br>
+          ✓ 耳掃除<br>
+          ✓ 肛門腺絞り<br>
+          ✓ 足裏バリカン
+        </div>
+      </button>
+    </div>
+    <div class="err-msg" id="err1"></div>
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goBack(1)">← 戻る</button>
+      <button type="button" class="btn-next" onclick="goNext(1)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 2: 犬種・料金 ===== -->
+  <div class="step" id="step2">
+    <div class="step-heading">犬種・料金を確認</div>
+    <div class="step-desc">犬種・猫種を選択してください</div>
+    <div class="card">
+      <div class="field">
+        <label class="field-label">犬種・猫種 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="breedSelect" onchange="onBreedChange()">
+            <option value="">選択してください</option>
+          </select>
+        </div>
+        <div id="breedOtherWrap" style="display:none; margin-top:10px;">
+          <input type="text" id="breedOtherInput" placeholder="犬種・猫種を入力してください" maxlength="30">
+          <div style="font-size:12px; color:var(--text-soft); margin-top:4px;">料金はスタッフへお問い合わせください</div>
+        </div>
+        <div class="price-display" id="priceDisplay">
+          <div class="price-label" id="priceLabel"></div>
+          <div class="price-value" id="priceValue"></div>
+        </div>
+      </div>
+    </div>
+    <div class="err-msg" id="err2"></div>
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goBack(2)">← 戻る</button>
+      <button type="button" class="btn-next" onclick="goNext(2)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 3: オプション ===== -->
+  <div class="step" id="step3">
+    <div class="step-heading">オプションを選択</div>
+    <div class="step-desc">追加オプションをお選びください（複数選択可）</div>
+    <div class="card">
+      <div class="option-grid" id="optionGrid"></div>
+    </div>
+    <div class="total-bar">
+      <div class="total-bar-label">合計金額（目安）</div>
+      <div class="total-bar-amount" id="totalDisplay">¥—</div>
+    </div>
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goBack(3)">← 戻る</button>
+      <button type="button" class="btn-next" onclick="goNext(3)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 4: 日時 ===== -->
+  <div class="step" id="step4">
+    <div class="step-heading">日時を選択</div>
+    <div class="step-desc">ご希望の日付・時間をお選びください</div>
+    <div class="card">
+      <div class="field">
+        <label class="field-label">日付 <span class="req">必須</span></label>
+        <div class="calendar-nav">
+          <button type="button" class="cal-nav-btn" id="calPrev" onclick="changeMonth(-1)">‹</button>
+          <span class="cal-month" id="calMonthLabel"></span>
+          <button type="button" class="cal-nav-btn" id="calNext" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="calendar-grid" id="calGrid"></div>
+      </div>
+
+
+      <div class="time-slots" id="timeSlotWrap" style="display:none;">
+        <div class="time-slots-title">時間を選択 <span class="req">必須</span></div>
+        <div class="time-loading" id="timeLoading">読み込み中...</div>
+        <div class="time-grid" id="timeGrid" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="err-msg" id="err4"></div>
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goBack(4)">← 戻る</button>
+      <button type="button" class="btn-next" onclick="goNext(4)">次へ →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 5: ペット・お客様情報 ===== -->
+  <div class="step" id="step5">
+    <div class="step-heading">ペット・お客様情報</div>
+    <div class="step-desc">必要事項をご入力ください</div>
+
+    <div class="returning-banner" id="returningBanner">
+      ✅ 前回のご利用情報を自動入力しました。内容をご確認の上、変更がある場合は修正してください。<br>
+      <span style="color:var(--text-soft);">毛玉の有無・スタッフへの伝言は毎回ご入力ください。</span>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:14px;">🐾 ペット情報</div>
+      <div class="field">
+        <label class="field-label">ペットのお名前 <span class="req">必須</span></label>
+        <input type="text" id="petName" placeholder="例：ぽち" maxlength="20">
+      </div>
+      <div class="field">
+        <label class="field-label">性別 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="gender">
+            <option value="">選択してください</option>
+            <option value="男の子">男の子</option>
+            <option value="女の子">女の子</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">体重 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="weight">
+            <option value="">選択してください</option>
+            <option value="〜3kg">〜3kg</option>
+            <option value="3〜5kg">3〜5kg</option>
+            <option value="5〜10kg">5〜10kg</option>
+            <option value="10kg〜">10kg〜</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">年齢 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="petAge">
+            <option value="">選択してください</option>
+            <option value="1歳未満">1歳未満</option>
+            <option value="1〜3歳">1〜3歳</option>
+            <option value="4〜7歳">4〜7歳</option>
+            <option value="8〜10歳">8〜10歳</option>
+            <option value="11歳以上">11歳以上</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">毛玉の有無 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="matting">
+            <option value="">選択してください</option>
+            <option value="なし">なし</option>
+            <option value="少しあり">少しあり</option>
+            <option value="多めにあり">多めにあり</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">ご利用経験 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="visitExperience">
+            <option value="">選択してください</option>
+            <option value="初めて">初めて</option>
+            <option value="2回目">2回目</option>
+            <option value="3回目">3回目</option>
+            <option value="4回目以上">4回目以上</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">狂犬病ワクチン接種 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="vaccineRabies" onchange="onVaccineChange()">
+            <option value="">選択してください</option>
+            <option value="接種済み">接種済み（1年以内）</option>
+            <option value="未接種">未接種 / 期限切れ</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">5種混合ワクチン接種 <span class="req">必須</span></label>
+        <div class="select-wrap">
+          <select id="vaccine5mix" onchange="onVaccineChange()">
+            <option value="">選択してください</option>
+            <option value="接種済み">接種済み（1年以内）</option>
+            <option value="未接種">未接種 / 期限切れ</option>
+          </select>
+        </div>
+        <div class="vaccine-warn" id="vaccineWarn">
+          ⚠️ 未接種・期限切れの場合、ご利用をお断りしております。必ず1年以内の接種証明書をご持参ください。
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">スタッフへの伝言 <span class="opt">任意</span></label>
+        <textarea id="staffNote" placeholder="アレルギー・気になることなど何でもどうぞ" maxlength="200"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:14px;">👤 飼い主情報</div>
+      <div class="field">
+        <label class="field-label">お名前 <span class="req">必須</span></label>
+        <input type="text" id="ownerName" placeholder="例：山田 太郎" maxlength="30">
+      </div>
+      <div class="field">
+        <label class="field-label">電話番号 <span class="req">必須</span></label>
+        <input type="tel" id="phone" placeholder="例：09012345678" maxlength="13">
+      </div>
+      <div class="field">
+        <label class="field-label">LINE表示名 <span class="opt">任意</span></label>
+        <input type="text" id="lineName" placeholder="LINEのお名前" maxlength="30">
+      </div>
+      <div class="field">
+        <label class="field-label">メールアドレス <span class="req">必須</span></label>
+        <input type="email" id="email" placeholder="example@email.com" maxlength="100">
+        <p style="font-size:12px; color:var(--text-soft); margin-top:4px;">前日・当日のリマインドをお送りします</p>
+      </div>
+    </div>
+
+    <div class="notice-box">
+      <div style="font-size:13px; font-weight:700; color:var(--warn); margin-bottom:10px;">ご予約前の注意事項</div>
+      <div class="notice-check">
+        <input type="checkbox" id="chk1">
+        <label for="chk1">🚗 クレートでのご来店をお願いしております（リードでのご来店はクレートがないお客様のみ対応しています）</label>
+      </div>
+      <div class="notice-check">
+        <input type="checkbox" id="chk2">
+        <label for="chk2">💉 1年以内の5種混合・狂犬病ワクチン接種証明書の持参が必要です。証明書が確認できない場合はご利用をお断りしております</label>
+      </div>
+      <div class="notice-check">
+        <input type="checkbox" id="chk3">
+        <label for="chk3">✂️ 毛玉の状態によって料金が変動する場合があります</label>
+      </div>
+      <div class="notice-check" style="margin-bottom:0;">
+        <input type="checkbox" id="chk4">
+        <label for="chk4">⏰ 予約時間から30分以上遅れる場合・連絡が取れない場合は自動キャンセルとなります（必ずお電話ください：097-594-9770）</label>
+      </div>
+    </div>
+
+    <div class="notice-box" style="margin-top:12px;">
+      <div style="font-size:13px; font-weight:700; color:var(--warn); margin-bottom:10px;">💴 キャンセル・変更ポリシー</div>
+      <div style="font-size:13px; color:var(--text); margin-bottom:10px; line-height:1.8;">
+        キャンセル料は振込または次回ご利用時にお支払いいただきます。<br>
+        <span style="font-size:12px; color:var(--text-soft);">（天候による場合も同扱いとなります）</span>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
+        <tr style="background:rgba(201,106,59,0.08);">
+          <th style="text-align:left; padding:8px 10px; color:var(--text-mid); font-weight:700; border-bottom:1px solid var(--border);">時期</th>
+          <th style="text-align:right; padding:8px 10px; color:var(--warn); font-weight:700; border-bottom:1px solid var(--border);">キャンセル料</th>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px; border-bottom:1px solid var(--border);">7日前〜2日前</td>
+          <td style="padding:8px 10px; border-bottom:1px solid var(--border); text-align:right; font-weight:700; color:var(--text);">基本料金の 50%</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px; border-bottom:1px solid var(--border);">前日</td>
+          <td style="padding:8px 10px; border-bottom:1px solid var(--border); text-align:right; font-weight:700; color:var(--text);">基本料金の 80%</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px; border-bottom:1px solid var(--border);">当日</td>
+          <td style="padding:8px 10px; border-bottom:1px solid var(--border); text-align:right; font-weight:700; color:var(--warn);">基本料金の 100%</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;">無断キャンセル</td>
+          <td style="padding:8px 10px; text-align:right; font-weight:700; color:var(--warn);">基本料金の 100%<br><span style="font-size:11px; font-weight:400;">＋次回以降施術受付不可</span></td>
+        </tr>
+      </table>
+      <div class="notice-check" style="margin-bottom:0;">
+        <input type="checkbox" id="chk5">
+        <label for="chk5">上記キャンセル・変更ポリシーに同意します</label>
+      </div>
+    </div>
+
+    <div class="privacy-box">
+      <strong>【個人情報の取り扱いについて】</strong><br>
+      <dl>
+        <dt>取得する情報</dt><dd>お名前・電話番号・メールアドレス・LINE表示名・ペット情報・予約内容</dd>
+        <dt>利用目的</dt><dd>予約確認・リマインド通知・口コミ依頼</dd>
+        <dt>保存場所</dt><dd>Supabase（セキュアなクラウドデータベース）</dd>
+        <dt>保管期間</dt><dd>最終来店日から3年間</dd>
+        <dt>第三者提供</dt><dd>法令に基づく場合を除き行いません</dd>
+        <dt>お問い合わせ</dt><dd>ANELLA CAFE 大分店 TEL：097-594-9770</dd>
+      </dl>
+    </div>
+    <div class="privacy-agree">
+      <input type="checkbox" id="privacyAgree">
+      <label for="privacyAgree">個人情報の取り扱いに同意します</label>
+    </div>
+
+    <div class="err-msg" id="err5"></div>
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goBack(5)">← 戻る</button>
+      <button type="button" class="btn-next" onclick="goNext(5)">確認画面へ →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 6: 確認 ===== -->
+  <div class="step" id="step6">
+    <div class="step-heading">予約内容を確認</div>
+    <div class="step-desc">内容をご確認の上、「予約を確定する」を押してください</div>
+    <div class="card">
+      <table class="confirm-table" id="confirmTable"></table>
+    </div>
+    <div class="total-bar confirm-total">
+      <div class="total-bar-label">お支払い合計（目安）</div>
+      <div class="total-bar-amount" id="confirmTotal"></div>
+    </div>
+    <div class="err-msg" id="err6"></div>
+    <div class="nav-btns">
+      <button type="button" class="btn-back" onclick="goBack(6)">← 修正する</button>
+      <button type="button" class="btn-next" onclick="submitReservation()">予約を確定する ✓</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 7: 完了 ===== -->
+  <div class="step" id="step7">
+    <div class="complete-wrap">
+      <div class="complete-icon">🎉</div>
+      <div class="complete-title">ご予約が完了しました！</div>
+      <div class="complete-number">予約番号：<br><strong id="reservationNumber"></strong></div>
+      <div class="complete-summary" id="completeSummary"></div>
+      <div style="margin-top:16px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:12px; font-size:13px; color:var(--text-soft); text-align:center;">
+        📧 ご登録のメールアドレスに予約確認メールをお送りしました<br>
+        <span style="font-size:12px;">前日・当日にもリマインドメールをお送りします</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── データ ─────────────────────────────────────────
+const BREEDS = [
+  { name: 'チワワ',              shampoo: 3000, cut: 4000 },
+  { name: 'ダックスフンド',      shampoo: 3000, cut: 4000 },
+  { name: 'パピヨン',            shampoo: 3000, cut: 4500 },
+  { name: 'ポメラニアン',        shampoo: 3000, cut: 4500 },
+  { name: 'マルチーズ',          shampoo: 3500, cut: 5000 },
+  { name: 'シーズー',            shampoo: 3500, cut: 5000 },
+  { name: 'トイ・プードル',      shampoo: 4000, cut: 5500 },
+  { name: 'ビションフリーゼ',    shampoo: 4500, cut: 7000 },
+  { name: 'フレンチ・ブルドッグ',shampoo: 4000, cut: null },
+  { name: 'ビーグル',            shampoo: 4500, cut: null },
+  { name: 'コーギー・柴犬',      shampoo: 5000, cut: null },
+  { name: 'シェルティ・ボーダーコリー', shampoo: 5000, cut: null },
+  { name: 'ラブラドールレトリバー', shampoo: 6500, cut: null },
+  { name: 'ゴールデン・レトリバー',shampoo: 7000, cut: 9000 },
+  { name: '猫（短毛）',          shampoo: 7000, cut: null },
+  { name: '猫（長毛）',          shampoo: 10000, cut: 13000 },
+  { name: 'その他',              shampoo: null, cut: null },
+];
+
+const OPTIONS_LIST = [
+  { name: 'デンタルor肉球ケア', price: 500 },
+  { name: '薬用シャンプー',     price: 500 },
+  { name: '足裏＋足回り',       price: 500 },
+  { name: '爪切り',             price: 500 },
+  { name: 'ひげカット',         price: 500 },
+  { name: '肛門腺絞り',         price: 500 },
+  { name: '部分カット',         price: 700 },
+  { name: '毛玉カット',         price: 700 },
+  { name: '顔カット',           price: 1500 },
+  { name: '3点ケアセット',      price: 1200 },
+];
+
+const TIME_SLOTS = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
+
+// ── リピーター状態 ───────────────────────────────
+let visitType = '';
+let isReturning = false;
+let returnedData = null;
+
+// ── フォーム状態 ──────────────────────────────────
+const fd = {
+  course: '', breed: '', breedDisplay: '', coursePrice: 0,
+  options: [], optionsPrice: 0, totalPrice: 0,
+  visitDate: '', visitTime: '',
+  gender: '', weight: '', matting: '', visitExperience: '',
+  petAge: '', petName: '', vaccineRabies: '', vaccine5mix: '', staffNote: '',
+  ownerName: '', phone: '', lineName: '', email: ''
+};
+
+let currentStep = 1;
+let calYear, calMonth;
+const today = new Date();
+today.setHours(0,0,0,0);
+const maxDate = new Date(today);
+maxDate.setMonth(maxDate.getMonth() + 2);
+
+// ── プログレス更新 ────────────────────────────────
+function updateProgress(step) {
+  for (let i = 1; i <= 6; i++) {
+    const dot = document.getElementById('dot' + i);
+    const lbl = document.getElementById('lbl' + i);
+    if (i < step) { dot.className = 'progress-dot done'; }
+    else if (i === step) { dot.className = 'progress-dot active'; lbl.className = 'progress-label active'; }
+    else { dot.className = 'progress-dot'; lbl.className = 'progress-label'; }
+    if (i < 6) {
+      const con = document.getElementById('con' + i);
+      con.className = 'progress-connector' + (i < step ? ' done' : '');
+    }
+  }
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  currentStep = n;
+  if (n === 0) {
+    document.getElementById('progressBar').style.display = 'none';
+  } else {
+    document.getElementById('progressBar').style.display = 'flex';
+    updateProgress(n);
+  }
+  if (n === 5) {
+    document.getElementById('returningBanner').classList.toggle('active', isReturning);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  clearErr(n);
+}
+
+function showErr(n, msg) {
+  const el = document.getElementById('err' + n);
+  if (!el) return;
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('active');
+}
+
+function clearErr(n) {
+  const el = document.getElementById('err' + n);
+  if (el) el.classList.remove('active');
+}
+
+// ── STEP 0: 来店回数選択 ──────────────────────────
+function selectVisitType(type) {
+  visitType = type;
+  document.getElementById('btnNew').classList.toggle('selected', type === 'new');
+  document.getElementById('btnReturn').classList.toggle('selected', type === 'return');
+  if (type === 'return') {
+    document.getElementById('returnLookup').style.display = 'block';
+    document.getElementById('step0Next').style.display = 'none';
+  } else {
+    document.getElementById('returnLookup').style.display = 'none';
+    document.getElementById('step0Next').style.display = 'none';
+    isReturning = false;
+    returnedData = null;
+    goNext(0);
+  }
+}
+
+async function lookupPastReservation() {
+  const phone = document.getElementById('lookupPhone').value.trim();
+  const errEl = document.getElementById('errLookup');
+  const resultEl = document.getElementById('lookupResult');
+  const btn = document.getElementById('lookupBtn');
+
+  errEl.classList.remove('active');
+  resultEl.classList.remove('active');
+
+  if (!phone) {
+    errEl.textContent = '⚠ 電話番号を入力してください。';
+    errEl.classList.add('active');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '検索中...';
+
+  const [{ data, error }, { data: karteData }] = await Promise.all([
+    supabase.rpc('lookup_reservation_by_phone', { p_phone: phone }),
+    supabase.from('pet_kartes').select('*').eq('phone', phone).maybeSingle(),
+  ]);
+
+  btn.disabled = false;
+  btn.textContent = '履歴を検索する 🔍';
+
+  if (error || !data) {
+    errEl.textContent = '⚠ 該当する予約履歴が見つかりませんでした。電話番号を確認するか「初めての方」を選択してください。';
+    errEl.classList.add('active');
+    return;
+  }
+
+  // カルテの値を優先し、ない場合は予約データにフォールバック
+  const pick = (karteVal, resVal) => {
+    if (karteVal && karteVal !== '不明') return karteVal;
+    if (resVal  && resVal  !== '不明') return resVal;
+    return '';
+  };
+  returnedData = {
+    ...data,
+    pet_name:       pick(karteData?.pet_name,       data.pet_name),
+    gender:         pick(karteData?.gender,          data.gender),
+    weight:         pick(karteData?.weight,          data.weight),
+    pet_age:        pick(karteData?.pet_age,         data.pet_age),
+    vaccine_rabies: pick(karteData?.vaccine_rabies,  data.vaccine_rabies),
+    vaccine_5mix:   pick(karteData?.vaccine_5mix,    data.vaccine_5mix),
+    owner_name:     pick(karteData?.owner_name,      data.owner_name),
+    line_name:      pick(karteData?.line_name,       data.line_name),
+    email:          pick(karteData?.email,           data.email),
+  };
+  isReturning = true;
+  resultEl.innerHTML = `
+    <div style="font-weight:700; color:var(--accent); margin-bottom:8px;">✅ 前回のご利用情報が見つかりました</div>
+    <div>🐾 ${data.pet_name}ちゃん（${data.breed}・${data.gender}）</div>
+    <div>👤 ${data.owner_name} 様</div>
+    <div style="font-size:12px; color:var(--text-soft); margin-top:4px;">前回来店：${data.visit_date}</div>
+  `;
+  resultEl.classList.add('active');
+  document.getElementById('step0Next').style.display = 'flex';
+}
+
+function prefillStep5() {
+  if (!returnedData) return;
+  const r = returnedData;
+
+  // STEP1: コースを自動選択
+  if (r.course) {
+    selectCourse(r.course);
+  }
+
+  // STEP2: 犬種を自動選択（コース選択後でないとドロップダウンが構築されない）
+  if (r.breed && fd.course) {
+    const breedSelect = document.getElementById('breedSelect');
+    const match = BREEDS.find(b => b.name === r.breed);
+    if (match) {
+      breedSelect.value = r.breed;
+      onBreedChange();
+      fd.breed = r.breed;
+      fd.breedDisplay = r.breed;
+      fd.coursePrice = fd.course === 'カットコース' ? (match.cut || 0) : (match.shampoo || 0);
+    }
+  }
+
+  // STEP5: 個人情報を自動入力（「不明」は空扱い）
+  const valid = v => (v && v !== '不明') ? v : '';
+  document.getElementById('petName').value = valid(r.pet_name);
+  document.getElementById('gender').value = valid(r.gender);
+  document.getElementById('weight').value = valid(r.weight);
+  document.getElementById('petAge').value = valid(r.pet_age);
+  document.getElementById('matting').value = '';
+  document.getElementById('visitExperience').value = '';
+  document.getElementById('vaccineRabies').value = valid(r.vaccine_rabies);
+  document.getElementById('vaccine5mix').value = valid(r.vaccine_5mix);
+  document.getElementById('ownerName').value = valid(r.owner_name);
+  document.getElementById('phone').value = r.phone || '';
+  document.getElementById('lineName').value = valid(r.line_name);
+  document.getElementById('email').value = valid(r.email);
+  document.getElementById('staffNote').value = '';
+}
+
+// 前回と同じ内容でステップ4（日時選択）へジャンプ
+function goNextSameAsLast() {
+  if (!visitType) { showErr(0, 'ご利用回数を選択してください。'); return; }
+  if (!isReturning || !returnedData) { showErr(0, '電話番号で履歴を検索してください。'); return; }
+  prefillStep5();
+  // オプションも構築（buildOptionsはstep3用）
+  buildOptions();
+  if (!calYear) { calYear = today.getFullYear(); calMonth = today.getMonth(); }
+  showStep(4);
+  renderCalendar();
+}
+
+// ── STEP 1: コース選択 ─────────────────────────────
+function selectCourse(course) {
+  fd.course = course;
+  document.getElementById('btnShampoo').classList.toggle('selected', course === 'シャンプーコース');
+  document.getElementById('btnCut').classList.toggle('selected', course === 'カットコース');
+  buildBreedOptions();
+}
+
+function goNext(step) {
+  if (step === 0) {
+    if (!visitType) { showErr(0, 'ご利用回数を選択してください。'); return; }
+    if (visitType === 'return' && !isReturning) { showErr(0, '電話番号で履歴を検索してください。'); return; }
+    if (isReturning) prefillStep5();
+    showStep(1);
+  } else if (step === 1) {
+    if (!fd.course) { showErr(1, 'コースを選択してください。'); return; }
+    showStep(2);
+  } else if (step === 2) {
+    const sel = document.getElementById('breedSelect').value;
+    if (!sel) { showErr(2, '犬種・猫種を選択してください。'); return; }
+    if (sel === 'その他') {
+      const oth = document.getElementById('breedOtherInput').value.trim();
+      if (!oth) { showErr(2, '犬種・猫種を入力してください。'); return; }
+      fd.breed = 'その他';
+      fd.breedDisplay = oth;
+      fd.coursePrice = 0;
+    } else {
+      const b = BREEDS.find(b => b.name === sel);
+      fd.breed = sel;
+      fd.breedDisplay = sel;
+      fd.coursePrice = fd.course === 'カットコース' ? (b.cut || 0) : (b.shampoo || 0);
+    }
+    buildOptions();
+    showStep(3);
+  } else if (step === 3) {
+    fd.optionsPrice = getSelectedOptionsPrice();
+    fd.options = getSelectedOptions();
+    fd.totalPrice = fd.coursePrice + fd.optionsPrice;
+    showStep(4);
+    if (!calYear) { calYear = today.getFullYear(); calMonth = today.getMonth(); }
+    renderCalendar();
+  } else if (step === 4) {
+    if (!fd.visitDate) { showErr(4, '日付を選択してください。'); return; }
+    if (!fd.visitTime) { showErr(4, '時間を選択してください。'); return; }
+    showStep(5);
+  } else if (step === 5) {
+    if (!validateStep5()) return;
+    buildConfirm();
+    showStep(6);
+  }
+}
+
+function goBack(step) {
+  if (step === 1) {
+    showStep(0);
+  } else {
+    showStep(step - 1);
+  }
+}
+
+// ── STEP 2: 犬種 ───────────────────────────────────
+function buildBreedOptions() {
+  const sel = document.getElementById('breedSelect');
+  sel.innerHTML = '<option value="">選択してください</option>';
+  BREEDS.forEach(b => {
+    if (fd.course === 'カットコース' && b.cut === null && b.name !== 'その他') return;
+    const opt = document.createElement('option');
+    opt.value = b.name;
+    opt.textContent = b.name;
+    sel.appendChild(opt);
+  });
+  sel.value = '';
+  document.getElementById('priceDisplay').classList.remove('visible');
+  document.getElementById('breedOtherWrap').style.display = 'none';
+}
+
+function onBreedChange() {
+  const sel = document.getElementById('breedSelect').value;
+  const pd = document.getElementById('priceDisplay');
+  const ow = document.getElementById('breedOtherWrap');
+
+  if (sel === 'その他') {
+    pd.classList.remove('visible');
+    ow.style.display = 'block';
+    return;
+  }
+  ow.style.display = 'none';
+
+  if (!sel) { pd.classList.remove('visible'); return; }
+
+  const b = BREEDS.find(b => b.name === sel);
+  const price = fd.course === 'カットコース' ? b.cut : b.shampoo;
+  document.getElementById('priceLabel').textContent = fd.course;
+  document.getElementById('priceValue').textContent = price ? '¥' + price.toLocaleString() : 'お問い合わせください';
+  pd.classList.add('visible');
+}
+
+// ── STEP 3: オプション ────────────────────────────
+function buildOptions() {
+  const grid = document.getElementById('optionGrid');
+  grid.innerHTML = '';
+  OPTIONS_LIST.forEach((opt, i) => {
+    const item = document.createElement('label');
+    item.className = 'option-item';
+    item.innerHTML = `
+      <input type="checkbox" id="opt${i}" value="${opt.name}" data-price="${opt.price}" onchange="updateTotal()">
+      <span class="option-name">${opt.name}</span>
+      <span class="option-price">+¥${opt.price.toLocaleString()}</span>
+    `;
+    grid.appendChild(item);
+  });
+  updateTotal();
+}
+
+function getSelectedOptions() {
+  return OPTIONS_LIST
+    .filter((_, i) => document.getElementById('opt' + i)?.checked)
+    .map(o => ({ name: o.name, price: o.price }));
+}
+
+function getSelectedOptionsPrice() {
+  return getSelectedOptions().reduce((s, o) => s + o.price, 0);
+}
+
+function updateTotal() {
+  const op = getSelectedOptionsPrice();
+  const total = fd.coursePrice + op;
+  document.getElementById('totalDisplay').textContent =
+    fd.coursePrice > 0 ? '¥' + total.toLocaleString() : 'お問い合わせください';
+}
+
+// ── STEP 4: カレンダー ────────────────────────────
+function renderCalendar() {
+  const label = document.getElementById('calMonthLabel');
+  label.textContent = `${calYear}年 ${calMonth + 1}月`;
+
+  document.getElementById('calPrev').disabled =
+    (calYear === today.getFullYear() && calMonth === today.getMonth());
+  const nm = new Date(calYear, calMonth + 2, 1);
+  document.getElementById('calNext').disabled =
+    (nm > new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 1));
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['日','月','火','水','木','金','土'].forEach((d, i) => {
+    const wd = document.createElement('div');
+    wd.className = 'cal-weekday' + (i === 0 ? ' sun' : i === 6 ? ' sat' : '');
+    wd.textContent = d;
+    grid.appendChild(wd);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= lastDate; d++) {
+    const date = new Date(calYear, calMonth, d);
+    const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const el = document.createElement('div');
+    const dow = date.getDay();
+    let cls = 'cal-day';
+    if (dow === 0) cls += ' sun';
+    if (dow === 6) cls += ' sat';
+    if (date.getTime() === today.getTime()) cls += ' today';
+    if (date < today || date > maxDate) cls += ' disabled';
+    if (dateStr === fd.visitDate) cls += ' selected';
+    el.className = cls;
+    el.textContent = d;
+    if (date >= today && date <= maxDate) {
+      el.onclick = () => selectDate(dateStr, el);
+    }
+    grid.appendChild(el);
+  }
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  fd.visitDate = '';
+  fd.visitTime = '';
+  document.getElementById('timeSlotWrap').style.display = 'none';
+  renderCalendar();
+}
+
+function selectDate(dateStr, el) {
+  fd.visitDate = dateStr;
+  fd.visitTime = '';
+  document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  loadTimeSlots();
+}
+
+async function loadTimeSlots() {
+  const wrap = document.getElementById('timeSlotWrap');
+  const loading = document.getElementById('timeLoading');
+  const grid = document.getElementById('timeGrid');
+  wrap.style.display = 'block';
+  loading.style.display = 'block';
+  grid.style.display = 'none';
+
+  let bookedSlots = [];
+  let blockedTimes = [];
+  try {
+    const { data, error } = await supabase.rpc('get_booked_slots', { p_date: fd.visitDate });
+    if (!error && data) bookedSlots = data;
+  } catch (e) {}
+
+  try {
+    const { data: blocks } = await supabase
+      .from('blocked_times')
+      .select('block_time')
+      .eq('block_date', fd.visitDate);
+    if (blocks && Array.isArray(blocks)) {
+      blockedTimes = blocks.map(b => {
+        const time = b.block_time.split(':')[0] + ':' + b.block_time.split(':')[1];
+        return time;
+      });
+    }
+  } catch (e) {}
+
+  loading.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.innerHTML = '';
+
+  let anyAvailable = false;
+  TIME_SLOTS.forEach(t => {
+    const isBlocked = blockedTimes.includes(t);
+    let isBooked = false;
+    if (bookedSlots && bookedSlots.length > 0) {
+      isBooked = bookedSlots.some(s => {
+        const slotHour = parseInt(s.slot_time.slice(0, 2));
+        const currentHour = parseInt(t.slice(0, 2));
+        return Math.abs(slotHour - currentHour) < 4;
+      });
+    }
+    const available = !isBlocked && !isBooked;
+    if (available) anyAvailable = true;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'time-btn' + (available ? '' : ' disabled') + (t === fd.visitTime ? ' selected' : '');
+    btn.textContent = t;
+    if (available) btn.onclick = () => selectTime(t, btn);
+    grid.appendChild(btn);
+  });
+
+  if (!anyAvailable) {
+    const msg = document.createElement('div');
+    msg.style.gridColumn = '1/-1';
+    msg.style.textAlign = 'center';
+    msg.style.color = 'var(--warn)';
+    msg.style.padding = '16px';
+    msg.textContent = 'この日の予約枠は埋まっています';
+    grid.innerHTML = '';
+    grid.appendChild(msg);
+  }
+}
+
+function selectTime(time, btn) {
+  fd.visitTime = time;
+  document.querySelectorAll('#timeGrid .time-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// ── STEP 5: バリデーション ────────────────────────
+function onVaccineChange() {
+  const rabies = document.getElementById('vaccineRabies').value;
+  const mix5 = document.getElementById('vaccine5mix').value;
+  const warn = document.getElementById('vaccineWarn');
+  warn.classList.toggle('active', rabies === '未接種' || mix5 === '未接種');
+}
+
+function validateStep5() {
+  const fields = [
+    ['petName', 'ペットのお名前'],
+    ['gender', '性別'],
+    ['weight', '体重'],
+    ['petAge', '年齢'],
+    ['matting', '毛玉の有無'],
+    ['visitExperience', 'ご利用経験'],
+    ['vaccineRabies', '狂犬病ワクチン接種'],
+    ['vaccine5mix', '5種混合ワクチン接種'],
+    ['ownerName', 'お名前（飼い主）'],
+    ['phone', '電話番号'],
+    ['email', 'メールアドレス'],
+  ];
+  for (const [id, name] of fields) {
+    if (!document.getElementById(id).value.trim()) {
+      showErr(5, `${name}を入力・選択してください。`);
+      return false;
+    }
+  }
+  const chks = ['chk1','chk2','chk3','chk4','chk5'];
+  for (const id of chks) {
+    if (!document.getElementById(id).checked) {
+      showErr(5, '注意事項すべてにチェックを入れてください。');
+      return false;
+    }
+  }
+  if (!document.getElementById('privacyAgree').checked) {
+    showErr(5, '個人情報の取り扱いへの同意が必要です。');
+    return false;
+  }
+  fd.petName = document.getElementById('petName').value.trim();
+  fd.gender = document.getElementById('gender').value;
+  fd.weight = document.getElementById('weight').value;
+  fd.petAge = document.getElementById('petAge').value;
+  fd.matting = document.getElementById('matting').value;
+  fd.visitExperience = document.getElementById('visitExperience').value;
+  fd.vaccineRabies = document.getElementById('vaccineRabies').value;
+  fd.vaccine5mix = document.getElementById('vaccine5mix').value;
+  fd.staffNote = document.getElementById('staffNote').value.trim();
+  fd.ownerName = document.getElementById('ownerName').value.trim();
+  fd.phone = document.getElementById('phone').value.trim();
+  fd.lineName = document.getElementById('lineName').value.trim();
+  fd.email = document.getElementById('email').value.trim();
+  return true;
+}
+
+// ── STEP 6: 確認 ──────────────────────────────────
+function buildConfirm() {
+  const rows = [
+    ['コース', fd.course],
+    ['犬種・猫種', fd.breedDisplay],
+    ['コース料金', fd.coursePrice > 0 ? '¥' + fd.coursePrice.toLocaleString() : '要確認'],
+    ['オプション', fd.options.length > 0 ? fd.options.map(o => o.name).join('、') : 'なし'],
+    ['オプション料金', fd.optionsPrice > 0 ? '+¥' + fd.optionsPrice.toLocaleString() : '¥0'],
+    ['来店日', fd.visitDate],
+    ['時間', fd.visitTime],
+    ['ペット名', fd.petName],
+    ['性別', fd.gender],
+    ['体重', fd.weight],
+    ['年齢', fd.petAge],
+    ['毛玉', fd.matting],
+    ['ご利用経験', fd.visitExperience],
+    ['狂犬病ワクチン', fd.vaccineRabies],
+    ['5種混合ワクチン', fd.vaccine5mix],
+    ['スタッフへの伝言', fd.staffNote || 'なし'],
+    ['お名前', fd.ownerName],
+    ['電話番号', fd.phone],
+    ['LINE表示名', fd.lineName || 'なし'],
+    ['メール', fd.email || 'なし'],
+  ];
+  const table = document.getElementById('confirmTable');
+  table.innerHTML = rows.map(([k, v]) =>
+    `<tr><th>${k}</th><td>${v}</td></tr>`
+  ).join('');
+  const total = fd.coursePrice + fd.optionsPrice;
+  document.getElementById('confirmTotal').textContent =
+    fd.coursePrice > 0 ? '¥' + total.toLocaleString() : '要確認';
+}
+
+// ── 送信 ──────────────────────────────────────────
+async function submitReservation() {
+  document.getElementById('loadingText').textContent = '予約を確定中...';
+  document.getElementById('loadingOverlay').classList.add('active');
+
+  try {
+    // 予約番号生成（SECURITY DEFINER RPCでRLSをバイパスしてカウント取得）
+    const dateStr = fd.visitDate.replace(/-/g, '');
+    const { data: countData } = await supabase.rpc('count_reservations_by_date', { p_date: fd.visitDate });
+    const reservationNumber = `${dateStr}-${String((Number(countData) || 0) + 1).padStart(3, '0')}`;
+
+    const payload = {
+      reservation_number: reservationNumber,
+      visit_date: fd.visitDate,
+      visit_time: fd.visitTime + ':00',
+      course: fd.course || '',
+      breed: fd.breedDisplay || '',
+      gender: fd.gender || '',
+      weight: fd.weight || '',
+      matting: fd.matting || '',
+      visit_experience: fd.visitExperience || '',
+      pet_age: fd.petAge || '',
+      pet_name: fd.petName || '',
+      owner_name: fd.ownerName || '',
+      phone: fd.phone || '',
+      email: fd.email || null,
+      staff: fd.staff || '',
+      course_price: fd.coursePrice || 0,
+      options_price: fd.optionsPrice || 0,
+      total_price: (fd.coursePrice || 0) + (fd.optionsPrice || 0),
+    };
+
+    console.log('Payload:', JSON.stringify(payload));
+    const { error } = await supabase.from('trimming_reservations').insert(payload);
+
+    if (error) throw error;
+
+    // カルテ自動作成/更新（電話番号をキーにupsert）
+    await supabase.from('pet_kartes').upsert({
+      phone:         fd.phone,
+      owner_name:    fd.ownerName,
+      email:         fd.email || null,
+      line_name:     fd.lineName || null,
+      pet_name:      fd.petName,
+      breed:         fd.breedDisplay,
+      gender:        fd.gender,
+      weight:        fd.weight,
+      pet_age:       fd.petAge,
+      vaccine_rabies: fd.vaccineRabies,
+      vaccine_5mix:  fd.vaccine5mix,
+    }, { onConflict: 'phone' });
+
+    // GAS Webhook（Gmail通知）※anellacafeoita@gmail.com で新規デプロイ
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz70c8M8x7u69_r2y7Ibh1JkMZIsJEYYLdRcRuRAxnhX_ekQclzDQL6RBNHhnzxyvy7_A/exec';
+    fetch(`${GAS_URL}?token=anella2026secret&data=${encodeURIComponent(JSON.stringify(payload))}`).catch(() => {});
+
+    document.getElementById('loadingOverlay').classList.remove('active');
+    document.getElementById('reservationNumber').textContent = reservationNumber;
+    buildCompleteSummary(reservationNumber);
+    document.getElementById('progressBar').style.display = 'none';
+    showStep(7);
+
+  } catch (e) {
+    document.getElementById('loadingOverlay').classList.remove('active');
+    showErr(6, '送信に失敗しました。時間をおいて再度お試しいただくか、お電話でご予約ください。（097-594-9770）');
+  }
+}
+
+function buildCompleteSummary(num) {
+  const rows = [
+    ['予約番号', num],
+    ['来店日', fd.visitDate + ' ' + fd.visitTime],
+    ['コース', fd.course],
+    ['ペット名', fd.petName],
+    ['合計（目安）', fd.coursePrice > 0 ? '¥' + (fd.coursePrice + fd.optionsPrice).toLocaleString() : '要確認'],
+  ];
+  document.getElementById('completeSummary').innerHTML =
+    rows.map(([k, v]) => `<div class="summary-row"><span class="summary-label">${k}</span><span class="summary-value">${v}</span></div>`).join('');
+}
+
+
+// ── 初期化 ────────────────────────────────────────
+buildBreedOptions();
+</script>
+
+</body>
+</html>

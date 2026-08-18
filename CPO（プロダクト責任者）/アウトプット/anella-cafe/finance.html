@@ -648,6 +648,13 @@
               </div>
             </div>
             <div class="field-item">
+              <div class="field-label">返済</div>
+              <div class="field-wrap">
+                <input type="number" class="field-input" id="f_hensei" min="0" placeholder="0" oninput="recalc()">
+                <span class="field-unit">円</span>
+              </div>
+            </div>
+            <div class="field-item">
               <div class="field-label">ロイヤリティ</div>
               <div class="field-wrap">
                 <input type="number" class="field-input" id="f_royalty" min="0" placeholder="0" oninput="recalc()">
@@ -712,13 +719,6 @@
             </div>
           </div>
 
-          <div class="adj-row">
-            <span class="adj-label">返済</span>
-            <input type="number" class="adj-input" id="f_hensei" min="0" placeholder="0" oninput="recalc()">
-            <span class="adj-unit">円</span>
-            <span class="adj-result-label">最終利益：</span>
-            <span class="adj-result-value cv-plus" id="calc_final">¥0</span>
-          </div>
 
           <div style="margin-top: 12px;">
             <div class="field-label" style="margin-bottom: 5px;">メモ</div>

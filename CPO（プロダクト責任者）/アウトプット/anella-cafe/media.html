@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>メディア掲載｜ANELLA CAFE 大分店</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #B8E4DC;
+      --surface: #FFFFFF;
+      --primary: #4D9E96;
+      --primary-light: #6DBFB7;
+      --accent: #3A7D76;
+      --text: #3A2010;
+      --text-mid: #6B4F3A;
+      --text-soft: #7A6050;
+      --border: #7EC8C0;
+      --gold: #C9A84C;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    /* ===== ヘッダー ===== */
+    .page-header {
+      background: #B8E4DC;
+      position: relative;
+      overflow: hidden;
+      padding: 52px 40px 44px;
+      margin-bottom: 48px;
+    }
+    .page-header::before {
+      content: '📺';
+      position: absolute;
+      right: 32px; top: 24px;
+      font-size: 120px;
+      opacity: 0.12;
+      transform: rotate(10deg);
+      line-height: 1;
+    }
+    .page-header::after {
+      content: '';
+      position: absolute;
+      left: -60px; bottom: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.28);
+    }
+    .header-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .header-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: #5A4030;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .header-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 38px;
+      color: #3A2010;
+      line-height: 1.1;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: #5A4030;
+      margin-bottom: 28px;
+    }
+    .badge-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.60);
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 50px;
+      padding: 10px 22px;
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ===== コンテンツ ===== */
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 20px 72px;
+    }
+
+    /* ===== 同日バナー ===== */
+    .banner {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 14px;
+      padding: 16px 22px;
+      margin-bottom: 36px;
+      font-size: 13px;
+      color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .banner strong {
+      color: var(--accent);
+    }
+
+    /* ===== セクションタイトル ===== */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .section-label-text {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .section-label-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(58,125,118,0.3);
+    }
+
+    /* ===== メディアカード ===== */
+    .media-card {
+      background: var(--surface);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(58,125,118,0.15);
+      margin-bottom: 32px;
+    }
+
+    /* サムネイルエリア */
+    .video-wrapper {
+      position: relative;
+      padding-top: 56.25%;
+      overflow: hidden;
+    }
+
+    .thumb-link {
+      position: absolute;
+      inset: 0;
+      display: block;
+      text-decoration: none;
+    }
+    .thumb-link img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s;
+    }
+    .thumb-link:hover img { transform: scale(1.03); }
+
+    .thumb-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(58,125,118,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .thumb-link:hover .thumb-overlay { background: rgba(58,125,118,0.12); }
+
+    /* UTAGEプレースホルダー */
+    .tos-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: white;
+      background: linear-gradient(150deg, #1e4a44 0%, #2d7068 55%, #3a9088 100%);
+      transition: opacity 0.2s;
+    }
+    .tos-placeholder:hover { opacity: 0.9; }
+
+    .tos-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 12px;
+      letter-spacing: 3px;
+      opacity: 0.6;
+      margin-bottom: 10px;
+    }
+    .tos-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+    .tos-hint {
+      font-size: 11px;
+      opacity: 0.55;
+      letter-spacing: 1px;
+      margin-top: 16px;
+    }
+
+    /* 再生ボタン */
+    .play-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(77,158,150,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(77,158,150,0.5);
+      transition: transform 0.2s;
+    }
+    .thumb-link:hover .play-btn,
+    .tos-placeholder:hover .play-btn { transform: scale(1.08); }
+    .play-btn svg { width: 28px; height: 28px; fill: white; margin-left: 4px; }
+
+    /* カード情報 */
+    .card-body {
+      padding: 22px 26px 26px;
+    }
+    .card-num {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary-light);
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 20px;
+    }
+    .tag-station {
+      background: rgba(77,158,150,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(77,158,150,0.3);
+    }
+    .tag-date {
+      background: #f5f5f5;
+      color: var(--text-soft);
+      border: 1px solid #e0e0e0;
+    }
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-soft);
+      line-height: 1.7;
+    }
+    .watch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background 0.2s;
+    }
+    .watch-btn:hover { background: var(--accent); }
+    .watch-btn svg { width: 14px; height: 14px; fill: white; }
+
+    /* ===== フッター ===== */
+    footer {
+      text-align: center;
+      padding: 28px 20px;
+      font-size: 12px;
+      color: var(--text-soft);
+      border-top: 1px solid rgba(126,200,192,0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <div class="page-header">
+    <div class="header-inner">
+      <div class="header-eyebrow">ANELLA CAFE / Media</div>
+      <div class="header-logo">メディア掲載情報</div>
+      <div class="header-sub">テレビ・メディアでご紹介いただきました</div>
+      <div class="badge-row">
+        📺 &nbsp;TV出演 2本
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- バナー -->
+    <div class="banner">
+      🎉 <span><strong>2026年4月17日（金）</strong>、大分の2番組にアネラカフェをご紹介いただきました！</span>
+    </div>
+
+    <!-- セクションタイトル -->
+    <div class="section-label">
+      <span class="section-label-text">TV出演実績</span>
+      <span class="section-label-line"></span>
+    </div>
+
+    <!-- MEDIA 01: ひるドキ!!おおいた -->
+    <div class="media-card">
+      <div class="video-wrapper">
+        <a href="https://www.youtube.com/watch?v=Xm-GBQjNeNg" target="_blank" rel="noopener" class="thumb-link">
+          <img
+            src="https://img.youtube.com/vi/Xm-GBQjNeNg/maxresdefault.jpg"
+            onerror="this.src='https://img.youtube.com/vi/Xm-GBQjNeNg/hqdefault.jpg'"
+            alt="ひるドキ!!おおいた">
+          <div class="thumb-overlay">
+            <div class="play-btn">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="card-body">
+        <div class="card-num">MEDIA 01</div>
+        <div class="meta-row">
+          <span class="tag tag-station">ひるドキ!!おおいた</span>
+          <span class="tag tag-date">📅 2026年4月17日 11:00</span>
+        </div>
+        <div class="card-title">ひるドキ!!おおいた</div>
+        <div class="card-desc">「わんにゃんでいず」のコーナーにてアネラカフェをご紹介いただきました。</div>
+        <a href="https://www.youtube.com/watch?v=Xm-GBQjNeNg" target="_blank" rel="noopener" class="watch-btn">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          YouTubeで見る
+        </a>
+      </div>
+    </div>
+
+    <!-- MEDIA 02: ゆ〜わくワイド -->
+    <div class="media-card">
+      <div class="video-wrapper">
+        <a href="https://utage-system.com/video/7HRzoKpFpDWd" target="_blank" rel="noopener" class="thumb-link">
+          <img src="media-thumb-02.jpg" alt="ゆ〜わくワイド アネラカフェ">
+          <div class="thumb-overlay">
+            <div class="play-btn">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="card-body">
+        <div class="card-num">MEDIA 02</div>
+        <div class="meta-row">
+          <span class="tag tag-station">TOSテレビ大分</span>
+          <span class="tag tag-date">📅 2026年4月17日 16:50</span>
+        </div>
+        <div class="card-title">ゆ〜わくワイド</div>
+        <div class="card-desc">TOSテレビ大分「ゆ〜わくワイド」にてアネラカフェをご紹介いただきました。</div>
+        <a href="https://utage-system.com/video/7HRzoKpFpDWd" target="_blank" rel="noopener" class="watch-btn">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          動画を見る
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>© ANELLA CAFÉ 大分店 — All Rights Reserved</footer>
+
+</body>
+</html>

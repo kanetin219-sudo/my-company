@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>在庫管理表</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "MS Gothic", "Hiragino Kaku Gothic Pro", monospace; font-size: 11px; }
+
+  @media print {
+    body { margin: 0; }
+    .page { page-break-after: always; }
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10mm auto;
+    padding: 8mm;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    text-align: center;
+    vertical-align: middle;
+    padding: 2px 1px;
+    font-size: 10px;
+    height: 18px;
+  }
+
+  .col-name  { width: 32%; text-align: left; padding-left: 3px; }
+  .col-unit  { width: 7%; }
+  .col-date  { width: 6.1%; }
+
+  .header-row th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    font-size: 10px;
+  }
+
+  .date-header {
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  .category-row td {
+    background-color: #e8e8e8;
+    font-weight: bold;
+    text-align: left;
+    padding-left: 4px;
+    font-size: 10px;
+  }
+
+  .new-item td {
+    background-color: #fff9e6;
+  }
+
+  .new-badge {
+    font-size: 8px;
+    color: #cc6600;
+    font-weight: bold;
+    margin-left: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>在 庫 管 理 表</h1>
+
+  <table>
+    <colgroup>
+      <col class="col-name">
+      <col class="col-unit">
+      <col class="col-date">
+      <col class="col-date">
+      <col class="col-date">
+      <col class="col-date">
+      <col class="col-date">
+      <col class="col-date">
+      <col class="col-date">
+      <col class="col-date">
+      <col class="col-date">
+    </colgroup>
+    <thead>
+      <tr class="header-row">
+        <th class="col-name">品　名</th>
+        <th class="col-unit">単位</th>
+        <th class="date-header">日付<br>（　/　）</th>
+        <th class="date-header">（　/　）</th>
+        <th class="date-header">（　/　）</th>
+        <th class="date-header">（　/　）</th>
+        <th class="date-header">（　/　）</th>
+        <th class="date-header">（　/　）</th>
+        <th class="date-header">（　/　）</th>
+        <th class="date-header">（　/　）</th>
+        <th class="date-header">（　/　）</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- おむつ -->
+      <tr class="category-row"><td colspan="11">▼ おむつ</td></tr>
+      <tr><td class="col-name">おむつ（SS）女</td><td>枚</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">おむつ（S）女</td><td>枚</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">おむつ（L）女</td><td>枚</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+      <!-- 清掃用品 -->
+      <tr class="category-row"><td colspan="11">▼ 清掃用品</td></tr>
+      <tr><td class="col-name">ペーパータオル</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ゴミ袋 20ℓ</td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ゴミ袋 30ℓ</td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ゴミ袋 45ℓ</td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ゴミ袋 70ℓ</td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">黒ゴミ袋</td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">レジロール紙</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ストッキングシート</td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">泡ハンドソープ</td><td>本</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">クイックワイパー（ウェット）</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">クイックワイパー（ドライ）</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">トイレクリーナー</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">窓クリーナー</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">消毒液</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">食器洗いスポンジ</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+      <!-- 事務用品 -->
+      <tr class="category-row"><td colspan="11">▼ 事務用品</td></tr>
+      <tr><td class="col-name">コピー用紙</td><td>箱</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">スペアテープ</td><td>本</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+      <!-- 飲料・食品 -->
+      <tr class="category-row"><td colspan="11">▼ 飲料・食品</td></tr>
+      <tr><td class="col-name">コーヒースティック</td><td>本</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">マドラー</td><td>本</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">コーヒーカップ（蓋）</td><td>枚</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">コーヒーカップ（本体）</td><td>枚</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ミルク</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">シュガー</td><td>本</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">紙パック（緑茶）</td><td>箱</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">紙パック（リンゴジュース）</td><td>箱</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">紙パック（オレンジジュース）</td><td>箱</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+      <!-- 日用品 -->
+      <tr class="category-row"><td colspan="11">▼ 日用品</td></tr>
+      <tr><td class="col-name">洗濯用洗剤</td><td>本</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">食器洗い用洗剤</td><td>本</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ウェットティッシュ</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ティッシュ</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ペットシート小</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">ペットシート大</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">トイレットペーパー</td><td>個</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="col-name">猫すな</td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+      <!-- ペットフード（新規追加） -->
+      <tr class="category-row"><td colspan="11">▼ ペットフード ★新規追加</td></tr>
+      <tr class="new-item"><td class="col-name">ワンタイムサーモン 800g<span class="new-badge">NEW</span></td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr class="new-item"><td class="col-name">ワンタイムサーモン 3kg<span class="new-badge">NEW</span></td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr class="new-item"><td class="col-name">ニャンタイムアダルト 400g<span class="new-badge">NEW</span></td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr class="new-item"><td class="col-name">ニャンタイムアダルト 2kg<span class="new-badge">NEW</span></td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr class="new-item"><td class="col-name">わんにゃんまぐろ<span class="new-badge">NEW</span></td><td>袋</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

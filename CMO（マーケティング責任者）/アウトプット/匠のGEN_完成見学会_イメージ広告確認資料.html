@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>匠のGEN｜完成見学会 イメージ広告 確認資料</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f7f5f2; color: #2d2d2d; line-height: 1.7; }
+
+  /* ─── ヘッダー ─── */
+  .hero {
+    background: #3D2E1F;
+    color: #fff;
+    padding: 48px 32px 40px;
+    text-align: center;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: #C8833A;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 5px 18px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .hero h1 { font-size: clamp(20px, 4vw, 28px); font-weight: 700; letter-spacing: 0.04em; line-height: 1.4; margin-bottom: 10px; }
+  .hero-meta { font-size: 13px; color: #C8B8A8; }
+
+  /* ─── ページ ─── */
+  .page { max-width: 980px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* ─── セクション ─── */
+  .section { background: #fff; border-radius: 14px; padding: 36px; margin-bottom: 32px; box-shadow: 0 2px 14px rgba(0,0,0,0.05); }
+  .section-badge {
+    display: inline-block;
+    background: #3D2E1F; color: #fff;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    padding: 4px 14px; border-radius: 20px; margin-bottom: 14px;
+  }
+  .section-title { font-size: 19px; font-weight: 700; color: #3D2E1F; padding-bottom: 14px; border-bottom: 2px solid #E8DFD3; margin-bottom: 20px; }
+  .section-desc { font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.8; }
+
+  /* ─── 広告2カラム表示 ─── */
+  .ad-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .ad-item {}
+  .ad-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ad-num {
+    width: 32px; height: 32px;
+    background: #3D2E1F; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+  }
+  .ad-title { font-size: 16px; font-weight: 700; color: #3D2E1F; }
+  .ad-image-wrap {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    margin-bottom: 14px;
+  }
+  .ad-image-wrap img { width: 100%; display: block; }
+  .ad-tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 10px;
+  }
+  .tag-style { background: #E8DFD3; color: #3D2E1F; }
+  .tag-copy { background: #FFF3E0; color: #7a4a00; }
+  .ad-copy-text {
+    font-size: 13px; color: #555; line-height: 1.7;
+    border-left: 3px solid #C8833A;
+    padding-left: 12px;
+  }
+
+  /* ─── イベント情報 ─── */
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+  .info-card {
+    background: #faf8f6;
+    border-radius: 10px;
+    padding: 20px 18px;
+    border-top: 3px solid #C8833A;
+    text-align: center;
+  }
+  .info-icon { font-size: 22px; margin-bottom: 8px; }
+  .info-label { font-size: 11px; color: #999; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .info-value { font-size: 15px; font-weight: 700; color: #3D2E1F; line-height: 1.5; }
+
+  /* ─── 使用写真 ─── */
+  .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .photo-item { border-radius: 8px; overflow: hidden; position: relative; }
+  .photo-item img { width: 100%; display: block; }
+  .photo-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(61,46,31,0.8);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── チェックリスト ─── */
+  .check-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .check-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; }
+  .check-box { width: 20px; height: 20px; border: 2px solid #C8B8A8; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+  .check-section { font-size: 12px; color: #999; margin-top: 16px; margin-bottom: 6px; font-weight: 700; letter-spacing: 0.06em; }
+
+  /* ─── ノート ─── */
+  .note { background: #FFF9E6; border-left: 4px solid #F5C542; border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 13px; color: #555; line-height: 1.8; margin-top: 20px; }
+
+  /* ─── フッター ─── */
+  .footer { text-align: center; padding: 40px 24px 28px; color: #C8B8A8; font-size: 13px; }
+  .footer-logo { font-size: 22px; font-weight: 700; color: #3D2E1F; margin-bottom: 8px; }
+
+  @media (max-width: 640px) {
+    .ad-grid { grid-template-columns: 1fr; }
+    .photo-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="hero">
+  <div class="hero-tag">CLIENT REVIEW</div>
+  <h1>匠のGEN｜完成見学会<br>イメージ広告 確認資料</h1>
+  <div class="hero-meta">作成日：2026年5月13日　ご確認：川添様・社長・専務</div>
+</div>
+
+<div class="page">
+
+  <!-- イベント情報 -->
+  <div class="section">
+    <div class="section-badge">EVENT INFO</div>
+    <div class="section-title">完成見学会 概要</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-icon">📅</div>
+        <div class="info-label">開催日</div>
+        <div class="info-value">5/23（土）・24（日）</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🕙</div>
+        <div class="info-label">時間</div>
+        <div class="info-value">10:00 〜 17:00</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">📍</div>
+        <div class="info-label">場所</div>
+        <div class="info-value">宮崎市生目</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🏠</div>
+        <div class="info-label">テーマ</div>
+        <div class="info-value">日差しと笑顔が行き交う<br>大開口の家</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 広告クリエイティブ2パターン -->
+  <div class="section">
+    <div class="section-badge">CREATIVE</div>
+    <div class="section-title">イメージ広告 クリエイティブ（2パターン）</div>
+    <div class="section-desc">META広告（Instagram・Facebook）用の縦型イメージ広告です。2パターンご確認いただき、使用するデザインをお選びください。</div>
+
+    <div class="ad-grid">
+
+      <!-- パターン１ -->
+      <div class="ad-item">
+        <div class="ad-label">
+          <div class="ad-num">1</div>
+          <div class="ad-title">3段構成スタイル</div>
+        </div>
+        <div class="ad-image-wrap">
+          <img src="イメージ広告_完成見学会_パターン１.png" alt="パターン１">
+        </div>
+        <div class="ad-tag-row">
+          <span class="tag tag-style">内観＋外観の2ショット</span>
+          <span class="tag tag-copy">信頼感・実在感</span>
+        </div>
+        <div class="ad-copy-text">
+          「この家を、体感しに来て。」<br>
+          上部に内観、下部に外観写真を使った2段構成。家の内と外どちらも見せることで、見込み客に実在感を与えます。
+        </div>
+      </div>
+
+      <!-- パターン２ -->
+      <div class="ad-item">
+        <div class="ad-label">
+          <div class="ad-num">2</div>
+          <div class="ad-title">フル背景スタイル</div>
+        </div>
+        <div class="ad-image-wrap">
+          <img src="イメージ広告_完成見学会_パターン２.png" alt="パターン２">
+        </div>
+        <div class="ad-tag-row">
+          <span class="tag tag-style">内観フル背景</span>
+          <span class="tag tag-copy">ワクワク・感情訴求</span>
+        </div>
+        <div class="ad-copy-text">
+          「見に来てほしい家が、できました。」<br>
+          内観をフルに使ったシネマティックなスタイル。空間の広さ・大開口の明るさがそのまま伝わり、「行ってみたい」気持ちを引き出します。
+        </div>
+      </div>
+
+    </div>
+
+    <div class="note">
+      <strong>どちらを使う？</strong>　2パターンとも同じイベント情報を含んでいます。「より実在感を伝えたい」ならパターン①、「ワクワク感で引っ張りたい」ならパターン②がおすすめです。両方テスト配信してCTRで判断するのもOKっちゃ。
+    </div>
+  </div>
+
+  <!-- 使用写真 -->
+  <div class="section">
+    <div class="section-badge">PHOTOS USED</div>
+    <div class="section-title">使用写真</div>
+    <div class="section-desc">広告に使用している写真です。差し替えが必要な場合はお知らせください。</div>
+    <div class="photo-grid">
+      <div class="photo-item">
+        <img src="takumi_hero_new.jpg" alt="内観写真">
+        <div class="photo-label">内観：LDK（大開口・アイランドキッチン）</div>
+      </div>
+      <div class="photo-item">
+        <img src="H001.jpg" alt="外観写真" style="height:300px;object-fit:cover;object-position:center 15%;">
+        <div class="photo-label">外観：完成見学会の建物（生目）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 確認チェックリスト -->
+  <div class="section">
+    <div class="section-badge">YOUR ACTION</div>
+    <div class="section-title">ご確認いただきたい事項</div>
+
+    <p class="check-section">▌ イベント情報</p>
+    <ul class="check-list" style="margin-bottom:20px;">
+      <li><div class="check-box"></div>日付・時間・場所に誤りはないか（5/23土・24日、10:00〜17:00、宮崎市生目）</li>
+      <li><div class="check-box"></div>「予約不要・入場無料」の表記は正しいか</li>
+    </ul>
+
+    <p class="check-section">▌ クリエイティブ</p>
+    <ul class="check-list" style="margin-bottom:20px;">
+      <li><div class="check-box"></div>パターン①・②どちらを採用するか（または両方テスト配信するか）</li>
+      <li><div class="check-box"></div>コピー文「この家を、体感しに来て。」「見に来てほしい家が、できました。」は問題ないか</li>
+      <li><div class="check-box"></div>写真は差し替えが必要か（もし当日撮影した内観写真があれば使えます）</li>
+    </ul>
+
+    <p class="check-section">▌ その他</p>
+    <ul class="check-list">
+      <li><div class="check-box"></div>追加で入れてほしい情報（駐車場・道案内・QRコードなど）はあるか</li>
+    </ul>
+
+    <div class="note">フィードバックはLINEまたは口頭でOKっちゃ。「パターン②のコピーをこう変えてほしい」等の具体的なご要望もお気軽にどうぞ。</div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-logo">匠のGEN</div>
+  <div>宮崎の家づくり ── Powered by my-company</div>
+</div>
+
+</body>
+</html>

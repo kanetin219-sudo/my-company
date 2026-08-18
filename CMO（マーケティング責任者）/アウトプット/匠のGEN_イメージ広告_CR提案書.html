@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>匠のGEN｜イメージ広告 クリエイティブ提案書</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f7f5f2; color: #2d2d2d; line-height: 1.7; }
+
+  /* ヒーロー */
+  .hero {
+    background: #3D2E1F;
+    color: #fff;
+    padding: 64px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('takumi_hero_new.jpg') center/cover no-repeat;
+    opacity: 0.18;
+  }
+  .hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+  .hero-tag {
+    display: inline-block;
+    background: #E8DFD3;
+    color: #3D2E1F;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 { font-size: clamp(22px, 5vw, 32px); font-weight: 700; letter-spacing: 0.04em; line-height: 1.4; margin-bottom: 12px; }
+  .hero-sub { font-size: 14px; color: #C8B8A8; margin-bottom: 28px; }
+  .hero-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #C8B8A8;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ページ */
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 24px 100px; }
+
+  /* セクション共通 */
+  .section { background: #fff; border-radius: 14px; padding: 36px; margin-bottom: 32px; box-shadow: 0 2px 16px rgba(0,0,0,0.05); }
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #3D2E1F; color: #fff;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 14px;
+  }
+  .section-title { font-size: 20px; font-weight: 700; color: #3D2E1F; margin-bottom: 8px; padding-bottom: 14px; border-bottom: 2px solid #E8DFD3; }
+  .section-desc { font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.8; }
+
+  /* 概要カード */
+  .overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
+  .overview-card {
+    background: #faf8f6;
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+    border-top: 3px solid #3D2E1F;
+  }
+  .overview-card .ov-num { font-size: 28px; font-weight: 700; color: #3D2E1F; }
+  .overview-card .ov-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+  /* メイン広告ビジュアル */
+  .ad-showcase {
+    display: flex;
+    gap: 36px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .ad-image-wrap {
+    flex: 0 0 auto;
+    width: 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .ad-image-wrap img { width: 100%; display: block; }
+  .ad-detail { flex: 1; min-width: 240px; }
+  .ad-detail-title { font-size: 16px; font-weight: 700; color: #3D2E1F; margin-bottom: 16px; }
+  .ad-spec-list { display: flex; flex-direction: column; gap: 10px; }
+  .ad-spec-item { display: flex; gap: 12px; font-size: 13px; }
+  .ad-spec-key { font-weight: 700; color: #3D2E1F; min-width: 80px; flex-shrink: 0; }
+  .ad-spec-val { color: #555; }
+  .ad-note {
+    margin-top: 20px;
+    background: #faf8f6;
+    border-left: 4px solid #C8D5C0;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.8;
+  }
+
+  /* コピーパターン */
+  .copy-grid { display: flex; flex-direction: column; gap: 16px; }
+  .copy-card {
+    border: 1.5px solid #E8DFD3;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .copy-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #faf8f6;
+    padding: 14px 20px;
+    border-bottom: 1px solid #E8DFD3;
+  }
+  .copy-num {
+    width: 32px; height: 32px;
+    background: #3D2E1F;
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .copy-main { font-size: 16px; font-weight: 700; color: #3D2E1F; }
+  .copy-card-body { padding: 16px 20px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .copy-tag-group { flex: 1; min-width: 200px; }
+  .copy-tag-label { font-size: 11px; color: #999; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .copy-tag { display: inline-block; background: #E8DFD3; color: #3D2E1F; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 10px; margin-right: 6px; margin-bottom: 4px; }
+  .copy-tag.scene { background: #C8D5C0; color: #2d4a2d; }
+  .copy-tag.target { background: #FFF3E0; color: #7a4a00; }
+
+  /* 訴求軸 */
+  .scene-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+  .scene-card {
+    background: #faf8f6;
+    border-radius: 10px;
+    padding: 18px 16px;
+    border-top: 3px solid #C8D5C0;
+  }
+  .scene-icon { font-size: 24px; margin-bottom: 8px; }
+  .scene-name { font-size: 13px; font-weight: 700; color: #3D2E1F; margin-bottom: 6px; }
+  .scene-copy { font-size: 12px; color: #666; line-height: 1.6; }
+  .scene-target { font-size: 11px; color: #999; margin-top: 6px; }
+
+  /* ブランドカラー */
+  .color-palette { display: flex; gap: 12px; flex-wrap: wrap; }
+  .color-chip { display: flex; align-items: center; gap: 10px; }
+  .color-swatch { width: 44px; height: 44px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); flex-shrink: 0; }
+  .color-info { }
+  .color-hex { font-size: 13px; font-weight: 700; color: #3D2E1F; }
+  .color-role { font-size: 11px; color: #999; }
+
+  /* NG例 */
+  .ng-list { display: flex; flex-direction: column; gap: 8px; }
+  .ng-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #666; }
+  .ng-icon { color: #e05555; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* OK例 */
+  .ok-list { display: flex; flex-direction: column; gap: 8px; }
+  .ok-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #666; }
+  .ok-icon { color: #4a9a5a; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  /* タイムライン */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 16px; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; }
+  .tl-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #3D2E1F; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .tl-line { width: 2px; background: #E8DFD3; flex: 1; min-height: 20px; margin: 4px 0; }
+  .tl-content { flex: 1; padding-bottom: 24px; }
+  .tl-period { font-size: 12px; font-weight: 700; color: #C8B8A8; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .tl-title { font-size: 15px; font-weight: 700; color: #3D2E1F; margin-bottom: 4px; }
+  .tl-desc { font-size: 13px; color: #666; }
+
+  /* 注記 */
+  .note-box {
+    background: #FFF9E6;
+    border-left: 4px solid #F5C542;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.8;
+    margin-top: 20px;
+  }
+
+  /* チェックリスト */
+  .check-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .check-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; }
+  .check-box { width: 20px; height: 20px; border: 2px solid #C8B8A8; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+  .check-section { font-size: 12px; color: #999; margin-top: 16px; margin-bottom: 4px; font-weight: 700; letter-spacing: 0.06em; }
+
+  /* フッター */
+  .footer { text-align: center; padding: 48px 24px 32px; color: #C8B8A8; font-size: 13px; }
+  .footer-logo { font-size: 20px; font-weight: 700; color: #3D2E1F; margin-bottom: 8px; }
+
+  @media (max-width: 600px) {
+    .ad-showcase { flex-direction: column; }
+    .ad-image-wrap { width: 100%; }
+    .two-col { grid-template-columns: 1fr; }
+    .copy-card-body { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ヒーロー -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">CLIENT REVIEW DOCUMENT</div>
+    <h1>匠のGEN<br>イメージ広告 クリエイティブ提案書</h1>
+    <div class="hero-sub">META広告（Instagram / Facebook）クリエイティブ方針・コピー確認資料</div>
+    <div class="hero-meta">
+      <span>作成日：2026年5月13日</span>
+      <span>ご確認：川添様・社長・専務</span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- 概要 -->
+  <div class="section">
+    <div class="section-badge">OVERVIEW</div>
+    <div class="section-title">この資料について</div>
+    <div class="section-desc">
+      本資料は、META広告（Instagram・Facebook）で配信するイメージ広告のクリエイティブ（ビジュアル・コピー）をご確認いただくための資料です。<br>
+      現在配信中の「イメージ広告」のデザイン方針・コピーバリエーション・ブランドガイドラインをまとめています。
+    </div>
+    <div class="overview-grid">
+      <div class="overview-card">
+        <div class="ov-num">5</div>
+        <div class="ov-label">コピーパターン数</div>
+      </div>
+      <div class="overview-card">
+        <div class="ov-num">4</div>
+        <div class="ov-label">テストシーン数</div>
+      </div>
+      <div class="overview-card">
+        <div class="ov-num">1,080×1,350</div>
+        <div class="ov-label">推奨サイズ（4:5）</div>
+      </div>
+      <div class="overview-card">
+        <div class="ov-num">Instagram<br>Facebook</div>
+        <div class="ov-label">配信媒体</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- メインビジュアル -->
+  <div class="section">
+    <div class="section-badge">MAIN CREATIVE</div>
+    <div class="section-title">現行イメージ広告ビジュアル</div>
+    <div class="section-desc">現在テスト配信中のイメージ広告です。ビジュアル・コピー・全体的な印象をご確認ください。</div>
+
+    <div class="ad-showcase">
+      <div class="ad-image-wrap">
+        <img src="匠のGEN_CR_イメージ広告.PNG" alt="匠のGEN イメージ広告クリエイティブ">
+      </div>
+      <div class="ad-detail">
+        <div class="ad-detail-title">クリエイティブ仕様</div>
+        <div class="ad-spec-list">
+          <div class="ad-spec-item">
+            <div class="ad-spec-key">メインコピー</div>
+            <div class="ad-spec-val">オシャレな家より<br>帰りたくなる家を。</div>
+          </div>
+          <div class="ad-spec-item">
+            <div class="ad-spec-key">サブコピー</div>
+            <div class="ad-spec-val">10年後も、好きでいられる家を。</div>
+          </div>
+          <div class="ad-spec-item">
+            <div class="ad-spec-key">ボディコピー</div>
+            <div class="ad-spec-val">家は、人生の器。<br>見えない部分まで丁寧に。<br>素材の質感、自然の光、<br>職人の手仕事。すべてが、<br>未来の心地よさにつながっています。</div>
+          </div>
+          <div class="ad-spec-item">
+            <div class="ad-spec-key">訴求軸</div>
+            <div class="ad-spec-val">長く愛せる家づくり × 職人品質</div>
+          </div>
+          <div class="ad-spec-item">
+            <div class="ad-spec-key">レイアウト</div>
+            <div class="ad-spec-val">上：施工事例（内観）<br>下：現場写真（職人・棟上げ）<br>中央帯：メインコピー</div>
+          </div>
+          <div class="ad-spec-item">
+            <div class="ad-spec-key">ロゴ位置</div>
+            <div class="ad-spec-val">右下「匠のGEN｜宮崎」</div>
+          </div>
+        </div>
+        <div class="ad-note">
+          <strong>広告の狙い：</strong>「おしゃれな家を建てたい」という表層的な動機ではなく、「10年後も好きな家に住み続けたい」という本質的な欲求に響かせる訴求です。流行に左右されない匠のGENのブランドらしさを表現しています。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- コピーパターン一覧 -->
+  <div class="section">
+    <div class="section-badge">COPY PATTERNS</div>
+    <div class="section-title">コピーバリエーション 5パターン</div>
+    <div class="section-desc">
+      同じビジュアル構成（上：内観 / 下：現場写真）で、コピーを変えた5パターンを用意しています。<br>
+      各パターンはターゲットの「ワクワクの引き金」が異なります。どのコピーが一番しっくり来るかご確認ください。
+    </div>
+
+    <div class="copy-grid">
+      <div class="copy-card">
+        <div class="copy-card-header">
+          <div class="copy-num">1</div>
+          <div class="copy-main">家を建てる"過程"が、"暮らし"になる。</div>
+        </div>
+        <div class="copy-card-body">
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">訴求軸</div>
+            <span class="copy-tag">過程×暮らし</span>
+            <span class="copy-tag">王道</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">対応シーン</div>
+            <span class="copy-tag scene">夜のシーン</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">想定ターゲット</div>
+            <span class="copy-tag target">家づくりのプロセスを大切にしたい層</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="copy-card">
+        <div class="copy-card-header">
+          <div class="copy-num">2</div>
+          <div class="copy-main">家は、素材から始まる。</div>
+        </div>
+        <div class="copy-card-body">
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">訴求軸</div>
+            <span class="copy-tag">素材・職人技</span>
+            <span class="copy-tag">本物志向</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">対応シーン</div>
+            <span class="copy-tag scene">裏付け（職人）</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">想定ターゲット</div>
+            <span class="copy-tag target">品質・素材にこだわりたい層</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="copy-card">
+        <div class="copy-card-header">
+          <div class="copy-num">3</div>
+          <div class="copy-main">"ただいま"が、いちばん嬉しい家を。</div>
+        </div>
+        <div class="copy-card-body">
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">訴求軸</div>
+            <span class="copy-tag">帰りたくなる家</span>
+            <span class="copy-tag">感情訴求</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">対応シーン</div>
+            <span class="copy-tag scene">夜のシーン</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">想定ターゲット</div>
+            <span class="copy-tag target">共働き・帰宅後の安らぎを求める層</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="copy-card">
+        <div class="copy-card-header">
+          <div class="copy-num">4</div>
+          <div class="copy-main">子どもの"好き"が、育つ家。</div>
+        </div>
+        <div class="copy-card-body">
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">訴求軸</div>
+            <span class="copy-tag">子育て世代</span>
+            <span class="copy-tag">教育</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">対応シーン</div>
+            <span class="copy-tag scene">子ども主体</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">想定ターゲット</div>
+            <span class="copy-tag target">子どもの教育・成長を重視する層</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="copy-card">
+        <div class="copy-card-header">
+          <div class="copy-num">5</div>
+          <div class="copy-main">手仕事の壁は、年月で美しくなる。</div>
+        </div>
+        <div class="copy-card-body">
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">訴求軸</div>
+            <span class="copy-tag">本物志向</span>
+            <span class="copy-tag">経年美化</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">対応シーン</div>
+            <span class="copy-tag scene">裏付け（素材）</span>
+          </div>
+          <div class="copy-tag-group">
+            <div class="copy-tag-label">想定ターゲット</div>
+            <span class="copy-tag target">漆喰・無垢材など本物素材を好む層</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>テスト方法：</strong>上記5パターンを別々の広告セットとして配信し、CTR（クリック率）とLINE登録率を比較します。反応が取れたコピーの「ワクワクの引き金」を軸に、今後のLP・LINE配信内容を再設計します。
+    </div>
+  </div>
+
+  <!-- 4シーンCRテスト -->
+  <div class="section">
+    <div class="section-badge">CR TEST STRATEGY</div>
+    <div class="section-title">4シーンCRテスト（5月〜6月）</div>
+    <div class="section-desc">
+      「どのシーンが一番刺さるか」を4パターンで検証します。反応が取れたシーンが、ターゲットの「登録動機」と直結します。
+    </div>
+
+    <div class="scene-cards">
+      <div class="scene-card">
+        <div class="scene-icon">☀️</div>
+        <div class="scene-name">朝のシーン</div>
+        <div class="scene-copy">朝食・朝日のリビング・子どもを送り出す</div>
+        <div class="scene-target">日常の充実を求める共働き世代</div>
+      </div>
+      <div class="scene-card">
+        <div class="scene-icon">🌙</div>
+        <div class="scene-name">夜のシーン</div>
+        <div class="scene-copy">夕食・ソファで団らん・ただいまの瞬間</div>
+        <div class="scene-target">帰宅後の安らぎを重視する層</div>
+      </div>
+      <div class="scene-card">
+        <div class="scene-icon">🌿</div>
+        <div class="scene-name">休日のシーン</div>
+        <div class="scene-copy">庭・本を読む・日なたぼっこ</div>
+        <div class="scene-target">スローライフ志向・自然志向</div>
+      </div>
+      <div class="scene-card">
+        <div class="scene-icon">🧒</div>
+        <div class="scene-name">子ども主体</div>
+        <div class="scene-copy">勉強・遊び・リビングで騒ぐ子ども</div>
+        <div class="scene-target">子どもの成長を重視・教育熱心な層</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>なぜテストが必要か：</strong>「ワクワクの引き金は人によって違う」のが前提です。どのシーンが一番反応を取れるか＝ターゲットのワクワクが分かる。それが「LINE登録する動機」とほぼ同義です。テスト結果を見て、LP・LINE特典・配信内容を最適化します。
+    </div>
+  </div>
+
+  <!-- ブランドガイドライン -->
+  <div class="section">
+    <div class="section-badge">BRAND GUIDELINE</div>
+    <div class="section-title">デザインルール（統一事項）</div>
+    <div class="section-desc">全クリエイティブで共通するデザイン方針です。新しい画像・素材を追加する際もこのルールに沿って制作します。</div>
+
+    <div style="margin-bottom: 28px;">
+      <div class="ad-detail-title" style="margin-bottom:16px;">ブランドカラー</div>
+      <div class="color-palette">
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#E8DFD3;"></div>
+          <div class="color-info">
+            <div class="color-hex">#E8DFD3</div>
+            <div class="color-role">メイン（ウォームベージュ）</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#3D2E1F;"></div>
+          <div class="color-info">
+            <div class="color-hex">#3D2E1F</div>
+            <div class="color-role">アクセント（焦げ茶）</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#FAFAFA; border:1px solid #ddd;"></div>
+          <div class="color-info">
+            <div class="color-hex">#FAFAFA</div>
+            <div class="color-role">ベース（白）</div>
+          </div>
+        </div>
+        <div class="color-chip">
+          <div class="color-swatch" style="background:#C8D5C0;"></div>
+          <div class="color-info">
+            <div class="color-hex">#C8D5C0</div>
+            <div class="color-role">サブ（淡いグリーン）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="ad-detail-title" style="margin-bottom:12px;">使ってはいけない表現（NG）</div>
+        <div class="ng-list">
+          <div class="ng-item"><div class="ng-icon">✕</div>派手なグラデーション・強い装飾</div>
+          <div class="ng-item"><div class="ng-icon">✕</div>ストックフォト感のある写真</div>
+          <div class="ng-item"><div class="ng-icon">✕</div>ハウスメーカーっぽいキラキラ感</div>
+          <div class="ng-item"><div class="ng-icon">✕</div>都会的すぎる雰囲気</div>
+          <div class="ng-item"><div class="ng-icon">✕</div>安っぽい合成・ピカピカした仕上げ</div>
+        </div>
+      </div>
+      <div>
+        <div class="ad-detail-title" style="margin-bottom:12px;">使うべき表現（OK）</div>
+        <div class="ok-list">
+          <div class="ok-item"><div class="ok-icon">○</div>自然光・温かみのある色調</div>
+          <div class="ok-item"><div class="ok-icon">○</div>実際の施工事例写真（リアル感）</div>
+          <div class="ok-item"><div class="ok-icon">○</div>日付スタンプなど現場のリアル感</div>
+          <div class="ok-item"><div class="ok-icon">○</div>無垢材・漆喰の質感が分かる写真</div>
+          <div class="ok-item"><div class="ok-icon">○</div>家族の素の表情・日常の一コマ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 今後のスケジュール -->
+  <div class="section">
+    <div class="section-badge">NEXT STEPS</div>
+    <div class="section-title">今後のスケジュール</div>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-circle">5月</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-period">2026年5月（現在）</div>
+          <div class="tl-title">イメージ広告テスト配信 + 見学会撮影</div>
+          <div class="tl-desc">5月13日（火）9:00〜 完成見学会の場所撮影。イメージ広告5パターンの配信開始。CTR・LINE登録率データ収集。</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-circle">5月末</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-period">2026年5月末</div>
+          <div class="tl-title">LP冒頭動画 撮影</div>
+          <div class="tl-desc">社長・専務・川添さんの紹介動画（30秒〜1分）撮影。LP冒頭に実装予定。</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-circle">6月</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-period">2026年6月</div>
+          <div class="tl-title">LP第2バージョン公開 + 登録動機確定</div>
+          <div class="tl-desc">テスト結果をもとに「効く動機・効くシーン」を1〜2軸に絞り込み。LP改修版（動画＋特典＋施主インタビュー）を公開。</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-circle">7月</div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-period">2026年7月末</div>
+          <div class="tl-title">LINE登録者 180人 達成</div>
+          <div class="tl-desc">現状30組 → 目標180人。広告母数増加・LP改修・登録動機最適化の3軸を並行して進め、7月末までに達成を目指す。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- クライアント確認チェックリスト -->
+  <div class="section">
+    <div class="section-badge">YOUR ACTION</div>
+    <div class="section-title">ご確認いただきたい事項</div>
+    <div class="section-desc">
+      以下の項目についてご確認いただき、ご意見・ご修正点をお知らせください。修正対応してご連絡します。
+    </div>
+
+    <p class="check-section">▌ メインビジュアル</p>
+    <ul class="check-list" style="margin-bottom:20px;">
+      <li><div class="check-box"></div>現行の広告ビジュアル（写真・レイアウト）は会社のイメージに合っているか</li>
+      <li><div class="check-box"></div>差し替えが必要な写真・画像はあるか（あれば教えてください）</li>
+    </ul>
+
+    <p class="check-section">▌ コピー5パターン</p>
+    <ul class="check-list" style="margin-bottom:20px;">
+      <li><div class="check-box"></div>5つのコピーは全て「匠のGENらしい」言葉になっているか</li>
+      <li><div class="check-box"></div>ご自身として「これは絶対使いたい！」と感じるコピーはあるか</li>
+      <li><div class="check-box"></div>逆に「これは使いたくない」と感じるコピーはあるか（理由も教えてください）</li>
+    </ul>
+
+    <p class="check-section">▌ ブランドガイドライン</p>
+    <ul class="check-list">
+      <li><div class="check-box"></div>NG表現の方針に同意いただけるか</div></li>
+      <li><div class="check-box"></div>追加して欲しい「使ってはいけない表現」はあるか</li>
+    </ul>
+
+    <div class="note-box">
+      フィードバックはお電話・LINEどちらでも大丈夫です。コピーについては「パターン○番が好き」「パターン△番の雰囲気が違う」といった感覚的なご意見でも助かります。
+    </div>
+  </div>
+
+</div>
+
+<!-- フッター -->
+<div class="footer">
+  <div class="footer-logo">匠のGEN</div>
+  <div>本資料に関するお問い合わせは担当者までお気軽にどうぞ</div>
+  <div style="margin-top:8px; color:#E8DFD3;">Powered by my-company</div>
+</div>
+
+</body>
+</html>

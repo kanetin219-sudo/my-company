@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>着物リメイクドレス講座 入金分 支払方法振り分け</title>
+<style>
+  body { font-family: 'Hiragino Kaku Gothic ProN', sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+  .container { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.4em; color: #333; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }
+  .tab-bar { display: flex; gap: 8px; margin: 20px 0 0; }
+  .tab-btn { padding: 10px 28px; border-radius: 8px 8px 0 0; border: none; cursor: pointer; font-size: 1em; font-weight: bold; background: #ddd; color: #666; transition: all .2s; }
+  .tab-btn.active-all  { background: #FF6B35; color: #fff; }
+  .tab-btn.active-apr  { background: #FF9800; color: #fff; }
+  .tab-btn.active-may  { background: #4CAF50; color: #fff; }
+  .summary { display: flex; gap: 15px; flex-wrap: wrap; background: white; border-radius: 0 10px 10px 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+  .card { flex: 1; min-width: 110px; text-align: center; }
+  .card .num { font-size: 2.2em; font-weight: bold; }
+  .card .label { font-size: 0.85em; color: #666; margin-top: 4px; }
+  .month-block { display: none; }
+  .month-block.visible { display: block; }
+  .month-title { font-size: 1.1em; font-weight: bold; padding: 10px 18px; border-radius: 8px; margin-bottom: 12px; }
+  .month-title.april { background: #FFF3E0; color: #E65100; border-left: 5px solid #FF9800; }
+  .month-title.may   { background: #E8F5E9; color: #1B5E20; border-left: 5px solid #4CAF50; }
+  .section { background: white; border-radius: 10px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .section h2 { font-size: 1.05em; margin: 0 0 12px; padding: 8px 15px; border-radius: 6px; }
+  .section.card-section h2 { background: #E3F2FD; color: #1565C0; }
+  .section.bank-section h2 { background: #E8F5E9; color: #2E7D32; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+  th { background: #f8f8f8; padding: 8px 12px; text-align: left; border-bottom: 2px solid #eee; color: #555; font-weight: bold; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  .badge-new { background: #FFF9C4; color: #F57F17; border: 1px solid #FFD600; border-radius: 10px; padding: 1px 7px; font-size: 0.78em; margin-left: 5px; }
+  .meta { color: #999; font-size: 0.8em; margin-top: 20px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🎌 着物リメイクドレス講座 — 入金分 支払方法振り分け</h1>
+  <p style="color:#666; font-size:0.9em;">集計日：2026年6月1日　｜　データソース：エルメタグ（着物リメイクドレス講座生 33名）</p>
+
+  <div class="tab-bar">
+    <button class="tab-btn active-all" onclick="showTab('all', this)">📋 全期間（33名）</button>
+    <button class="tab-btn" onclick="showTab('apr', this)">🟠 4月入会（24名）</button>
+    <button class="tab-btn" onclick="showTab('may', this)">🟢 5月入会（9名）</button>
+  </div>
+
+  <div class="summary" id="summary-all">
+    <div class="card"><div class="num" style="color:#FF6B35;">33</div><div class="label">総人数</div></div>
+    <div class="card"><div class="num" style="color:#2196F3;">19</div><div class="label">💳 カード</div></div>
+    <div class="card"><div class="num" style="color:#4CAF50;">14</div><div class="label">🏦 振込</div></div>
+    <div class="card"><div class="num" style="color:#FF9800;">24</div><div class="label">📅 4月</div></div>
+    <div class="card"><div class="num" style="color:#4CAF50;">9</div><div class="label">📅 5月</div></div>
+  </div>
+  <div class="summary" id="summary-apr" style="display:none;">
+    <div class="card"><div class="num" style="color:#FF9800;">24</div><div class="label">4月 合計</div></div>
+    <div class="card"><div class="num" style="color:#2196F3;">18</div><div class="label">💳 カード</div></div>
+    <div class="card"><div class="num" style="color:#4CAF50;">6</div><div class="label">🏦 振込</div></div>
+  </div>
+  <div class="summary" id="summary-may" style="display:none;">
+    <div class="card"><div class="num" style="color:#4CAF50;">9</div><div class="label">5月 合計</div></div>
+    <div class="card"><div class="num" style="color:#2196F3;">1</div><div class="label">💳 カード</div></div>
+    <div class="card"><div class="num" style="color:#4CAF50;">8</div><div class="label">🏦 振込</div></div>
+  </div>
+
+  <!-- 4月 -->
+  <div class="month-block visible" id="block-apr">
+    <div class="month-title april">📅 4月入会分 — 24名（カード決済18名 ／ 銀行振込6名）</div>
+    <div class="section card-section">
+      <h2>💳 カード決済 — 18名</h2>
+      <table>
+        <tr><th>No</th><th>名前</th><th>流入経路</th><th>タグ付与日</th></tr>
+        <tr><td>8</td><td>hiromi</td><td>新IG_2(LP02)</td><td>2026-04-30</td></tr>
+        <tr><td>9</td><td>いしばしゆきこ</td><td>OG_1(インスタ)</td><td>2026-04-30</td></tr>
+        <tr><td>10</td><td>松村晶子</td><td>IG_4(LP04)</td><td>2026-04-30</td></tr>
+        <tr><td>11</td><td>🌺NANA 🌸</td><td>新IG_8(LP08)</td><td>2026-04-30</td></tr>
+        <tr><td>12</td><td>えりこ</td><td>OG_1(インスタ)</td><td>2026-04-30</td></tr>
+        <tr><td>13</td><td>伊藤美香</td><td>新IG_6(LP06)</td><td>2026-04-30</td></tr>
+        <tr><td>14</td><td>うけた あきこ</td><td>新IG_2(LP02)</td><td>2026-04-30</td></tr>
+        <tr><td>15</td><td>やまなかくみこ</td><td>IG_7(LP07)</td><td>2026-04-30</td></tr>
+        <tr><td>16</td><td>♪Rie♪</td><td>新IG_2(LP02)</td><td>2026-04-30</td></tr>
+        <tr><td>17</td><td>Erika Abe</td><td>OG_1(インスタ)</td><td>2026-04-30</td></tr>
+        <tr><td>18</td><td>三木恭子</td><td>新IG_6(LP06)</td><td>2026-04-30</td></tr>
+        <tr><td>22</td><td>たまみ</td><td>新IG_6(LP06)</td><td>2026-04-30</td></tr>
+        <tr><td>23</td><td>田島良子</td><td>新IG_3(LP03)</td><td>2026-04-30</td></tr>
+        <tr><td>24</td><td>mayumi</td><td>新IG_3(LP03)</td><td>2026-04-30</td></tr>
+        <tr><td>25</td><td>池田陽子</td><td>新IG_6(LP06)</td><td>2026-04-30</td></tr>
+        <tr><td>27</td><td>Tomoyo</td><td>新IG_3(LP03)</td><td>2026-04-30</td></tr>
+        <tr><td>28</td><td>京花(オノセキョウコ)</td><td>IG_5(LP05)</td><td>2026-04-29</td></tr>
+        <tr><td>29</td><td>Ayuka</td><td>新IG_3(LP03)</td><td>2026-04-29</td></tr>
+      </table>
+    </div>
+    <div class="section bank-section">
+      <h2>🏦 銀行振込 — 6名</h2>
+      <table>
+        <tr><th>No</th><th>名前</th><th>流入経路</th><th>タグ付与日</th><th>備考</th></tr>
+        <tr><td>19</td><td>りゅうまま</td><td>新IG_4(LP04)</td><td>2026-04-30</td><td></td></tr>
+        <tr><td>20</td><td>近藤周子</td><td>IG_1(LP01)</td><td>2026-04-30</td><td></td></tr>
+        <tr><td>21</td><td>伊藤 恵美</td><td>新IG_4(LP04)</td><td>2026-04-30</td><td></td></tr>
+        <tr><td>26</td><td>たなか みえこ</td><td>新IG_9(LP09)</td><td>2026-04-30</td><td></td></tr>
+        <tr><td>30</td><td>はら まゆみ</td><td>IG_1(LP01)</td><td>2026-04-29</td><td></td></tr>
+        <tr><td>31</td><td>Yuko. kondoh</td><td>新IG_4(LP04)</td><td>2026-04-15</td><td style="font-size:0.82em;color:#888;">※エルメは「Yuko. kondoh」表記</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5月 -->
+  <div class="month-block visible" id="block-may">
+    <div class="month-title may">📅 5月入会分 — 9名（カード決済1名 ／ 銀行振込8名）</div>
+    <div class="section card-section">
+      <h2>💳 カード決済 — 1名</h2>
+      <table>
+        <tr><th>No</th><th>名前</th><th>流入経路</th><th>タグ付与日</th></tr>
+        <tr><td>33</td><td>hiro <span class="badge-new">NEW</span></td><td>新IG_6(LP06)</td><td>2026-05-24</td></tr>
+      </table>
+    </div>
+    <div class="section bank-section">
+      <h2>🏦 銀行振込 — 8名</h2>
+      <table>
+        <tr><th>No</th><th>名前</th><th>流入経路</th><th>タグ付与日</th></tr>
+        <tr><td>1</td><td>なみ</td><td>新IG_2(LP02)</td><td>2026-05-03</td></tr>
+        <tr><td>2</td><td>京田まゆみ</td><td>新IG_3(LP03)</td><td>2026-05-03</td></tr>
+        <tr><td>3</td><td>松下 陽子</td><td>IG_1(LP01)</td><td>2026-05-01</td></tr>
+        <tr><td>4</td><td>みぃやぁ</td><td>新IG_3(LP03)</td><td>2026-05-01</td></tr>
+        <tr><td>5</td><td>yokkoママ</td><td>IG_1(LP01)</td><td>2026-05-01</td></tr>
+        <tr><td>6</td><td>mizu</td><td>OG_1(インスタ)</td><td>2026-05-01</td></tr>
+        <tr><td>7</td><td>Mizuho Ohno</td><td>IG_7(LP07)</td><td>2026-05-01</td></tr>
+        <tr><td>32</td><td>るみちゃん <span class="badge-new">NEW</span></td><td>新IG_9(LP09)</td><td>2026-05-25</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+function showTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-all','active-apr','active-may'));
+  if (tab==='all') btn.classList.add('active-all');
+  if (tab==='apr') btn.classList.add('active-apr');
+  if (tab==='may') btn.classList.add('active-may');
+  document.getElementById('summary-all').style.display = tab==='all' ? 'flex' : 'none';
+  document.getElementById('summary-apr').style.display = tab==='apr' ? 'flex' : 'none';
+  document.getElementById('summary-may').style.display = tab==='may' ? 'flex' : 'none';
+  var apr = document.getElementById('block-apr');
+  var may = document.getElementById('block-may');
+  apr.classList.toggle('visible', tab==='all' || tab==='apr');
+  may.classList.toggle('visible', tab==='all' || tab==='may');
+}
+</script>
+</body>
+</html>

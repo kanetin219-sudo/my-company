@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>参加規約兼同意書｜夏休み特別企画 飼育＆トリマー体験</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', sans-serif;
+    font-size: 10px;
+    color: #3a2c1e;
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 8mm 12mm;
+  }
+
+  /* ヘッダー */
+  .header {
+    background: linear-gradient(135deg, #a8d8ea 0%, #c5e8f5 50%, #e8f6fb 100%);
+    border-radius: 12px;
+    padding: 10px 14px 8px;
+    text-align: center;
+    margin-bottom: 7px;
+    border: 2px solid #7ec8e3;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '🐾';
+    position: absolute;
+    left: 10px; top: 8px;
+    font-size: 22px;
+    opacity: 0.4;
+  }
+  .header::after {
+    content: '🐾';
+    position: absolute;
+    right: 10px; top: 8px;
+    font-size: 22px;
+    opacity: 0.4;
+  }
+  .header .shop-name {
+    font-size: 9px;
+    color: #5a8fa3;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+  .header .event-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1a6a8a;
+    line-height: 1.4;
+    margin-bottom: 2px;
+  }
+  .header .doc-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: #7b5c3a;
+    background: rgba(255,255,255,0.7);
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 20px;
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+
+  /* イベント概要ボックス */
+  .event-info {
+    background: #f5fbfe;
+    border: 1.5px solid #a8d8ea;
+    border-radius: 8px;
+    padding: 5px 10px;
+    margin-bottom: 6px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .event-info-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+  }
+  .event-info-item .label {
+    background: #7ec8e3;
+    color: #fff;
+    font-weight: bold;
+    padding: 1px 5px;
+    border-radius: 10px;
+    font-size: 8px;
+    white-space: nowrap;
+  }
+
+  /* 注意書き */
+  .intro-note {
+    font-size: 9px;
+    color: #5a4030;
+    background: #fff9f0;
+    border-left: 3px solid #e8a87c;
+    padding: 4px 8px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+
+  /* 条文 */
+  .article {
+    margin-bottom: 5px;
+  }
+  .article-title {
+    background: linear-gradient(90deg, #7ec8e3 0%, #a8d8ea 100%);
+    color: #fff;
+    font-weight: bold;
+    font-size: 9.5px;
+    padding: 2px 8px;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .article-title .num {
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    width: 14px; height: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: bold;
+  }
+  .article-body {
+    border: 1px solid #a8d8ea;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 4px 8px;
+    background: #fff;
+  }
+  .article-body p {
+    font-size: 9px;
+    line-height: 1.55;
+    margin-bottom: 2px;
+    color: #3a2c1e;
+  }
+  .article-body ul {
+    padding-left: 14px;
+    margin: 2px 0;
+  }
+  .article-body ul li {
+    font-size: 9px;
+    line-height: 1.5;
+    color: #3a2c1e;
+    margin-bottom: 1px;
+  }
+
+  /* 2カラムレイアウト */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  /* 記入欄 */
+  .form-section {
+    background: linear-gradient(135deg, #f5fbfe 0%, #fff9f0 100%);
+    border: 2px solid #7ec8e3;
+    border-radius: 10px;
+    padding: 7px 10px;
+    margin-top: 5px;
+  }
+  .form-section-title {
+    text-align: center;
+    font-size: 10.5px;
+    font-weight: bold;
+    color: #1a6a8a;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 10px;
+    margin-bottom: 6px;
+  }
+  .form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .form-item.full {
+    grid-column: 1 / -1;
+  }
+  .form-label {
+    font-size: 8.5px;
+    font-weight: bold;
+    color: #5a8fa3;
+  }
+  .form-line {
+    border-bottom: 1.5px solid #7ec8e3;
+    min-height: 14px;
+    background: transparent;
+  }
+
+  .photo-consent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0;
+  }
+  .photo-consent .label {
+    font-size: 8.5px;
+    font-weight: bold;
+    color: #5a8fa3;
+    white-space: nowrap;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+  }
+  .check-box {
+    width: 12px; height: 12px;
+    border: 1.5px solid #7ec8e3;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .sign-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 5px;
+  }
+  .sign-box {
+    border: 1.5px solid #a8d8ea;
+    border-radius: 6px;
+    padding: 5px 8px;
+    min-height: 40px;
+  }
+  .sign-box .sign-label {
+    font-size: 8.5px;
+    font-weight: bold;
+    color: #5a8fa3;
+    margin-bottom: 3px;
+  }
+  .sign-line {
+    border-bottom: 1px solid #ccc;
+    min-height: 18px;
+  }
+
+  /* 同意文 */
+  .consent-statement {
+    background: #e8f6fb;
+    border: 1.5px solid #7ec8e3;
+    border-radius: 6px;
+    padding: 5px 10px;
+    margin: 5px 0;
+    font-size: 9px;
+    color: #1a6a8a;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* フッター */
+  .footer {
+    text-align: center;
+    font-size: 8px;
+    color: #999;
+    margin-top: 4px;
+  }
+
+  /* 印刷ボタンバー（印刷時は非表示） */
+  .print-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: linear-gradient(90deg, #1a6a8a, #7ec8e3);
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .print-bar .bar-title {
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .print-bar .bar-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .btn-print {
+    background: #fff;
+    color: #1a6a8a;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-print:hover {
+    background: #e8f6fb;
+    transform: scale(1.03);
+  }
+  .btn-pdf {
+    background: #e8a87c;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-pdf:hover {
+    background: #d4895a;
+    transform: scale(1.03);
+  }
+  .print-hint {
+    color: rgba(255,255,255,0.8);
+    font-size: 11px;
+  }
+
+  /* 印刷時はボタンバーを隠す */
+  @media print {
+    .print-bar { display: none !important; }
+    body { padding-top: 8mm !important; }
+  }
+
+  /* ボタンバー分だけbodyをずらす */
+  body { padding-top: 48px; }
+</style>
+</head>
+<body>
+
+<!-- 印刷ボタンバー -->
+<div class="print-bar">
+  <div class="bar-title">🐾 アネラカフェ大分店｜夏休み特別企画 参加規約兼同意書</div>
+  <div class="bar-actions">
+    <span class="print-hint">※ 印刷時はボタンが消えてA4にきれいに収まります</span>
+    <button class="btn-print" onclick="window.print()">🖨️ 印刷する</button>
+    <button class="btn-pdf" onclick="window.print()">📄 PDFで保存</button>
+  </div>
+</div>
+
+<!-- ヘッダー -->
+<div class="header">
+  <div class="shop-name">アネラカフェ大分店</div>
+  <div class="event-title">夏休み特別企画　飼育＆トリマー体験<br>〜アネラの店員さんになろう〜</div>
+  <div class="doc-title">参加規約兼同意書</div>
+</div>
+
+<!-- イベント概要 -->
+<div class="event-info">
+  <div class="event-info-item"><span class="label">開催場所</span>アネラカフェ大分店</div>
+  <div class="event-info-item"><span class="label">対象</span>小学生以上（小学生は保護者同伴必須）</div>
+  <div class="event-info-item"><span class="label">参加費</span>3,980円（税込）</div>
+  <div class="event-info-item"><span class="label">体験内容</span>犬猫のお世話・ブラッシング・給餌・ふれあい・モールキーホルダー作り</div>
+</div>
+
+<!-- 前文 -->
+<div class="intro-note">
+  本規約は、参加者の皆様に安全・安心にイベントをお楽しみいただくために定めたものです。ご参加前に保護者の方とともに必ずお読みいただき、ご同意のうえお申し込みください。
+</div>
+
+<!-- 条文 2カラム -->
+<div class="two-col">
+
+  <div>
+    <div class="article">
+      <div class="article-title"><span class="num">1</span>第1条　参加条件</div>
+      <div class="article-body">
+        <ul>
+          <li>対象は小学生以上とします。</li>
+          <li>小学生は保護者（親権者または法定後見人）の同伴が必須です。</li>
+          <li>中学生以上は単独参加可能ですが、保護者の同意・本同意書への署名が必要です。</li>
+          <li>動物アレルギー・喘息・その他健康上の懸念がある方は事前にスタッフへご申告ください。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="article">
+      <div class="article-title"><span class="num">2</span>第2条　安全上の注意</div>
+      <div class="article-body">
+        <ul>
+          <li>スタッフの指示・誘導に必ず従ってください。</li>
+          <li>体験中は動きやすい服装でお越しください。衣類の汚れが生じる場合があります。</li>
+          <li>参加者自身も安全への注意義務を負います。</li>
+          <li>小学生参加者の保護者は、お子様から目を離さないようにしてください。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="article">
+      <div class="article-title"><span class="num">3</span>第3条　動物との接触に関する注意事項</div>
+      <div class="article-body">
+        <ul>
+          <li>犬・猫は生き物であり、予測できない行動をとる場合があります。</li>
+          <li>引っかき傷・噛み傷が発生する可能性があります。</li>
+          <li>動物アレルギー反応（くしゃみ・目のかゆみ・蕁麻疹等）が生じる場合があります。</li>
+          <li>スタッフは安全確保に最大限努めますが、動物の本能的行動を完全に制御することはできません。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="article">
+      <div class="article-title"><span class="num">4</span>第4条　怪我・事故・アレルギー等に関する免責事項</div>
+      <div class="article-body">
+        <p>当店は参加者の安全に十分配慮しますが、以下の場合を除き、イベント参加中に生じた怪我・事故・アレルギー反応・衣類の汚損・その他損害について責任を負いかねます。</p>
+        <ul>
+          <li>当店スタッフの故意または重大な過失による場合</li>
+        </ul>
+        <p style="margin-top:2px;">参加者および保護者は、動物由来リスクを理解したうえで自己責任のもとご参加ください。</p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="article">
+      <div class="article-title"><span class="num">5</span>第5条　写真・動画撮影及びSNS掲載について</div>
+      <div class="article-body">
+        <ul>
+          <li>イベント中にスタッフが撮影した写真・動画を、当店のSNS・ホームページ・広告・チラシ等で使用する場合があります。</li>
+          <li>掲載をご希望でない方は、下記同意欄にて「NG」をお選びください。事前申告された方の画像は使用いたしません。</li>
+          <li>参加者本人による撮影・SNS投稿は自由ですが、他の参加者・スタッフが特定できる画像の無断掲載はお控えください。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="article">
+      <div class="article-title"><span class="num">6</span>第6条　イベント中止・内容変更について</div>
+      <div class="article-body">
+        <ul>
+          <li>自然災害・感染症拡大・動物の体調不良・その他やむを得ない事情により、イベントを中止または内容を変更する場合があります。</li>
+          <li>中止の場合は参加費を全額返金します。内容変更の場合は事前にご連絡します。</li>
+          <li>参加者の都合によるキャンセルの取り扱いは別途お問い合わせください。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="article">
+      <div class="article-title"><span class="num">7</span>第7条　禁止事項</div>
+      <div class="article-body">
+        <p>以下の行為は固く禁止します。違反した場合、参加を即時中止していただくことがあります。</p>
+        <ul>
+          <li>動物を追いかける・驚かせる行為</li>
+          <li>大声を出す・乱暴に扱う行為</li>
+          <li>スタッフの指示に従わない行為</li>
+          <li>他の参加者・動物への危険行為</li>
+          <li>飲食物の無断持ち込み・動物への無断給餌</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="article">
+      <div class="article-title"><span class="num">8</span>第8条　個人情報の取り扱い</div>
+      <div class="article-body">
+        <ul>
+          <li>ご記入いただいた個人情報は、本イベントの運営・緊急連絡のみに使用します。</li>
+          <li>第三者への提供・目的外利用は行いません。</li>
+          <li>情報は適切に管理し、イベント終了後は速やかに廃棄します。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /two-col -->
+
+<!-- 第9条 同意事項 -->
+<div class="article" style="margin-bottom:5px;">
+  <div class="article-title"><span class="num">9</span>第9条　同意事項</div>
+  <div class="article-body">
+    <p>参加者（および保護者）は、上記全条項・イベント内容・リスクについて十分理解し、自己の意思でご参加いただくことに同意します。スタッフの指示に従い、安全で楽しい体験となるようご協力をお願いします。</p>
+  </div>
+</div>
+
+<!-- 同意文 -->
+<div class="consent-statement">
+  上記の参加規約をすべて読み、内容を理解・納得したうえで参加に同意します。
+</div>
+
+<!-- 記入欄 -->
+<div class="form-section">
+  <div class="form-section-title">✏️　参加者情報・署名欄　✏️</div>
+
+  <div class="form-grid">
+    <div class="form-item">
+      <div class="form-label">参加者氏名（ふりがな）</div>
+      <div class="form-line"></div>
+    </div>
+    <div class="form-item">
+      <div class="form-label">保護者氏名（ふりがな）</div>
+      <div class="form-line"></div>
+    </div>
+    <div class="form-item full">
+      <div class="form-label">住所</div>
+      <div class="form-line"></div>
+    </div>
+    <div class="form-item">
+      <div class="form-label">電話番号</div>
+      <div class="form-line"></div>
+    </div>
+    <div class="form-item">
+      <div class="form-label">緊急連絡先（氏名・続柄・電話番号）</div>
+      <div class="form-line"></div>
+    </div>
+    <div class="form-item">
+      <div class="form-label">参加日</div>
+      <div class="form-line"></div>
+    </div>
+    <div class="form-item" style="align-items:flex-start;">
+      <div class="photo-consent">
+        <div class="label">📷 写真・動画掲載</div>
+        <div class="check-item"><span class="check-box"></span>OK（掲載を許可する）</div>
+        <div class="check-item"><span class="check-box"></span>NG（掲載しないでください）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sign-area">
+    <div class="sign-box">
+      <div class="sign-label">参加者本人　署名</div>
+      <div class="sign-line"></div>
+    </div>
+    <div class="sign-box">
+      <div class="sign-label">保護者　署名（小学生参加の場合は必須）</div>
+      <div class="sign-line"></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">アネラカフェ大分店　｜　本書面は店舗にて保管いたします</div>
+
+</body>
+</html>

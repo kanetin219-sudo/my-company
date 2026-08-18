@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>同意書閲覧 | ANELLA CAFE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    :root {
+      --bg: #FDF6EE;
+      --surface: #FFFAF4;
+      --primary: #C96A3B;
+      --primary-light: #E8946A;
+      --accent: #4A7C6F;
+      --accent-light: #6FA898;
+      --text: #2C1F14;
+      --text-mid: #6B4F3A;
+      --text-soft: #A88870;
+      --border: #E8D5C0;
+      --shadow: rgba(150, 80, 30, 0.12);
+      --warn: #D4502A;
+      --warn-bg: #FFF3EE;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 15px; line-height: 1.6; min-height: 100vh; }
+
+    /* ── ログイン画面 ── */
+    #loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 40px 36px; width: 100%; max-width: 400px; box-shadow: 0 8px 32px var(--shadow);
+    }
+    .login-logo { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--primary); text-align: center; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: var(--text-soft); text-align: center; margin-bottom: 32px; }
+    .login-field { margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 13px; font-weight: 700; color: var(--text-mid); margin-bottom: 6px; }
+    .login-field input {
+      width: 100%; padding: 13px 14px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; font-family: 'Noto Sans JP', sans-serif; font-size: 16px; color: var(--text); outline: none;
+    }
+    .login-field input:focus { border-color: var(--primary-light); }
+    .login-btn {
+      width: 100%; padding: 15px; background: var(--accent); color: #fff; border: none; border-radius: 12px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;
+      margin-top: 8px; box-shadow: 0 4px 12px rgba(74,124,111,0.3); transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-err { color: var(--warn); font-size: 13px; margin-top: 10px; text-align: center; display: none; }
+    .login-err.active { display: block; }
+
+    /* ── メイン画面 ── */
+    #mainScreen { display: none; }
+
+    .admin-header {
+      background: var(--text); color: #fff; padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .admin-header-logo { font-family: 'DM Serif Display', serif; font-size: 18px; color: #a8d5c8; }
+    .admin-header-right { display: flex; align-items: center; gap: 12px; }
+    .admin-user { font-size: 12px; color: #bbb; }
+    .logout-btn {
+      padding: 7px 14px; background: transparent; border: 1px solid #555; border-radius: 8px;
+      color: #ccc; font-family: 'Noto Sans JP', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: #aaa; color: #fff; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+    /* ── フィルター ── */
+    .filter-bar {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    }
+    .filter-label { font-size: 13px; font-weight: 700; color: var(--text-mid); white-space: nowrap; }
+    .filter-bar input[type="date"] {
+      padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text); outline: none;
+    }
+    .filter-bar input[type="date"]:focus { border-color: var(--accent-light); }
+    .btn-filter {
+      padding: 10px 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .btn-all {
+      padding: 10px 14px; background: var(--surface); color: var(--text-mid); border: 1px solid var(--border);
+      border-radius: 8px; font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .count-label { font-size: 13px; color: var(--text-soft); margin-left: auto; }
+
+    /* ── 同意書カード ── */
+    .consent-list { display: flex; flex-direction: column; gap: 10px; }
+    .consent-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 4px var(--shadow);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .consent-card:hover { border-color: var(--accent-light); box-shadow: 0 3px 10px var(--shadow); }
+    .consent-date-badge {
+      background: var(--accent); color: #fff; border-radius: 10px; padding: 8px 12px;
+      font-size: 13px; font-weight: 700; white-space: nowrap; text-align: center; min-width: 64px;
+    }
+    .consent-info { flex: 1; }
+    .consent-info-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .consent-info-sub { font-size: 12px; color: var(--text-soft); }
+    .consent-sig-count {
+      background: var(--warn-bg); border: 1px solid #F0C4B0; border-radius: 8px;
+      padding: 5px 10px; font-size: 12px; font-weight: 700; color: var(--primary); white-space: nowrap;
+    }
+    .no-consent { text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: 14px; }
+
+    /* ── モーダル ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300;
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px;
+      max-height: 90vh; overflow-y: auto; padding: 24px 20px 40px; animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @media (min-width: 700px) {
+      .modal-overlay { align-items: center; }
+      .modal { border-radius: 20px; max-height: 85vh; }
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--accent); }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg);
+      cursor: pointer; font-size: 16px; color: var(--text-soft); display: flex; align-items: center; justify-content: center;
+    }
+    .detail-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    .detail-table tr { border-bottom: 1px solid var(--border); }
+    .detail-table tr:last-child { border-bottom: none; }
+    .detail-table th { padding: 9px 10px; font-size: 12px; color: var(--text-soft); font-weight: 500; text-align: left; width: 38%; }
+    .detail-table td { padding: 9px 10px; font-size: 13px; color: var(--text); font-weight: 500; }
+    .section-label { font-size: 12px; font-weight: 700; color: var(--text-mid); margin-bottom: 8px; }
+    .sig-img {
+      border: 1px solid var(--border); border-radius: 10px; width: 100%; max-width: 400px;
+      display: block; margin: 8px auto 16px; background: #fff;
+    }
+    .sig-label { font-size: 12px; color: var(--text-soft); margin-top: 8px; margin-bottom: 4px; }
+
+    /* ── ローディング ── */
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(253,246,238,0.8); z-index: 200; align-items: center; justify-content: center; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- ===== ログイン画面 ===== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">ANELLA CAFE</div>
+    <div class="login-sub">同意書閲覧</div>
+    <div class="login-field">
+      <label>メールアドレス</label>
+      <input type="email" id="loginEmail" placeholder="メールアドレス" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>パスワード</label>
+      <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">ログイン</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ===== メイン画面 ===== -->
+<div id="mainScreen">
+  <div class="admin-header">
+    <div class="admin-header-logo">同意書閲覧</div>
+    <div class="admin-header-right">
+      <span class="admin-user" id="adminUserLabel"></span>
+      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="filter-bar">
+      <span class="filter-label">来店日</span>
+      <input type="date" id="filterDate" onchange="loadConsentForms()">
+      <button class="btn-filter" onclick="setToday()">今日</button>
+      <button class="btn-all" onclick="clearFilter()">全件表示</button>
+      <span class="count-label" id="countLabel"></span>
+    </div>
+
+    <div class="consent-list" id="consentList">
+      <div class="no-consent">読み込み中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 同意書詳細モーダル ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">同意書詳細</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="section-label">基本情報</div>
+    <table class="detail-table" id="detailTable"></table>
+    <div style="margin-top:16px;">
+      <div class="section-label">署名</div>
+      <div id="sigContainer"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function checkAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) showMain(session.user.email);
+}
+
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn      = document.getElementById('loginBtn');
+  const err      = document.getElementById('loginErr');
+
+  if (!email || !password) { showErr('メールとパスワードを入力してください'); return; }
+  btn.disabled = true;
+  btn.textContent = 'ログイン中...';
+  err.classList.remove('active');
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  btn.disabled = false;
+  btn.textContent = 'ログイン';
+
+  if (error) { showErr('メールまたはパスワードが正しくありません'); return; }
+  showMain(data.user.email);
+}
+
+async function doLogout() {
+  await supabase.auth.signOut();
+  document.getElementById('mainScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+}
+
+function showErr(msg) {
+  const el = document.getElementById('loginErr');
+  el.textContent = msg;
+  el.classList.add('active');
+}
+
+function showMain(email) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display = 'block';
+  document.getElementById('adminUserLabel').textContent = email;
+  setToday();
+}
+
+function setToday() {
+  document.getElementById('filterDate').value = new Date().toISOString().slice(0, 10);
+  loadConsentForms();
+}
+
+function clearFilter() {
+  document.getElementById('filterDate').value = '';
+  loadConsentForms();
+}
+
+async function loadConsentForms() {
+  const date   = document.getElementById('filterDate').value;
+  const listEl = document.getElementById('consentList');
+  listEl.innerHTML = '<div class="no-consent">読み込み中...</div>';
+
+  let query = supabase
+    .from('consent_forms')
+    .select('*')
+    .order('submitted_at', { ascending: false });
+
+  if (date) query = query.eq('visit_date', date);
+
+  const { data, error } = await query;
+  if (error) {
+    listEl.innerHTML = '<div class="no-consent">読み込みに失敗しました</div>';
+    return;
+  }
+
+  document.getElementById('countLabel').textContent = data ? `${data.length}件` : '0件';
+
+  if (!data || data.length === 0) {
+    listEl.innerHTML = '<div class="no-consent">該当する同意書はありません</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+  data.forEach(f => {
+    const card       = document.createElement('div');
+    card.className   = 'consent-card';
+    const sigCount   = Array.isArray(f.signatures) ? f.signatures.length : 0;
+    const submittedAt = f.submitted_at
+      ? new Date(f.submitted_at).toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })
+      : '不明';
+    const attendees = [
+      f.adults    > 0 ? `大人${f.adults}名`      : null,
+      f.children  > 0 ? `子ども${f.children}名`  : null,
+      f.preschool > 0 ? `未就学児${f.preschool}名` : null,
+    ].filter(Boolean).join(' / ') || '不明';
+
+    card.innerHTML = `
+      <div class="consent-date-badge">${f.visit_date ? f.visit_date.slice(5) : '--'}</div>
+      <div class="consent-info">
+        <div class="consent-info-title">${f.visit_date || '日付不明'} — ${f.visit_count || '来店回数不明'}</div>
+        <div class="consent-info-sub">${attendees}　提出: ${submittedAt}</div>
+      </div>
+      <div class="consent-sig-count">署名 ${sigCount}件</div>
+    `;
+    card.onclick = () => openModal(f);
+    listEl.appendChild(card);
+  });
+}
+
+function openModal(f) {
+  document.getElementById('modalTitle').textContent = `同意書 — ${f.visit_date || '日付不明'}`;
+
+  const total = (f.adults || 0) + (f.children || 0) + (f.preschool || 0);
+  const submittedAt = f.submitted_at ? new Date(f.submitted_at).toLocaleString('ja-JP') : '不明';
+
+  const rows = [
+    ['来店日',            f.visit_date || '不明'],
+    ['来店回数',          f.visit_count || '不明'],
+    ['大人',              f.adults != null ? f.adults + '名' : '不明'],
+    ['子ども（小学生以下）', f.children != null ? f.children + '名' : '不明'],
+    ['未就学児',          f.preschool != null ? f.preschool + '名' : '不明'],
+    ['合計来場者',        total + '名'],
+    ['好きなペット',      f.favorite_pet || '不明'],
+    ['提出日時',          submittedAt],
+  ];
+  document.getElementById('detailTable').innerHTML =
+    rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('');
+
+  const sigContainer = document.getElementById('sigContainer');
+  sigContainer.innerHTML = '';
+  const sigs = Array.isArray(f.signatures) ? f.signatures : [];
+  if (sigs.length === 0) {
+    sigContainer.innerHTML = '<div style="color:var(--text-soft); font-size:13px; padding:12px 0;">署名データなし</div>';
+  } else {
+    sigs.forEach((src, i) => {
+      const label    = document.createElement('div');
+      label.className = 'sig-label';
+      label.textContent = `署名 ${i + 1}`;
+      const img      = document.createElement('img');
+      img.className  = 'sig-img';
+      img.src        = src;
+      img.alt        = `署名${i + 1}`;
+      sigContainer.appendChild(label);
+      sigContainer.appendChild(img);
+    });
+  }
+
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+checkAuth();
+</script>
+</body>
+</html>

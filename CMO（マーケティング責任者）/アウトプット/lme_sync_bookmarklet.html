@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kaimon カレンダー同期 — ブックマークレット</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #f0f4f8;
+    padding: 40px 24px 80px;
+    color: #2d3748;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .lead { color: #718096; font-size: 14px; margin-bottom: 32px; }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 28px 28px 24px;
+    margin-bottom: 24px;
+  }
+  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    background: #3182ce;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ブックマークレットリンク */
+  .bm-link {
+    display: block;
+    background: #ebf8ff;
+    border: 2px dashed #63b3ed;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: #2b6cb0;
+    text-decoration: none;
+    margin-bottom: 12px;
+    cursor: grab;
+  }
+  .bm-link:hover { background: #bee3f8; }
+  .hint { font-size: 12px; color: #718096; text-align: center; }
+
+  /* 手順 */
+  ol { padding-left: 20px; font-size: 14px; }
+  ol li { margin-bottom: 8px; }
+
+  /* コードボックス */
+  .code-box {
+    background: #1a202c;
+    color: #a0aec0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: monospace;
+    font-size: 11px;
+    word-break: break-all;
+    white-space: pre-wrap;
+    margin-top: 12px;
+    cursor: text;
+  }
+
+  .note {
+    background: #fffde7;
+    border-left: 4px solid #f6c90e;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📅 kaimon カレンダー同期ツール</h1>
+  <p class="lead">L Message の予約データをカレンダーウィジェットに反映させるためのブックマークレットです。</p>
+
+  <!-- STEP 1: ブックマークレット追加 -->
+  <div class="card">
+    <h2><span class="badge">1</span> ブックマークレットをブラウザに追加</h2>
+
+    <a class="bm-link" id="bmLink" href="#">🔄 kaimon 予約データ同期</a>
+    <p class="hint">↑ このボタンをブラウザのブックマークバーにドラッグ＆ドロップするっちゃ</p>
+
+    <div style="margin-top:16px; font-size:13px; color:#718096;">
+      <strong>ドラッグが難しい場合：</strong><br>
+      下のコードをコピーして、ブックマークのURLとして貼り付けるっちゃ。
+    </div>
+    <div class="code-box" id="bmCode">（読み込み中...）</div>
+  </div>
+
+  <!-- STEP 2: 使い方 -->
+  <div class="card">
+    <h2><span class="badge">2</span> 毎回の同期手順（予約が入ったら）</h2>
+    <ol>
+      <li>Chrome で <strong>step.lme.jp</strong> を開いてログインする</li>
+      <li>サロン予約のページ（どのページでもOK）を開く</li>
+      <li>ブックマークバーの <strong>「kaimon 予約データ同期」</strong> をクリックする</li>
+      <li>「同期完了！」のアラートが出たらOKっちゃ</li>
+      <li>UTAGEのカレンダーウィジェットが最新状態に更新されるっちゃ</li>
+    </ol>
+  </div>
+
+  <!-- 注意事項 -->
+  <div class="note">
+    ⚠️ <strong>注意：</strong> ブックマークレットは step.lme.jp にログインした状態で使うこと。<br>
+    ログインしていない状態でクリックしても「セッション切れ」エラーが出るっちゃ。<br>
+    <br>
+    同期は <strong>今月・来月の2ヶ月分</strong> を取得するっちゃ。月が変わったら再度同期すること。
+  </div>
+</div>
+
+<script>
+// ブックマークレット本体（圧縮JS）
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwr2GucgYR7LQOca33a1ptV8DzieOAebnPouD1fhcUM99PrCpSUf_sb3Jr5dAN4fYBygA/exec';
+var SECRET = 'kaimon2026sync';
+var SALON_ID = 23653;
+
+var bookmarkletCode = 'javascript:(function(){' +
+  'var GAS="' + GAS_URL + '";' +
+  'var SEC="' + SECRET + '";' +
+  'var SID=' + SALON_ID + ';' +
+  'var booked={};' +
+  'var today=new Date();' +
+  'var months=[];' +
+  'for(var i=0;i<2;i++){var d=new Date(today.getFullYear(),today.getMonth()+i,1);months.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"));}' +
+  'var done=0;' +
+  'var errs=[];' +
+  'months.forEach(function(ym){' +
+    'fetch("/basic/calendar-salon/"+SID+"/get-list-booking?page=1&tab_query=new_booking&per_page=200&date_booking="+ym,{headers:{"X-Requested-With":"XMLHttpRequest","Accept":"application/json"}})' +
+    '.then(function(r){return r.text();})' +
+    '.then(function(txt){' +
+      'if(txt.indexOf("<html")!==-1){errs.push("セッション切れ");done++;check();return;}' +
+      'var data=JSON.parse(txt);' +
+      'if(data.success&&data.data&&data.data.data){' +
+        'data.data.data.forEach(function(b){' +
+          'if(b.booking_status!==1)return;' +
+          'var ds=b.received_booking_date.replace(/\\./g,"-");' +
+          'if(!booked[ds])booked[ds]=[];' +
+          'if(booked[ds].indexOf(b.start_time)===-1)booked[ds].push(b.start_time);' +
+        '});' +
+      '}' +
+      'done++;check();' +
+    '})' +
+    '.catch(function(e){errs.push(e.message);done++;check();});' +
+  '});' +
+  'function check(){' +
+    'if(done<months.length)return;' +
+    'if(errs.length){alert("エラー: "+errs.join(", "));return;}' +
+    'fetch(GAS,{method:"POST",mode:"no-cors",body:JSON.stringify({secret:SEC,booked:booked})});' +
+    'alert("kaimonカレンダー同期完了！\\n予約データ: "+JSON.stringify(booked,null,2));' +
+  '}' +
+'})();';
+
+document.getElementById('bmLink').href = bookmarkletCode;
+document.getElementById('bmCode').textContent = bookmarkletCode;
+</script>
+</body>
+</html>

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>レジ締めチェックシート - ANELLA CAFE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: #FFF8F3;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #5D4037;
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    header h1 { font-size: 18px; font-weight: 700; }
+    header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+    .tabs { display: flex; background: #4E342E; }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      color: white;
+      border-bottom: 3px solid #FF8F00;
+    }
+
+    .tab-content { display: none; padding: 16px; }
+    .tab-content.active { display: block; }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #5D4037;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #EFEBE9;
+    }
+
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .optional { font-size: 10px; color: #bbb; font-weight: normal; margin-left: 4px; }
+
+    input[type="date"],
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #FAFAFA;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #5D4037;
+      background: white;
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    .amount-wrap { position: relative; }
+    .amount-wrap::before {
+      content: '¥';
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: #999;
+      pointer-events: none;
+    }
+    .amount-wrap input { padding-left: 30px; }
+
+    /* Info boxes */
+    .info-box {
+      border-radius: 8px;
+      padding: 11px 14px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .info-box.blue   { background: #E3F2FD; border: 1px solid #BBDEFB; }
+    .info-box.purple { background: #F3E5F5; border: 1px solid #E1BEE7; }
+    .info-box.zero   { background: #E8F5E9; border: 1px solid #C8E6C9; }
+    .info-box.ng     { background: #FFEBEE; border: 1px solid #FFCDD2; }
+    .info-box.neutral { background: #F5F5F5; border: 1px solid #E0E0E0; }
+
+    .info-box .ib-label { font-size: 12px; font-weight: 600; }
+    .info-box .ib-value { font-size: 17px; font-weight: 700; }
+
+    .info-box.blue   .ib-label, .info-box.blue   .ib-value  { color: #1565C0; }
+    .info-box.purple .ib-label, .info-box.purple .ib-value  { color: #6A1B9A; }
+    .info-box.zero   .ib-label, .info-box.zero   .ib-value  { color: #2E7D32; }
+    .info-box.ng     .ib-label, .info-box.ng     .ib-value  { color: #C62828; }
+    .info-box.neutral .ib-label, .info-box.neutral .ib-value { color: #9E9E9E; }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: #5D4037;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .submit-btn:active { opacity: 0.85; }
+
+    /* History */
+    .record-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .record-date { font-size: 16px; font-weight: 700; color: #5D4037; }
+    .record-staff { font-size: 12px; color: #888; margin-top: 2px; }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge.ok { background: #E8F5E9; color: #2E7D32; }
+    .badge.ng { background: #FFEBEE; color: #C62828; }
+
+    .record-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .ri {
+      padding: 9px 10px;
+      background: #FAFAFA;
+      border-radius: 8px;
+    }
+    .ri-label { font-size: 10px; color: #999; font-weight: 600; margin-bottom: 2px; }
+    .ri-value { font-size: 14px; font-weight: 600; color: #333; }
+    .ri-diff  { font-size: 11px; font-weight: 600; margin-top: 2px; }
+    .ri-diff.zero { color: #2E7D32; }
+    .ri-diff.ng   { color: #C62828; }
+    .ri-sub   { font-size: 10px; color: #aaa; margin-top: 2px; }
+
+    .record-extra { margin-top: 8px; display: flex; gap: 8px; }
+    .record-extra .ri { flex: 1; }
+
+    .record-notes {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: #FFF8E1;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .record-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #F0F0F0;
+    }
+    .record-edit-info { font-size: 11px; color: #aaa; line-height: 1.5; }
+
+    .edit-btn {
+      font-size: 12px;
+      padding: 7px 14px;
+      background: #5D4037;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .edit-log-btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      background: #E3F2FD;
+      color: #1565C0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .record-actions { display: flex; gap: 6px; align-items: center; }
+
+    .empty { text-align: center; padding: 48px 20px; color: #bbb; font-size: 14px; }
+
+    /* Month nav */
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .month-nav-btn {
+      background: #5D4037;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .month-nav-btn:active { opacity: 0.8; }
+    .month-nav-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: #5D4037;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 9999;
+      white-space: nowrap;
+      transition: opacity 0.3s;
+    }
+    .toast.success { background: #2E7D32; color: white; }
+    .toast.error   { background: #C62828; color: white; }
+    .toast.info    { background: #333;    color: white; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.hidden { display: none; }
+
+    .modal {
+      background: white;
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-width: 600px;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 20px 16px 40px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      position: sticky;
+      top: 0;
+      background: white;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #EFEBE9;
+      z-index: 1;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; color: #5D4037; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    /* 編集履歴 */
+    .edit-log-item {
+      padding: 12px;
+      background: #FAFAFA;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .edit-log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .edit-log-who { font-size: 13px; font-weight: 700; color: #333; }
+    .edit-log-when { font-size: 11px; color: #999; }
+    .edit-log-change { font-size: 12px; color: #555; margin-bottom: 4px; }
+    .edit-log-change .field-name { font-weight: 600; color: #5D4037; }
+    .edit-log-change .before { color: #C62828; text-decoration: line-through; margin: 0 4px; }
+    .edit-log-change .after  { color: #2E7D32; margin-left: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>💰 レジ締めチェックシート</h1>
+  <p>ANELLA CAFE 大分店</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" id="btn-input"   onclick="switchTab('input')">記録入力</button>
+  <button class="tab-btn"        id="btn-history" onclick="switchTab('history')">履歴</button>
+</div>
+
+<!-- ===== 記録入力タブ ===== -->
+<div id="tab-input" class="tab-content active">
+
+  <div class="section">
+    <div class="section-title">📅 基本情報</div>
+    <div class="field">
+      <label>日付</label>
+      <input type="date" id="date" />
+    </div>
+    <div class="field">
+      <label>担当者名</label>
+      <input type="text" id="staffName" placeholder="名前を入力" />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🗂️ レジ確認</div>
+    <div class="field">
+      <label>レジ金額（実際に数えた金額）</label>
+      <div class="amount-wrap">
+        <input type="number" id="registerAmount" placeholder="0" inputmode="numeric" oninput="calcRegisterDiff()" />
+      </div>
+    </div>
+    <div id="regDiffBox" class="info-box neutral">
+      <span class="ib-label">レジ差異（目標 ¥50,000）</span>
+      <span class="ib-value" id="regDiffVal">- -</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📊 売上確認</div>
+    <div class="field">
+      <label>総売上（キャッシュレス含む）</label>
+      <div class="amount-wrap">
+        <input type="number" id="totalSales" placeholder="0" inputmode="numeric" />
+      </div>
+    </div>
+    <div class="field">
+      <label>現金売上</label>
+      <div class="amount-wrap">
+        <input type="number" id="cashSales" placeholder="0" inputmode="numeric" oninput="calcSafeDiff()" />
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏦 金庫確認</div>
+
+    <div id="prevSafeBox" class="info-box blue" style="margin-bottom:12px">
+      <span class="ib-label">前回金庫残高</span>
+      <span class="ib-value" id="prevSafeVal">読込中...</span>
+    </div>
+
+    <div class="field">
+      <label>銀行入金額 <span class="optional">（任意）</span></label>
+      <div class="amount-wrap">
+        <input type="number" id="bankTransfer" placeholder="0" inputmode="numeric" oninput="calcSafeDiff()" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>現金支出額 <span class="optional">（任意）</span></label>
+      <div class="amount-wrap">
+        <input type="number" id="cashExpense" placeholder="0" inputmode="numeric" oninput="calcSafeDiff()" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>支出メモ <span class="optional">（任意）</span></label>
+      <input type="text" id="expenseNote" placeholder="例：消耗品購入" />
+    </div>
+
+    <div class="field">
+      <label>金庫金額（実際に数えた金額）</label>
+      <div class="amount-wrap">
+        <input type="number" id="safeAmount" placeholder="0" inputmode="numeric" oninput="calcSafeDiff()" />
+      </div>
+    </div>
+
+    <div id="theoreticalBox" class="info-box purple" style="display:none;margin-top:8px">
+      <span class="ib-label">金庫理論値</span>
+      <span class="ib-value" id="theoreticalVal">¥0</span>
+    </div>
+
+    <div id="safeDiffBox" class="info-box neutral" style="margin-top:8px">
+      <span class="ib-label">金庫差異</span>
+      <span class="ib-value" id="safeDiffVal">- -</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📝 メモ</div>
+    <div class="field">
+      <textarea id="notes" placeholder="特記事項があれば記入してください"></textarea>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submitRecord()">保存する</button>
+  <div style="height:32px"></div>
+</div>
+
+<!-- ===== 履歴タブ ===== -->
+<div id="tab-history" class="tab-content">
+  <div class="month-nav">
+    <button class="month-nav-btn" onclick="changeMonth(-1)">&#8592; 前月</button>
+    <span class="month-nav-label" id="monthNavLabel"></span>
+    <button class="month-nav-btn" onclick="changeMonth(1)">翌月 &#8594;</button>
+  </div>
+  <div id="historyList"><div class="empty">読み込み中...</div></div>
+  <div style="height:32px"></div>
+</div>
+
+<!-- ===== 編集モーダル ===== -->
+<div id="editModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✏️ 記録を編集</span>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+
+    <div class="section" style="margin-bottom:12px">
+      <div class="section-title">🙋 編集者情報</div>
+      <div class="field">
+        <label>編集者名（あなたの名前）</label>
+        <input type="text" id="editEditorName" placeholder="名前を入力" />
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:12px">
+      <div class="section-title">📅 基本情報</div>
+      <div class="field">
+        <label>日付</label>
+        <input type="date" id="editDate" />
+      </div>
+      <div class="field">
+        <label>担当者名</label>
+        <input type="text" id="editStaffName" placeholder="名前を入力" />
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:12px">
+      <div class="section-title">🗂️ レジ確認</div>
+      <div class="field">
+        <label>レジ金額</label>
+        <div class="amount-wrap">
+          <input type="number" id="editRegisterAmount" placeholder="0" inputmode="numeric" oninput="calcEditRegisterDiff()" />
+        </div>
+      </div>
+      <div id="editRegDiffBox" class="info-box neutral">
+        <span class="ib-label">レジ差異（目標 ¥50,000）</span>
+        <span class="ib-value" id="editRegDiffVal">- -</span>
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:12px">
+      <div class="section-title">📊 売上確認</div>
+      <div class="field">
+        <label>総売上</label>
+        <div class="amount-wrap">
+          <input type="number" id="editTotalSales" placeholder="0" inputmode="numeric" />
+        </div>
+      </div>
+      <div class="field">
+        <label>現金売上</label>
+        <div class="amount-wrap">
+          <input type="number" id="editCashSales" placeholder="0" inputmode="numeric" oninput="calcEditSafeDiff()" />
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:12px">
+      <div class="section-title">🏦 金庫確認</div>
+      <div class="field">
+        <label>銀行入金額</label>
+        <div class="amount-wrap">
+          <input type="number" id="editBankTransfer" placeholder="0" inputmode="numeric" oninput="calcEditSafeDiff()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>現金支出額</label>
+        <div class="amount-wrap">
+          <input type="number" id="editCashExpense" placeholder="0" inputmode="numeric" oninput="calcEditSafeDiff()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>支出メモ</label>
+        <input type="text" id="editExpenseNote" placeholder="例：消耗品購入" />
+      </div>
+      <div class="field">
+        <label>金庫金額</label>
+        <div class="amount-wrap">
+          <input type="number" id="editSafeAmount" placeholder="0" inputmode="numeric" oninput="calcEditSafeDiff()" />
+        </div>
+      </div>
+      <div id="editTheoreticalBox" class="info-box purple" style="display:none;margin-top:8px">
+        <span class="ib-label">金庫理論値</span>
+        <span class="ib-value" id="editTheoreticalVal">¥0</span>
+      </div>
+      <div id="editSafeDiffBox" class="info-box neutral" style="margin-top:8px">
+        <span class="ib-label">金庫差異</span>
+        <span class="ib-value" id="editSafeDiffVal">- -</span>
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:12px">
+      <div class="section-title">📝 メモ</div>
+      <div class="field">
+        <textarea id="editNotes" placeholder="特記事項があれば記入してください"></textarea>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="editSaveBtn" onclick="saveEdit()">保存する</button>
+  </div>
+</div>
+
+<!-- ===== 編集履歴モーダル ===== -->
+<div id="editLogModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📋 編集履歴</span>
+      <button class="modal-close" onclick="closeEditLog()">×</button>
+    </div>
+    <div id="editLogList"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL  = 'https://abeekodehorlwsmnhoza.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const REG_TARGET = 50000;
+  let prevSafe = 0;
+  let editingRecord = null;
+  let prevSafeForEdit = 0;
+
+  /* ---- util ---- */
+  function fmt(n) {
+    return '¥' + Number(n || 0).toLocaleString('ja-JP');
+  }
+  function fmtDiff(n) {
+    if (n === 0) return '±¥0';
+    return (n > 0 ? '+¥' : '-¥') + Math.abs(n).toLocaleString('ja-JP');
+  }
+  function numVal(id) {
+    return parseInt(document.getElementById(id).value) || 0;
+  }
+  function hasVal(id) {
+    return document.getElementById(id).value !== '';
+  }
+
+  /* ---- 月ナビ ---- */
+  let currentYear  = new Date().getFullYear();
+  let currentMonth = new Date().getMonth() + 1; // 1-12
+
+  function updateMonthLabel() {
+    document.getElementById('monthNavLabel').textContent =
+      currentYear + '年' + currentMonth + '月';
+  }
+
+  function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 12) { currentMonth = 1;  currentYear++; }
+    if (currentMonth < 1)  { currentMonth = 12; currentYear--; }
+    updateMonthLabel();
+    loadHistory();
+  }
+
+  /* ---- tab ---- */
+  function switchTab(tab) {
+    ['input','history'].forEach(t => {
+      document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('btn-' + t).classList.toggle('active', t === tab);
+    });
+    if (tab === 'history') {
+      updateMonthLabel();
+      loadHistory();
+    }
+  }
+
+  /* ---- register diff ---- */
+  function calcRegisterDiff() {
+    const box = document.getElementById('regDiffBox');
+    const val = document.getElementById('regDiffVal');
+    if (!hasVal('registerAmount')) {
+      box.className = 'info-box neutral';
+      val.textContent = '- -';
+      return;
+    }
+    const diff = numVal('registerAmount') - REG_TARGET;
+    const cls = diff === 0 ? 'zero' : 'ng';
+    box.className = 'info-box ' + cls;
+    val.textContent = fmtDiff(diff);
+  }
+
+  /* ---- safe diff ---- */
+  function calcSafeDiff() {
+    const cashSales    = numVal('cashSales');
+    const bankTransfer = numVal('bankTransfer');
+    const cashExpense  = numVal('cashExpense');
+    const theoretical  = prevSafe + cashSales - bankTransfer - cashExpense;
+
+    const tBox = document.getElementById('theoreticalBox');
+    tBox.style.display = 'flex';
+    document.getElementById('theoreticalVal').textContent = fmt(theoretical);
+
+    const dBox = document.getElementById('safeDiffBox');
+    const dVal = document.getElementById('safeDiffVal');
+    if (!hasVal('safeAmount')) {
+      dBox.className = 'info-box neutral';
+      dVal.textContent = '- -';
+      return;
+    }
+    const diff = numVal('safeAmount') - theoretical;
+    dBox.className = 'info-box ' + (diff === 0 ? 'zero' : 'ng');
+    dVal.textContent = fmtDiff(diff);
+  }
+
+  /* ---- load prev safe ---- */
+  async function loadPrevSafe() {
+    const { data } = await db
+      .from('cash_records')
+      .select('safe_amount, date')
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (data && data.length > 0) {
+      prevSafe = data[0].safe_amount;
+      const d = new Date(data[0].date + 'T00:00:00');
+      const label = d.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' });
+      document.getElementById('prevSafeVal').textContent = fmt(prevSafe) + '（' + label + '）';
+    } else {
+      prevSafe = 0;
+      document.getElementById('prevSafeVal').textContent = '¥0（初回）';
+    }
+  }
+
+  /* ---- submit ---- */
+  async function submitRecord() {
+    const date      = document.getElementById('date').value;
+    const staffName = document.getElementById('staffName').value.trim();
+
+    if (!date)      { toast('日付を入力してください', 'error'); return; }
+    if (!staffName) { toast('担当者名を入力してください', 'error'); return; }
+    if (!hasVal('registerAmount')) { toast('レジ金額を入力してください', 'error'); return; }
+    if (!hasVal('totalSales'))     { toast('総売上を入力してください', 'error'); return; }
+    if (!hasVal('cashSales'))      { toast('現金売上を入力してください', 'error'); return; }
+    if (!hasVal('safeAmount'))     { toast('金庫金額を入力してください', 'error'); return; }
+
+    const registerAmount  = numVal('registerAmount');
+    const totalSales      = numVal('totalSales');
+    const cashSales       = numVal('cashSales');
+    const safeAmount      = numVal('safeAmount');
+    const bankTransfer    = numVal('bankTransfer');
+    const cashExpense     = numVal('cashExpense');
+    const expenseNote     = document.getElementById('expenseNote').value.trim();
+    const notes           = document.getElementById('notes').value.trim();
+
+    const registerDiff    = registerAmount - REG_TARGET;
+    const safeTheoretical = prevSafe + cashSales - bankTransfer - cashExpense;
+    const safeDiff        = safeAmount - safeTheoretical;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '保存中...';
+
+    const { error } = await db.from('cash_records').insert({
+      date,
+      staff_name:       staffName,
+      register_amount:  registerAmount,
+      total_sales:      totalSales,
+      cash_sales:       cashSales,
+      safe_amount:      safeAmount,
+      bank_transfer:    bankTransfer,
+      cash_expense:     cashExpense,
+      expense_note:     expenseNote,
+      notes,
+      register_diff:    registerDiff,
+      safe_theoretical: safeTheoretical,
+      safe_diff:        safeDiff
+    });
+
+    btn.disabled = false;
+    btn.textContent = '保存する';
+
+    if (error) { toast('保存に失敗しました', 'error'); console.error(error); return; }
+
+    toast('保存しました！', 'success');
+
+    ['staffName','registerAmount','totalSales','cashSales','safeAmount',
+     'bankTransfer','cashExpense','expenseNote','notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('date').value = todayStr();
+    document.getElementById('regDiffBox').className = 'info-box neutral';
+    document.getElementById('regDiffVal').textContent = '- -';
+    document.getElementById('theoreticalBox').style.display = 'none';
+    document.getElementById('safeDiffBox').className = 'info-box neutral';
+    document.getElementById('safeDiffVal').textContent = '- -';
+
+    await loadPrevSafe();
+  }
+
+  /* ---- history ---- */
+  async function loadHistory() {
+    document.getElementById('historyList').innerHTML = '<div class="empty">読み込み中...</div>';
+
+    const firstDay = currentYear + '-' + String(currentMonth).padStart(2,'0') + '-01';
+    const lastMonth = new Date(currentYear, currentMonth, 0); // 月末日
+    const lastDay   = currentYear + '-' + String(currentMonth).padStart(2,'0') + '-' +
+                      String(lastMonth.getDate()).padStart(2,'0');
+
+    const { data, error } = await db
+      .from('cash_records')
+      .select('*')
+      .gte('date', firstDay)
+      .lte('date', lastDay)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error || !data) {
+      document.getElementById('historyList').innerHTML = '<div class="empty">読み込みに失敗しました</div>';
+      return;
+    }
+    if (data.length === 0) {
+      document.getElementById('historyList').innerHTML = '<div class="empty">' + currentYear + '年' + currentMonth + '月の記録はありません</div>';
+      return;
+    }
+
+    const html = data.map(r => {
+      const d = new Date(r.date + 'T00:00:00');
+      const dateStr = d.toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+      const allOk   = r.register_diff === 0 && r.safe_diff === 0;
+
+      const regDiffCls  = r.register_diff === 0 ? 'zero' : 'ng';
+      const safeDiffCls = r.safe_diff     === 0 ? 'zero' : 'ng';
+
+      let extraHtml = '';
+      if (r.bank_transfer > 0 || r.cash_expense > 0) {
+        extraHtml = '<div class="record-extra">';
+        if (r.bank_transfer > 0) {
+          extraHtml += `<div class="ri"><div class="ri-label">銀行入金</div><div class="ri-value">${fmt(r.bank_transfer)}</div></div>`;
+        }
+        if (r.cash_expense > 0) {
+          const expLabel = r.expense_note ? `現金支出（${r.expense_note}）` : '現金支出';
+          extraHtml += `<div class="ri"><div class="ri-label">${expLabel}</div><div class="ri-value">${fmt(r.cash_expense)}</div></div>`;
+        }
+        extraHtml += '</div>';
+      }
+
+      const notesHtml = r.notes ? `<div class="record-notes">📝 ${r.notes}</div>` : '';
+
+      // 編集情報・ボタン
+      let editInfoHtml = '';
+      let actionsHtml  = '';
+      if (r.edited_at) {
+        const edt = new Date(r.edited_at);
+        const edtStr = edt.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric' }) + ' ' +
+                       edt.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+        editInfoHtml = `<div class="record-edit-info">✏️ ${r.edited_by} が編集<br>${edtStr}</div>`;
+        actionsHtml  = `
+          <div class="record-actions">
+            <button class="edit-log-btn" onclick="openEditLog('${r.id}')">編集履歴</button>
+            <button class="edit-btn" onclick="openEditModal(${encodeRecord(r)})">編集</button>
+          </div>`;
+      } else {
+        editInfoHtml = '<div></div>';
+        actionsHtml  = `<button class="edit-btn" onclick="openEditModal(${encodeRecord(r)})">編集</button>`;
+      }
+
+      return `
+        <div class="record-card">
+          <div class="record-header">
+            <div>
+              <div class="record-date">${dateStr}</div>
+              <div class="record-staff">担当：${r.staff_name}</div>
+            </div>
+            <span class="badge ${allOk ? 'ok' : 'ng'}">${allOk ? '✓ 差異なし' : '⚠ 差異あり'}</span>
+          </div>
+          <div class="record-grid">
+            <div class="ri">
+              <div class="ri-label">レジ金額</div>
+              <div class="ri-value">${fmt(r.register_amount)}</div>
+              <div class="ri-diff ${regDiffCls}">${fmtDiff(r.register_diff)}</div>
+            </div>
+            <div class="ri">
+              <div class="ri-label">現金売上</div>
+              <div class="ri-value">${fmt(r.cash_sales)}</div>
+              <div class="ri-sub">総売上 ${fmt(r.total_sales)}</div>
+            </div>
+            <div class="ri">
+              <div class="ri-label">金庫金額</div>
+              <div class="ri-value">${fmt(r.safe_amount)}</div>
+              <div class="ri-diff ${safeDiffCls}">${fmtDiff(r.safe_diff)}</div>
+            </div>
+            <div class="ri">
+              <div class="ri-label">金庫理論値</div>
+              <div class="ri-value">${fmt(r.safe_theoretical)}</div>
+            </div>
+          </div>
+          ${extraHtml}
+          ${notesHtml}
+          <div class="record-footer">
+            ${editInfoHtml}
+            ${actionsHtml}
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('historyList').innerHTML = html;
+  }
+
+  /* レコードをHTML属性に安全に渡すためのエンコード */
+  function encodeRecord(r) {
+    return "JSON.parse(decodeURIComponent('" + encodeURIComponent(JSON.stringify(r)) + "'))";
+  }
+
+  /* ---- 編集モーダルを開く ---- */
+  async function openEditModal(record) {
+    editingRecord = record;
+
+    // 対象レコードより前の直近金庫残高を取得
+    const { data } = await db
+      .from('cash_records')
+      .select('safe_amount, date')
+      .lt('date', record.date)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    prevSafeForEdit = (data && data.length > 0) ? data[0].safe_amount : 0;
+
+    document.getElementById('editEditorName').value   = '';
+    document.getElementById('editDate').value          = record.date;
+    document.getElementById('editStaffName').value     = record.staff_name;
+    document.getElementById('editRegisterAmount').value = record.register_amount;
+    document.getElementById('editTotalSales').value    = record.total_sales;
+    document.getElementById('editCashSales').value     = record.cash_sales;
+    document.getElementById('editBankTransfer').value  = record.bank_transfer;
+    document.getElementById('editCashExpense').value   = record.cash_expense;
+    document.getElementById('editExpenseNote').value   = record.expense_note || '';
+    document.getElementById('editSafeAmount').value    = record.safe_amount;
+    document.getElementById('editNotes').value         = record.notes || '';
+
+    calcEditRegisterDiff();
+    calcEditSafeDiff();
+
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editModal').scrollTop = 0;
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+    editingRecord = null;
+  }
+
+  /* ---- 編集モーダル差異計算 ---- */
+  function calcEditRegisterDiff() {
+    const box = document.getElementById('editRegDiffBox');
+    const val = document.getElementById('editRegDiffVal');
+    const v   = document.getElementById('editRegisterAmount').value;
+    if (v === '') { box.className = 'info-box neutral'; val.textContent = '- -'; return; }
+    const diff = parseInt(v) - REG_TARGET;
+    box.className = 'info-box ' + (diff === 0 ? 'zero' : 'ng');
+    val.textContent = fmtDiff(diff);
+  }
+
+  function calcEditSafeDiff() {
+    const cashSales    = parseInt(document.getElementById('editCashSales').value)    || 0;
+    const bankTransfer = parseInt(document.getElementById('editBankTransfer').value) || 0;
+    const cashExpense  = parseInt(document.getElementById('editCashExpense').value)  || 0;
+    const theoretical  = prevSafeForEdit + cashSales - bankTransfer - cashExpense;
+
+    document.getElementById('editTheoreticalBox').style.display = 'flex';
+    document.getElementById('editTheoreticalVal').textContent = fmt(theoretical);
+
+    const dBox = document.getElementById('editSafeDiffBox');
+    const dVal = document.getElementById('editSafeDiffVal');
+    const sv   = document.getElementById('editSafeAmount').value;
+    if (sv === '') { dBox.className = 'info-box neutral'; dVal.textContent = '- -'; return; }
+    const diff = parseInt(sv) - theoretical;
+    dBox.className = 'info-box ' + (diff === 0 ? 'zero' : 'ng');
+    dVal.textContent = fmtDiff(diff);
+  }
+
+  /* ---- 編集保存 ---- */
+  async function saveEdit() {
+    const editorName = document.getElementById('editEditorName').value.trim();
+    if (!editorName) { toast('編集者名を入力してください', 'error'); return; }
+
+    const newData = {
+      date:            document.getElementById('editDate').value,
+      staff_name:      document.getElementById('editStaffName').value.trim(),
+      register_amount: parseInt(document.getElementById('editRegisterAmount').value) || 0,
+      total_sales:     parseInt(document.getElementById('editTotalSales').value)     || 0,
+      cash_sales:      parseInt(document.getElementById('editCashSales').value)      || 0,
+      bank_transfer:   parseInt(document.getElementById('editBankTransfer').value)   || 0,
+      cash_expense:    parseInt(document.getElementById('editCashExpense').value)    || 0,
+      expense_note:    document.getElementById('editExpenseNote').value.trim(),
+      safe_amount:     parseInt(document.getElementById('editSafeAmount').value)     || 0,
+      notes:           document.getElementById('editNotes').value.trim(),
+    };
+
+    newData.register_diff    = newData.register_amount - REG_TARGET;
+    newData.safe_theoretical = prevSafeForEdit + newData.cash_sales - newData.bank_transfer - newData.cash_expense;
+    newData.safe_diff        = newData.safe_amount - newData.safe_theoretical;
+    newData.edited_at        = new Date().toISOString();
+    newData.edited_by        = editorName;
+
+    // 変更点を検出
+    const fieldLabels = {
+      date: '日付', staff_name: '担当者名',
+      register_amount: 'レジ金額', total_sales: '総売上', cash_sales: '現金売上',
+      bank_transfer: '銀行入金', cash_expense: '現金支出', expense_note: '支出メモ',
+      safe_amount: '金庫金額', notes: 'メモ'
+    };
+    const field_changes = {};
+    for (const [key, label] of Object.entries(fieldLabels)) {
+      const before = editingRecord[key] ?? '';
+      const after  = newData[key] ?? '';
+      if (String(before) !== String(after)) {
+        field_changes[key] = { label, before, after };
+      }
+    }
+
+    const btn = document.getElementById('editSaveBtn');
+    btn.disabled = true;
+    btn.textContent = '保存中...';
+
+    const { error: updateError } = await db
+      .from('cash_records')
+      .update(newData)
+      .eq('id', editingRecord.id);
+
+    if (updateError) {
+      toast('更新に失敗しました', 'error');
+      console.error(updateError);
+      btn.disabled = false;
+      btn.textContent = '保存する';
+      return;
+    }
+
+    // 編集ログを記録
+    await db.from('cash_edit_logs').insert({
+      record_id:    editingRecord.id,
+      edited_by:    editorName,
+      field_changes
+    });
+
+    btn.disabled = false;
+    btn.textContent = '保存する';
+
+    toast('更新しました！', 'success');
+    closeEditModal();
+    loadHistory();
+  }
+
+  /* ---- 編集履歴モーダル ---- */
+  async function openEditLog(recordId) {
+    document.getElementById('editLogModal').classList.remove('hidden');
+    document.getElementById('editLogList').innerHTML = '<div class="empty">読み込み中...</div>';
+
+    const { data, error } = await db
+      .from('cash_edit_logs')
+      .select('*')
+      .eq('record_id', recordId)
+      .order('edited_at', { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      document.getElementById('editLogList').innerHTML = '<div class="empty">編集履歴はありません</div>';
+      return;
+    }
+
+    const html = data.map(log => {
+      const dt = new Date(log.edited_at);
+      const dtStr = dt.toLocaleDateString('ja-JP', { month:'numeric', day:'numeric' }) + ' ' +
+                    dt.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+
+      const changes = Object.values(log.field_changes).map(c => {
+        const isNum    = typeof c.before === 'number' || typeof c.after === 'number';
+        const beforeStr = isNum ? fmt(c.before) : (c.before || '（空）');
+        const afterStr  = isNum ? fmt(c.after)  : (c.after  || '（空）');
+        return `<div class="edit-log-change"><span class="field-name">${c.label}</span>: <span class="before">${beforeStr}</span>→<span class="after">${afterStr}</span></div>`;
+      }).join('');
+
+      return `
+        <div class="edit-log-item">
+          <div class="edit-log-header">
+            <span class="edit-log-who">✏️ ${log.edited_by}</span>
+            <span class="edit-log-when">${dtStr}</span>
+          </div>
+          ${changes || '<div class="edit-log-change" style="color:#aaa">変更なし</div>'}
+        </div>`;
+    }).join('');
+
+    document.getElementById('editLogList').innerHTML = html;
+  }
+
+  function closeEditLog() {
+    document.getElementById('editLogModal').classList.add('hidden');
+  }
+
+  /* ---- util ---- */
+  function todayStr() {
+    const n = new Date();
+    return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0');
+  }
+
+  function toast(msg, type) {
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type || 'info');
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2500);
+  }
+
+  /* ---- init ---- */
+  document.getElementById('date').value = todayStr();
+  loadPrevSafe();
+</script>
+</body>
+</html>

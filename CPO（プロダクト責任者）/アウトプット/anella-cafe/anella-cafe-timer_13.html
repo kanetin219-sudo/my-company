@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>アネラカフェ 入場管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+  :root {
+    --bg: #FDF6EE;
+    --surface: #FFFAF4;
+    --primary: #C96A3B;
+    --primary-light: #E8946A;
+    --accent: #4A7C6F;
+    --accent-light: #6FA898;
+    --text: #2C1F14;
+    --text-mid: #6B4F3A;
+    --text-soft: #A88870;
+    --border: #E8D5C0;
+    --shadow: rgba(150,80,30,0.12);
+    --warn: #D4502A;
+    --warn-bg: #FFF3EE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(201,106,59,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 85% 85%, rgba(74,124,111,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--primary);
+  }
+  .header-left p { font-size: 11px; color: var(--text-soft); letter-spacing: 0.08em; margin-top: 2px; }
+  .header-time {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--primary);
+    line-height: 1;
+    text-align: right;
+  }
+  .header-time-label { font-size: 11px; color: var(--text-soft); text-align: right; margin-bottom: 2px; }
+
+  /* 統計 */
+  .stats-bar { display: flex; gap: 12px; margin-bottom: 16px; }
+  .stat-chip {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-mid);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-chip span { color: var(--primary); font-family: 'DM Serif Display', serif; font-size: 18px; }
+
+  /* 待機リスト */
+  .waiting-section {
+    background: rgba(74,124,111,0.05);
+    border: 1.5px solid var(--accent-light);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .waiting-header {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .waiting-badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 100px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .waiting-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(74,124,111,0.12);
+  }
+  .waiting-item:last-child { border-bottom: none; }
+  .waiting-item-info { flex: 1; }
+  .waiting-item-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .waiting-item-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+  .waiting-sig {
+    width: 90px;
+    height: 48px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .waiting-checkin-btn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .waiting-checkin-btn:active { opacity: 0.8; }
+
+  /* カード署名 */
+  .card-sig {
+    width: 88px;
+    height: 40px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  /* 新規入場ボタン */
+  .add-btn {
+    width: 100%;
+    padding: 18px;
+    border-radius: 16px;
+    border: 2px dashed var(--primary-light);
+    background: rgba(201,106,59,0.04);
+    color: var(--primary);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .add-btn:active { background: rgba(201,106,59,0.1); transform: scale(0.98); }
+
+  /* グループカード */
+  .groups-list { display: flex; flex-direction: column; gap: 16px; }
+  .group-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 3px 16px var(--shadow);
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .group-card.warn-card {
+    border-color: var(--warn);
+    box-shadow: 0 3px 20px rgba(212,80,42,0.18);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header.warn-header { background: var(--warn-bg); }
+  .group-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-mid);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .seq-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--primary);
+    line-height: 1;
+  }
+  .warn-badge {
+    background: var(--warn);
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-weight: 700;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .checkin-info { font-size: 12px; color: var(--text-soft); }
+
+  .card-body {
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .timer-block, .fee-block { text-align: center; }
+  .block-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .timer-display {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    color: var(--primary);
+    line-height: 1;
+    transition: color 0.3s;
+  }
+  .timer-display.warn { color: var(--warn); }
+  .timer-display.prep { color: var(--accent); font-size: 32px; }
+  .block-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+  .fee-display {
+    font-family: 'DM Serif Display', serif;
+    font-size: 30px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .action-block { display: flex; flex-direction: column; gap: 8px; }
+  .checkout-btn-sm {
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .checkout-btn-sm:active { transform: scale(0.96); }
+  .delete-btn-sm {
+    padding: 10px 8px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .delete-btn-sm:active { background: var(--bg); }
+
+  /* 空状態 */
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text-soft); }
+  .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.8; }
+
+  /* モーダル */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(44,31,20,0.5);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(44,31,20,0.3);
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
+    overflow: hidden;
+  }
+  .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal-header { padding: 24px 24px 0; text-align: center; }
+  .modal-icon { font-size: 40px; margin-bottom: 8px; }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--primary); margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: var(--text-soft); margin-bottom: 20px; }
+  .modal-body { padding: 0 24px 24px; }
+
+  .guest-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .guest-row:last-of-type { border-bottom: none; }
+  .guest-row-label { font-size: 14px; font-weight: 700; color: var(--text-mid); }
+  .guest-row-price { font-size: 11px; color: var(--text-soft); }
+  .counter { display: flex; align-items: center; gap: 14px; }
+  .counter-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .counter-btn:active { background: var(--primary); color: white; border-color: var(--primary); }
+  .counter-num { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--text); min-width: 36px; text-align: center; }
+
+  .discount-row { display: flex; gap: 10px; margin: 16px 0; }
+  .discount-toggle {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    text-align: center;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-mid);
+    transition: all 0.15s;
+  }
+  .discount-toggle span { display: block; font-size: 10px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+  .discount-toggle.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .modal-primary-btn {
+    width: 100%;
+    padding: 18px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(201,106,59,0.35);
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .modal-primary-btn:disabled { background: var(--border); box-shadow: none; color: var(--text-soft); cursor: not-allowed; }
+  .modal-primary-btn.green { background: linear-gradient(135deg, var(--accent), var(--accent-light)); box-shadow: 0 6px 20px rgba(74,124,111,0.35); }
+  .modal-cancel-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  /* 会計詳細 */
+  .result-detail {
+    background: var(--bg);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1.5px solid var(--border);
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-mid);
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row strong { color: var(--text); font-weight: 700; }
+  .total-highlight {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 14px;
+    color: white;
+    margin-bottom: 20px;
+  }
+  .total-highlight-label { font-size: 14px; font-weight: 700; }
+  .total-highlight-amount { font-family: 'DM Serif Display', serif; font-size: 34px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>🐾 ANELLA CAFE</h1>
+      <p>大分店 ／ 入場管理システム</p>
+    </div>
+    <div>
+      <div class="header-time-label">現在時刻</div>
+      <div class="header-time" id="clockDisplay">--:--</div>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-chip">🏠 滞在中 <span id="statGroups">0</span>組</div>
+    <div class="stat-chip">👤 合計 <span id="statPeople">0</span>名</div>
+  </div>
+
+  <!-- 同意書待機リスト -->
+  <div class="waiting-section" id="waitingSection">
+    <div class="waiting-header">
+      📋 同意書提出済み・待機中
+      <span class="waiting-badge" id="waitingBadge">0</span>
+    </div>
+    <div id="waitingList"></div>
+  </div>
+
+  <button class="add-btn" onclick="openCheckinModal()">＋ 新規入場（手入力）</button>
+
+  <div class="groups-list" id="groupsList"></div>
+</div>
+
+<!-- 入場モーダル -->
+<div class="modal-overlay" id="checkinModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon">🐾</div>
+      <div class="modal-title">新規入場</div>
+      <div class="modal-sub">お名前と人数を入力してください</div>
+    </div>
+    <div class="modal-body">
+      <!-- 署名プレビュー（同意書からの場合のみ表示） -->
+      <div id="mSigPreview" style="display:none;margin-bottom:14px;background:#FDF6EE;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;">
+        <div class="guest-row-label" style="margin-bottom:6px;font-size:11px;color:var(--text-soft);">📝 署名（AIが名前を読み取り中...）</div>
+        <div id="mSigImgs" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div class="guest-row-label" style="margin-bottom:8px;">👤 お名前</div>
+        <input type="text" id="mName" placeholder="読み取り中..."
+          oninput="updateStartBtn()"
+          onfocus="this.style.borderColor='var(--primary)'"
+          onblur="this.style.borderColor='var(--border)'"
+          style="width:100%;padding:12px 16px;border-radius:12px;border:2px solid var(--border);background:var(--bg);font-family:'Noto Sans JP',sans-serif;font-size:16px;color:var(--text);outline:none;transition:border-color 0.15s;">
+      </div>
+      <div class="guest-row">
+        <div>
+          <div class="guest-row-label">🧑 大人</div>
+          <div class="guest-row-price">30分 ¥1,000 / 延長15分 ¥400</div>
+        </div>
+        <div class="counter">
+          <button class="counter-btn" onclick="mChange('adult',-1)">−</button>
+          <div class="counter-num" id="mAdult">1</div>
+          <button class="counter-btn" onclick="mChange('adult',1)">＋</button>
+        </div>
+      </div>
+      <div class="guest-row">
+        <div>
+          <div class="guest-row-label">👧 子供</div>
+          <div class="guest-row-price">30分 ¥500 / 延長15分 ¥200</div>
+        </div>
+        <div class="counter">
+          <button class="counter-btn" onclick="mChange('child',-1)">−</button>
+          <div class="counter-num" id="mChild">0</div>
+          <button class="counter-btn" onclick="mChange('child',1)">＋</button>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:2px dashed var(--border);">
+        <div class="guest-row-label" style="margin-bottom:8px;">📅 来店回数</div>
+        <select id="mVisitSelect" onchange="selectVisit(this.value)"
+          style="width:100%;padding:12px 16px;border-radius:12px;border:2px solid var(--border);background:var(--bg);font-family:'Noto Sans JP',sans-serif;font-size:16px;color:var(--text);outline:none;transition:border-color 0.15s;appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23A88870%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>');background-repeat:no-repeat;background-position:right 14px center;">
+          <option value="">選択してください</option>
+          <option value="新規">新規（はじめてのご来店）</option>
+          <option value="2回目">2回目</option>
+          <option value="3回目">3回目</option>
+          <option value="4回目以上">4回目以上（リピーター）</option>
+        </select>
+      </div>
+      <div class="guest-row-label" style="margin-bottom:8px;">🎫 割引</div>
+      <div class="discount-row" style="margin-top:8px;">
+        <button class="discount-toggle" id="mDiscSenior" onclick="mToggleDisc('senior')">シニア割<span>大人 → ¥500/30分</span></button>
+        <button class="discount-toggle" id="mDiscDisability" onclick="mToggleDisc('disability')">障害者割引<span>大人 → ¥500/30分</span></button>
+        <button class="discount-toggle" id="mDiscReview" onclick="mToggleDisc('review')">口コミ割<span>全員 → 入場料半額</span></button>
+      </div>
+      <button class="modal-primary-btn" id="mStartBtn" onclick="doCheckin()">✅ 入場開始</button>
+      <button class="modal-cancel-btn" onclick="closeModal('checkinModal')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 会計モーダル -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon">🎉</div>
+      <div class="modal-title">お会計</div>
+      <div class="modal-sub">ありがとうございました！</div>
+    </div>
+    <div class="modal-body">
+      <div class="result-detail" id="checkoutDetail"></div>
+      <div class="total-highlight">
+        <span class="total-highlight-label">合計金額</span>
+        <span class="total-highlight-amount" id="checkoutTotal"></span>
+      </div>
+      <button class="modal-primary-btn green" onclick="confirmCheckout()">✔ 会計完了・退場</button>
+      <button class="modal-cancel-btn" onclick="closeModal('checkoutModal')">戻る</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// 日次連番
+const CIRCLES = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩',
+                 '⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'];
+function seqLabel(n) { return (n >= 1 && n <= 20) ? CIRCLES[n - 1] : n + '.'; }
+
+function assignSeq() {
+  const today = new Date().toISOString().slice(0, 10);
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem('anella_daily_seq') || '{}'); } catch(e) {}
+  const next = d.date === today ? (d.next || 1) : 1;
+  try { localStorage.setItem('anella_daily_seq', JSON.stringify({ date: today, next: next + 1 })); } catch(e) {}
+  return next;
+}
+
+// signatures フィールドから最初の署名データURLを安全に取り出す
+function extractSig(raw) {
+  if (!raw) return null;
+  let arr = raw;
+  if (typeof arr === 'string') {
+    try { arr = JSON.parse(arr); } catch(e) { return null; }
+  }
+  if (Array.isArray(arr)) return arr.length > 0 ? arr[0] : null;
+  if (typeof arr === 'object') {
+    const vals = Object.values(arr);
+    return vals.length > 0 ? vals[0] : null;
+  }
+  return null;
+}
+
+// visit_count マッピング（同意書 → タイマー）
+function mapVisitCount(v) {
+  if (!v) return '';
+  if (v === '初回') return '新規';
+  if (v === '2回目') return '2回目';
+  if (v === '3回目') return '3回目';
+  return '4回目以上';
+}
+
+// localStorage からデータ復元
+function loadData() {
+  try {
+    const saved = localStorage.getItem('anella_groups');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return [];
+}
+function saveData() {
+  try { localStorage.setItem('anella_groups', JSON.stringify(groups)); } catch(e) {}
+}
+
+let groups = loadData();
+let nextId = groups.length ? Math.max(...groups.map(g=>g.id)) + 1 : 1;
+let mAdults = 1, mChildren = 0;
+let mDisc = { senior: false, disability: false, review: false };
+let mVisit = '';
+let checkoutTargetId = null;
+let pendingConsentId  = null;
+let pendingConsentSeq = null;
+let pendingSignature  = null;
+
+// 日次連番の同期（ページ再読み込み対応）
+(function syncDailySeq() {
+  const today = new Date().toISOString().slice(0, 10);
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem('anella_daily_seq') || '{}'); } catch(e) {}
+  if (d.date !== today) {
+    // 日付が変わったら1からリセット
+    try { localStorage.setItem('anella_daily_seq', JSON.stringify({ date: today, next: 1 })); } catch(e) {}
+  }
+})();
+
+// ── 待機リスト（Supabase） ──
+let waitingForms = [];
+
+// 処理済みIDをlocalStorageで管理（DBの更新に依存しない）
+function getDismissedIds() {
+  try {
+    const d = JSON.parse(localStorage.getItem('anella_dismissed_consents') || '{}');
+    const today = new Date().toISOString().slice(0, 10);
+    return d.date === today ? (d.ids || []) : [];
+  } catch(e) { return []; }
+}
+function addDismissedId(id) {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const d = JSON.parse(localStorage.getItem('anella_dismissed_consents') || '{}');
+    const ids = d.date === today ? [...new Set([...(d.ids || []), id])] : [id];
+    localStorage.setItem('anella_dismissed_consents', JSON.stringify({ date: today, ids }));
+  } catch(e) {}
+}
+
+async function loadWaitingForms() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .from('consent_forms')
+      .select('id, adults, children, preschool, visit_count, submitted_at, signatures, day_seq')
+      .eq('visit_date', today)
+      .eq('checked_in', false)
+      .order('submitted_at', { ascending: true });
+    if (!error && data) {
+      const dismissed = getDismissedIds();
+      waitingForms = data.filter(f => !dismissed.includes(f.id));
+      renderWaiting();
+    }
+  } catch(e) {}
+}
+
+function renderWaiting() {
+  const section = document.getElementById('waitingSection');
+  const list    = document.getElementById('waitingList');
+  const badge   = document.getElementById('waitingBadge');
+
+  if (!waitingForms.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  badge.textContent = waitingForms.length;
+
+  list.innerHTML = waitingForms.map((f, idx) => {
+    const pax = [];
+    if ((f.adults||0) > 0) pax.push(`大人${f.adults}名`);
+    if ((f.children||0) > 0) pax.push(`子供${f.children}名`);
+    if ((f.preschool||0) > 0) pax.push(`未就学${f.preschool}名`);
+    const t = f.submitted_at
+      ? new Date(f.submitted_at).toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' })
+      : '';
+    const label = pax.join('・') || '来場者';
+    const sub = [f.visit_count, t ? `提出: ${t}` : ''].filter(Boolean).join('　');
+    const sigSrc = extractSig(f.signatures);
+    return `<div class="waiting-item">
+      ${sigSrc ? `<img class="waiting-sig" src="${sigSrc}" alt="署名">` : ''}
+      <div class="waiting-item-info">
+        <div class="waiting-item-name">${label}</div>
+        <div class="waiting-item-sub">${sub}</div>
+      </div>
+      <button class="waiting-checkin-btn" onclick="openCheckinFromConsent('${f.id}')">入場登録 →</button>
+      <button onclick="skipConsent('${f.id}')" style="padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-soft);font-size:13px;cursor:pointer;margin-left:6px;white-space:nowrap;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+async function skipConsent(id) {
+  addDismissedId(id);
+  waitingForms = waitingForms.filter(f => f.id !== id);
+  renderWaiting();
+  supabase.from('consent_forms').update({ checked_in: true }).eq('id', id).then(() => {}).catch(() => {});
+}
+
+async function openCheckinFromConsent(id) {
+  const f = waitingForms.find(x => x.id === id);
+  if (!f) return;
+  pendingConsentId  = id;
+  pendingConsentSeq = f.day_seq || null;
+  pendingSignature  = extractSig(f.signatures);
+  mAdults   = f.adults || 0;
+  mChildren = (f.children || 0) + (f.preschool || 0);
+  mDisc     = { senior: false, disability: false, review: false };
+  mVisit    = mapVisitCount(f.visit_count);
+  document.getElementById('mAdult').textContent = mAdults;
+  document.getElementById('mChild').textContent = mChildren;
+  document.getElementById('mName').value        = '';
+  document.getElementById('mName').placeholder  = '読み取り中...';
+  document.getElementById('mVisitSelect').value = mVisit;
+  document.getElementById('mDiscSenior').classList.remove('active');
+  document.getElementById('mDiscDisability').classList.remove('active');
+  document.getElementById('mDiscReview').classList.remove('active');
+
+  // 署名プレビュー表示
+  const sigs = Array.isArray(f.signatures) ? f.signatures : [];
+  const preview = document.getElementById('mSigPreview');
+  const imgs    = document.getElementById('mSigImgs');
+  if (sigs.length > 0) {
+    imgs.innerHTML = sigs.map(s =>
+      `<img src="${s}" style="height:52px;max-width:120px;object-fit:contain;border:1px solid var(--border);border-radius:8px;background:#fff;">`
+    ).join('');
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+
+  updateStartBtn();
+  openModal('checkinModal');
+
+  // OCRで最初の署名から名前を読み取る
+  if (pendingSignature) {
+    try {
+      const res = await fetch('https://abeekodehorlwsmnhoza.supabase.co/functions/v1/ocr-name', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: pendingSignature })
+      });
+      const { name } = await res.json();
+      // 長い文章（10文字超）はOCRエラーとみなす
+      const validName = name && name.length <= 10 ? name : null;
+      if (validName) {
+        document.getElementById('mName').value       = validName;
+        document.getElementById('mName').placeholder = '例：田中さん、山田ファミリー';
+        preview.querySelector('.guest-row-label').textContent = '📝 署名';
+        updateStartBtn();
+      } else {
+        document.getElementById('mName').placeholder = '任意（空白のまま登録可）';
+        preview.querySelector('.guest-row-label').textContent = '📝 署名（読み取れませんでした）';
+        updateStartBtn();
+        setTimeout(() => document.getElementById('mName').focus(), 100);
+      }
+    } catch(e) {
+      document.getElementById('mName').placeholder = '任意（空白のまま登録可）';
+      updateStartBtn();
+      setTimeout(() => document.getElementById('mName').focus(), 100);
+    }
+  } else {
+    setTimeout(() => document.getElementById('mName').focus(), 200);
+  }
+}
+
+// ── 料金計算 ──
+function calcFee(g, atMs) {
+  const elapsed = (atMs || Date.now()) - g.checkinAt;
+  const rawMins = elapsed / 60000;
+  const billableMins = Math.max(0, rawMins - 5);
+  const mins = billableMins === 0 ? 0 : Math.max(1, Math.ceil(billableMins));
+  function fee(base, ext) {
+    if (mins === 0) return 0;
+    return mins <= 30 ? base : base + Math.ceil((mins-30)/15)*ext;
+  }
+  const normFee = fee(1000, 400);
+  const discFee = fee(500, 200);
+  const cNormFee = fee(500, 200);
+
+  if (g.disc.review) {
+    const aEach = Math.floor(normFee / 2);
+    const cEach = Math.floor(cNormFee / 2);
+    const aTotal = g.adults * aEach;
+    const cTotal = g.children * cEach;
+    const gachaTotal = (g.gacha||0) * 200;
+    return { mins, discFee, normFee, cEach,
+      discCount: 0, normCount: 0,
+      reviewCount: g.adults, reviewFee: aEach,
+      reviewCCount: g.children, reviewCFee: cEach,
+      aTotal, cTotal, gachaTotal, grand: aTotal + cTotal + gachaTotal, isReview: true };
+  }
+
+  const discCount = (g.disc.senior || g.disc.disability) ? Math.min(g.adults, 2) : 0;
+  const normCount = g.adults - discCount;
+  const aTotal = discCount * discFee + normCount * normFee;
+  const cTotal = g.children * cNormFee;
+  const gachaTotal = (g.gacha||0) * 200;
+  return { mins, discFee, normFee, cEach: cNormFee, discCount, normCount,
+    aTotal, cTotal, gachaTotal, grand: aTotal + cTotal + gachaTotal, isReview: false };
+}
+
+function fmt(d) {
+  return [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
+}
+function fmtShort(d) {
+  return [d.getHours(),d.getMinutes()].map(n=>String(n).padStart(2,'0')).join(':');
+}
+
+// 時計
+setInterval(() => {
+  const d = new Date();
+  document.getElementById('clockDisplay').textContent =
+    [d.getHours(),d.getMinutes()].map(n=>String(n).padStart(2,'0')).join(':');
+}, 1000);
+
+// ── レンダリング ──
+function render() {
+  document.getElementById('statGroups').textContent = groups.length;
+  document.getElementById('statPeople').textContent = groups.reduce((s,g)=>s+g.adults+g.children,0);
+
+  const list = document.getElementById('groupsList');
+  if (!groups.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🐕</div><p>現在ご滞在中のお客様はいません<br>「新規入場」ボタンから登録してください</p></div>`;
+    return;
+  }
+
+  list.innerHTML = groups.map(g => {
+    const fee = calcFee(g);
+    const now = Date.now();
+    const totalSec = Math.floor((now - g.checkinAt)/1000);
+    const rawMins = (now - g.checkinAt) / 60000;
+    const billSec = Math.max(0, totalSec - 300);
+    const m = Math.floor(billSec/60), s = billSec%60;
+    const warn = m >= 30 && rawMins >= 5;
+    const timeStr = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    const seq = g.daySeq ? seqLabel(g.daySeq) : '';
+
+    let summary = [];
+    if (g.adults>0) summary.push(`大人${g.adults}名`);
+    if (g.children>0) summary.push(`子供${g.children}名`);
+    if (g.disc.senior) summary.push('シニア割');
+    if (g.disc.disability) summary.push('障害者割引');
+    if (g.disc.review) summary.push('口コミ割');
+
+    let breakdown = [];
+    if (fee.isReview) {
+      if (g.adults>0) breakdown.push(`大人¥${fee.aTotal.toLocaleString()}（口コミ割）`);
+      if (g.children>0) breakdown.push(`子供¥${fee.cTotal.toLocaleString()}（口コミ割）`);
+    } else {
+      if (g.adults>0) breakdown.push(`大人¥${fee.aTotal.toLocaleString()}`);
+      if (g.children>0) breakdown.push(`子供¥${fee.cTotal.toLocaleString()}`);
+    }
+    if ((g.gacha||0)>0) breakdown.push(`ガチャ¥${fee.gachaTotal.toLocaleString()}`);
+
+    return `<div class="group-card ${warn?'warn-card':''}">
+      <div class="card-header ${warn?'warn-header':''}">
+        <div class="group-label">🐾 <span class="seq-num">${seq}</span>${g.label}　${summary.join('・')}${warn?'<span class="warn-badge">延長中</span>':''}</div>
+        ${g.sig ? `<img class="card-sig" src="${g.sig}" alt="署名">` : ''}
+        <div class="checkin-info">入場 ${fmtShort(new Date(g.checkinAt))}</div>
+      </div>
+      <div class="card-body">
+        <div class="timer-block">
+          <div class="block-label">滞在時間</div>
+          <div class="timer-display ${warn?'warn':(rawMins<5?'prep':'')})">${rawMins<5?'準備中':timeStr}</div>
+          <div class="block-sub">${rawMins<5?`あと${Math.ceil(5-rawMins)}分で課金開始`:`${m}分${s}秒`}</div>
+        </div>
+        <div class="fee-block">
+          <div class="block-label">現在料金</div>
+          <div class="fee-display">¥${fee.grand.toLocaleString()}</div>
+          <div class="block-sub">${breakdown.join(' / ')}</div>
+        </div>
+        <div class="action-block">
+          <button class="checkout-btn-sm" onclick="openCheckout(${g.id})">💴 会計</button>
+          <div style="display:flex;gap:6px;align-items:center;justify-content:center;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:6px 8px;">
+            <button onclick="addGacha(${g.id},-1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--primary);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+            <span style="font-size:11px;color:var(--text-soft);text-align:center;">🎰 ガチャ<br><strong style="font-size:15px;color:var(--text);">${g.gacha||0}</strong>回</span>
+            <button onclick="addGacha(${g.id},1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--primary);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;">＋</button>
+          </div>
+          <button class="delete-btn-sm" onclick="deleteGroup(${g.id})">✕ 削除</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+setInterval(render, 1000);
+render();
+
+// ── 入場モーダル ──
+function openCheckinModal() {
+  pendingConsentId = null;
+  pendingSignature = null;
+  mAdults=1; mChildren=0; mDisc={senior:false,disability:false,review:false};
+  document.getElementById('mAdult').textContent=1;
+  document.getElementById('mChild').textContent=0;
+  document.getElementById('mName').value='';
+  mVisit='';
+  document.getElementById('mVisitSelect').value='';
+  document.getElementById('mDiscSenior').classList.remove('active');
+  document.getElementById('mDiscDisability').classList.remove('active');
+  document.getElementById('mDiscReview').classList.remove('active');
+  updateStartBtn();
+  openModal('checkinModal');
+  setTimeout(()=>document.getElementById('mName').focus(), 200);
+}
+function mChange(type, delta) {
+  if (type==='adult') { mAdults=Math.max(0,mAdults+delta); document.getElementById('mAdult').textContent=mAdults; }
+  else { mChildren=Math.max(0,mChildren+delta); document.getElementById('mChild').textContent=mChildren; }
+  updateStartBtn();
+}
+function mToggleDisc(type) {
+  mDisc[type]=!mDisc[type];
+  document.getElementById('mDisc'+type.charAt(0).toUpperCase()+type.slice(1)).classList.toggle('active',mDisc[type]);
+}
+function updateStartBtn() {
+  const name = document.getElementById('mName')?.value.trim() || '';
+  // 同意書からの場合は名前なしでもOK（第N組として登録される）
+  const needName = !pendingConsentId;
+  document.getElementById('mStartBtn').disabled = (mAdults+mChildren)===0 || (needName && name==='') || mVisit==='';
+}
+
+function selectVisit(v) {
+  mVisit = v;
+  updateStartBtn();
+}
+
+function addGacha(id, delta) {
+  const g = groups.find(x=>x.id===id);
+  if (!g) return;
+  g.gacha = Math.max(0, (g.gacha||0) + delta);
+  saveData();
+  render();
+}
+
+function doCheckin() {
+  const name = document.getElementById('mName').value.trim();
+  const seq   = pendingConsentSeq || assignSeq();
+  const label = name || `第${seq}組`;
+  document.getElementById('mSigPreview').style.display = 'none';
+  document.getElementById('mName').placeholder = '例：田中さん、山田ファミリー';
+  const cid   = pendingConsentId;
+
+  groups.push({
+    id: nextId++,
+    daySeq: seq,
+    label,
+    adults: mAdults,
+    children: mChildren,
+    disc: {...mDisc},
+    visit: mVisit,
+    checkinAt: Date.now(),
+    consentId: cid || null,
+    sig: pendingSignature || null
+  });
+  pendingSignature = null;
+  saveData();
+
+  // 同意書を入場済みにマーク
+  if (cid) {
+    addDismissedId(cid);
+    waitingForms = waitingForms.filter(f => f.id !== cid);
+    renderWaiting();
+    supabase.from('consent_forms').update({ checked_in: true }).eq('id', cid).then(() => {}).catch(() => {});
+  } else {
+    loadWaitingForms();
+  }
+  pendingConsentId  = null;
+  pendingConsentSeq = null;
+  closeModal('checkinModal');
+  render();
+  showToast(`${seqLabel(seq)} ${label}の入場を登録しました！`);
+}
+
+// ── 会計モーダル ──
+function openCheckout(id) {
+  checkoutTargetId = id;
+  const g = groups.find(x=>x.id===id);
+  if (!g) return;
+  const now = Date.now();
+  const fee = calcFee(g, now);
+  const m = Math.floor((now-g.checkinAt)/60000);
+  const seq = g.daySeq ? seqLabel(g.daySeq) : '';
+
+  let html = `
+    ${g.sig ? `<div style="text-align:center;margin-bottom:12px;"><img src="${g.sig}" alt="署名" style="max-width:200px;height:60px;object-fit:contain;border:1px solid var(--border);border-radius:10px;background:#fff;"></div>` : ''}
+    <div class="result-row"><span>グループ</span><strong>${seq} ${g.label}</strong></div>
+    <div class="result-row"><span>入場時刻</span><strong>${fmt(new Date(g.checkinAt))}</strong></div>
+    <div class="result-row"><span>退場時刻</span><strong>${fmt(new Date(now))}</strong></div>
+    <div class="result-row"><span>滞在時間</span><strong>${m}分</strong></div>`;
+  if (fee.isReview) {
+    if (g.adults>0) html+=`<div class="result-row"><span>大人（口コミ割）${g.adults}名 × ¥${fee.reviewFee.toLocaleString()}</span><strong>¥${fee.aTotal.toLocaleString()}</strong></div>`;
+    if (g.children>0) html+=`<div class="result-row"><span>子供（口コミ割）${g.children}名 × ¥${fee.reviewCFee.toLocaleString()}</span><strong>¥${fee.cTotal.toLocaleString()}</strong></div>`;
+  } else {
+    if (fee.discCount>0) html+=`<div class="result-row"><span>大人（割引）${fee.discCount}名 × ¥${fee.discFee.toLocaleString()}</span><strong>¥${(fee.discCount*fee.discFee).toLocaleString()}</strong></div>`;
+    if (fee.normCount>0) html+=`<div class="result-row"><span>大人（通常）${fee.normCount}名 × ¥${fee.normFee.toLocaleString()}</span><strong>¥${(fee.normCount*fee.normFee).toLocaleString()}</strong></div>`;
+    if (g.children>0) html+=`<div class="result-row"><span>子供 ${g.children}名 × ¥${fee.cEach.toLocaleString()}</span><strong>¥${fee.cTotal.toLocaleString()}</strong></div>`;
+  }
+  if ((g.gacha||0)>0) html+=`<div class="result-row"><span>🎰 ガチャ ${g.gacha}回 × ¥200</span><strong>¥${fee.gachaTotal.toLocaleString()}</strong></div>`;
+
+  document.getElementById('checkoutDetail').innerHTML = html;
+  document.getElementById('checkoutTotal').textContent = '¥'+fee.grand.toLocaleString();
+  openModal('checkoutModal');
+}
+
+function confirmCheckout() {
+  const g = groups.find(x=>x.id===checkoutTargetId);
+  const seq   = g?.daySeq ? seqLabel(g.daySeq) : '';
+  const label = g?.label || '';
+  if (g && g.visit) {
+    fetch('https://script.google.com/macros/s/AKfycby0BhfKBJG_iUdXSYM4NJ_oCKLlhYe7-Xa27GVJCz2jwfRdoye0OdgPElJrtzSKgkgcTA/exec?visit=' + encodeURIComponent(g.visit) + '&t=' + Date.now(), {mode:'no-cors', cache:'no-store'}).catch(()=>{});
+  }
+  groups = groups.filter(x=>x.id!==checkoutTargetId);
+  saveData();
+  closeModal('checkoutModal');
+  render();
+  showToast(`${seq} ${label}の会計が完了しました！`);
+}
+
+function deleteGroup(id) {
+  const g = groups.find(x=>x.id===id);
+  if (!confirm(`${g?.daySeq ? seqLabel(g.daySeq) : ''} ${g?.label||''}を削除しますか？`)) return;
+  groups = groups.filter(x=>x.id!==id);
+  saveData();
+  render();
+  showToast('削除しました');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// 待機リストの初回読み込み＆5秒ごとにポーリング
+loadWaitingForms();
+setInterval(loadWaitingForms, 5000);
+</script>
+</body>
+</html>

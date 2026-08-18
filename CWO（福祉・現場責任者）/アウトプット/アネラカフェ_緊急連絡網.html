@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANELLA CAFE 大分店 緊急連絡網</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+    font-size: 11pt;
+    color: #1a1a1a;
+    background: #f0f0f0;
+  }
+
+  /* ツールバー */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #00ACC1;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .toolbar-title {
+    font-weight: bold;
+    font-size: 10pt;
+    flex: 1;
+  }
+  .toolbar-hint {
+    font-size: 8.5pt;
+    opacity: 0.85;
+  }
+  .toolbar-save-status {
+    font-size: 8.5pt;
+    opacity: 0.8;
+    min-width: 120px;
+    text-align: right;
+  }
+  .btn {
+    padding: 5px 14px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 9pt;
+    font-weight: bold;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-print {
+    background: white;
+    color: #00838F;
+  }
+  .btn-clear {
+    background: rgba(255,255,255,0.2);
+    color: white;
+  }
+  .btn-pdf {
+    background: #e74c3c;
+    color: white;
+  }
+  .btn-pdf:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* 編集可能セルのスタイル */
+  [contenteditable="true"] {
+    outline: none;
+    border-radius: 3px;
+    padding: 1px 3px;
+    min-width: 20px;
+    display: inline-block;
+    cursor: text;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  [contenteditable="true"]:hover {
+    background: rgba(0,172,193,0.08);
+    box-shadow: 0 0 0 1px rgba(0,172,193,0.3);
+  }
+  [contenteditable="true"]:focus {
+    background: #fff;
+    box-shadow: 0 0 0 2px #00ACC1;
+  }
+  .card.primary [contenteditable="true"]:hover {
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.5);
+  }
+  .card.primary [contenteditable="true"]:focus {
+    background: rgba(255,255,255,0.25);
+    box-shadow: 0 0 0 2px white;
+  }
+  td[contenteditable="true"] {
+    display: table-cell;
+    width: 100%;
+  }
+  td[contenteditable="true"]:hover {
+    background: rgba(0,172,193,0.07) !important;
+    box-shadow: inset 0 0 0 1px rgba(0,172,193,0.25);
+  }
+  td[contenteditable="true"]:focus {
+    background: #fff !important;
+    box-shadow: inset 0 0 0 2px #00ACC1;
+  }
+  .empty-hint::before {
+    content: attr(data-placeholder);
+    color: #bbb;
+    font-weight: normal;
+    font-style: italic;
+    pointer-events: none;
+  }
+
+  /* ページ */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10mm auto;
+    background: white;
+    padding: 12mm 14mm;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+
+  /* ヘッダー */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #00ACC1;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+  .header-left h1 {
+    font-size: 20pt;
+    font-weight: 900;
+    color: #00ACC1;
+    letter-spacing: 2px;
+  }
+  .header-left .subtitle {
+    font-size: 9pt;
+    color: #555;
+    margin-top: 2px;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 9pt;
+    color: #555;
+    line-height: 1.8;
+  }
+  .confidential-badge {
+    display: inline-block;
+    background: #e74c3c;
+    color: white;
+    font-size: 8pt;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .section-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: white;
+    background: #00ACC1;
+    padding: 4px 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+  }
+
+  /* 連絡系統図 */
+  .chain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .chain-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+  }
+  .chain-arrow-down {
+    text-align: center;
+    font-size: 18pt;
+    color: #00ACC1;
+    line-height: 1;
+    margin: 3px 0;
+  }
+  .chain-arrow-side {
+    font-size: 14pt;
+    color: #00ACC1;
+    display: flex;
+    align-items: center;
+    margin: 0 4px;
+  }
+  .card {
+    border: 2px solid #00ACC1;
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-width: 120px;
+    text-align: center;
+  }
+  .card.primary { background: #00ACC1; color: white; min-width: 160px; }
+  .card.secondary { background: #E0F7FA; min-width: 140px; }
+  .card.small { border-color: #4DD0E1; border-width: 1.5px; min-width: 100px; font-size: 9.5pt; }
+  .card .role { font-size: 7.5pt; opacity: 0.8; margin-bottom: 2px; }
+  .card.primary .role { opacity: 0.85; }
+  .card .name { font-size: 11pt; font-weight: bold; }
+  .card .tel { font-size: 9pt; margin-top: 2px; letter-spacing: 0.5px; }
+  .card.primary .tel { color: #B2EBF2; }
+  .card.secondary .tel { color: #006064; }
+
+  /* スタッフ一覧表 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 9.5pt;
+  }
+  thead tr { background: #00ACC1; color: white; }
+  thead th { padding: 5px 7px; text-align: center; font-weight: bold; font-size: 9pt; }
+  tbody tr:nth-child(even) { background: #E0F7FA; }
+  tbody tr:hover { background: #B2EBF2; }
+  tbody td { padding: 5px 7px; border-bottom: 1px solid #B2EBF2; vertical-align: middle; }
+  .td-role { text-align: center; font-size: 8.5pt; color: #444; white-space: nowrap; }
+  .td-name { font-weight: bold; }
+  .td-tel { letter-spacing: 0.5px; color: #006064; font-weight: bold; }
+  .td-note { font-size: 8.5pt; color: #666; }
+
+  /* 外部機関 */
+  .external-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .ext-card { border: 1.5px solid #bbb; border-radius: 5px; padding: 7px 9px; }
+  .ext-card.emergency { border-color: #e74c3c; background: #fff5f5; }
+  .ext-card.admin { border-color: #2980b9; background: #f0f7ff; }
+  .ext-card .ext-label { font-size: 8pt; color: #777; margin-bottom: 2px; }
+  .ext-card.emergency .ext-label { color: #c0392b; }
+  .ext-card.admin .ext-label { color: #1a5276; }
+  .ext-card .ext-name { font-size: 10pt; font-weight: bold; margin-bottom: 2px; }
+  .ext-card .ext-tel { font-size: 12pt; font-weight: 900; color: #e74c3c; letter-spacing: 1px; }
+  .ext-card.admin .ext-tel { color: #1a5276; font-size: 10pt; }
+  .ext-card .ext-note { font-size: 7.5pt; color: #999; margin-top: 2px; }
+
+  /* 対応手順 */
+  .steps-box {
+    border: 1.5px solid #00ACC1;
+    border-radius: 5px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+  }
+  .steps-title { font-size: 9.5pt; font-weight: bold; color: #00ACC1; margin-bottom: 6px; }
+  .steps-row { display: flex; gap: 6px; align-items: flex-start; }
+  .step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .step-num {
+    background: #00ACC1; color: white; font-size: 9pt; font-weight: bold;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px; flex-shrink: 0;
+  }
+  .step-text { font-size: 8.5pt; text-align: center; line-height: 1.4; }
+  .step-arrow { font-size: 16pt; color: #aaa; padding-top: 2px; flex-shrink: 0; }
+
+  /* 改訂欄 */
+  .revision-box {
+    border: 1px solid #ccc; border-radius: 4px; padding: 5px 10px;
+    margin-bottom: 14px; display: flex; gap: 20px;
+    font-size: 8.5pt; color: #666; align-items: center;
+  }
+  .revision-box span { font-weight: bold; color: #333; }
+
+  /* フッター */
+  .footer {
+    border-top: 1px solid #ccc; padding-top: 6px;
+    display: flex; justify-content: space-between;
+    font-size: 8pt; color: #888;
+  }
+
+  /* 印刷設定 */
+  @media print {
+    body { background: white; }
+    .toolbar { display: none !important; }
+    .page { margin: 0; padding: 10mm 13mm; box-shadow: none; width: 100%; }
+    [contenteditable="true"] { box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+    .empty-hint::before { content: ""; }
+    @page { size: A4 portrait; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ツールバー -->
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-title">✏️ ANELLA CAFE 大分店 緊急連絡網 — 編集モード</div>
+  <div class="toolbar-hint">セルをクリックして直接入力できるっちゃ！自動保存されるっちゃよ</div>
+  <div class="toolbar-save-status" id="saveStatus">💾 読み込み中…</div>
+  <button class="btn btn-clear" onclick="clearAll()">リセット</button>
+  <button class="btn btn-print" onclick="window.print()">🖨️ 印刷</button>
+  <button class="btn btn-pdf" onclick="downloadPDF()" id="pdfBtn">📄 PDFダウンロード</button>
+</div>
+
+<div class="page">
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="header-left">
+      <div class="confidential-badge">社内限定</div>
+      <h1>ANELLA CAFE 大分店 緊急連絡網</h1>
+      <div class="subtitle">就労継続支援B型事業所 ANELLA CAFE 大分店</div>
+    </div>
+    <div class="header-right">
+      <div>作成日：2026年6月4日</div>
+      <div>改訂日：<span contenteditable="true" data-id="rev-date" data-placeholder="年月日を入力"></span></div>
+      <div>保管場所：事務所・休憩室</div>
+    </div>
+  </div>
+
+  <!-- 連絡系統 -->
+  <div class="section-title">■ 緊急時の連絡系統</div>
+  <div class="chain">
+    <div class="chain-row">
+      <div class="card primary">
+        <div class="role">管理者 / サービス管理責任者</div>
+        <div class="name"><span contenteditable="true" data-id="c-mgr-name" data-placeholder="氏名"></span></div>
+        <div class="tel">📱 <span contenteditable="true" data-id="c-mgr-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+    </div>
+    <div class="chain-arrow-down">↓</div>
+    <div class="chain-row">
+      <div class="card secondary">
+        <div class="role">現場リーダー（常勤）</div>
+        <div class="name"><span contenteditable="true" data-id="c-lead1-name" data-placeholder="氏名"></span></div>
+        <div class="tel">📱 <span contenteditable="true" data-id="c-lead1-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+    </div>
+    <div class="chain-arrow-down">↓</div>
+    <div class="chain-row" style="gap:6px; flex-wrap:wrap; justify-content:center;">
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s1-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s1-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s2-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s2-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s3-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s3-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s4-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s4-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s5-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s5-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s6-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s6-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s7-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s7-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+      <div class="card small">
+        <div class="role">支援員</div>
+        <div class="name"><span contenteditable="true" data-id="c-s8-name" data-placeholder="氏名"></span></div>
+        <div class="tel"><span contenteditable="true" data-id="c-s8-tel" data-placeholder="000-0000-0000"></span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 外部機関 -->
+  <div class="section-title">■ 外部関係機関・緊急連絡先</div>
+  <div class="external-grid">
+    <div class="ext-card emergency">
+      <div class="ext-label">🚨 警察</div>
+      <div class="ext-name">警察</div>
+      <div class="ext-tel">110</div>
+      <div class="ext-note">事件・不審者・事故</div>
+    </div>
+    <div class="ext-card emergency">
+      <div class="ext-label">🚑 救急・消防</div>
+      <div class="ext-name">消防・救急</div>
+      <div class="ext-tel">119</div>
+      <div class="ext-note">火災・急病・けが</div>
+    </div>
+    <div class="ext-card emergency">
+      <div class="ext-label">🏥 かかりつけ医</div>
+      <div class="ext-name" contenteditable="true" data-id="ext-doctor-name" data-placeholder="病院・医院名"></div>
+      <div class="ext-tel" style="font-size:10pt" contenteditable="true" data-id="ext-doctor-tel" data-placeholder="000-000-0000"></div>
+      <div class="ext-note">利用者緊急時</div>
+    </div>
+    <div class="ext-card admin">
+      <div class="ext-label">🏢 指定権者</div>
+      <div class="ext-name">大分県 福祉保健部</div>
+      <div class="ext-tel">097-506-2680</div>
+      <div class="ext-note">就労支援担当課</div>
+    </div>
+    <div class="ext-card admin">
+      <div class="ext-label">🏛️ 市区町村担当</div>
+      <div class="ext-name">大分市 福祉保健部</div>
+      <div class="ext-tel">097-537-5731</div>
+      <div class="ext-note">障害福祉課</div>
+    </div>
+    <div class="ext-card admin">
+      <div class="ext-label">📋 社会保険労務士 / 顧問</div>
+      <div class="ext-name" contenteditable="true" data-id="ext-sr-name" data-placeholder="事務所・担当者名"></div>
+      <div class="ext-tel" style="font-size:10pt" contenteditable="true" data-id="ext-sr-tel" data-placeholder="000-000-0000"></div>
+      <div class="ext-note">労務・労災対応</div>
+    </div>
+  </div>
+
+  <!-- 緊急時対応手順 -->
+  <div class="section-title">■ 緊急時の対応手順</div>
+  <div class="steps-box">
+    <div class="steps-title">【事故・急病・災害発生時】</div>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">利用者の安全確保<br>・二次被害防止<br>・その場を離れない</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">119 / 110 に通報<br>・状況を冷静に説明<br>・指示に従う</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">管理者へ報告<br>・発生日時・場所<br>・状況を簡潔に</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">保護者・家族へ連絡<br>・利用者情報ファイル<br>を参照</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-text">行政機関へ報告<br>（必要な場合）<br>・指定権者・市町村</div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-text">記録・報告書作成<br>・事故報告書を<br>24時間以内に提出</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 改訂欄 -->
+  <div class="revision-box">
+    <div>改訂履歴：</div>
+    <div>第1版 <span>2026年6月4日</span> 作成</div>
+    <div>第2版 <span contenteditable="true" data-id="rev2" data-placeholder="年月日"></span> 改訂</div>
+    <div>第3版 <span contenteditable="true" data-id="rev3" data-placeholder="年月日"></span> 改訂</div>
+    <div style="margin-left:auto; color:#c0392b; font-weight:bold; font-size:9pt;">
+      ※個人情報含む。外部への持ち出し・複製不可
+    </div>
+  </div>
+
+  <!-- フッター -->
+  <div class="footer">
+    <div>ANELLA CAFE 大分店（就労継続支援B型）｜緊急連絡網</div>
+    <div>更新の都度、旧版と差し替えること</div>
+    <div>ver.1.0 / 2026-06-04</div>
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'anella_kinkyuu_v1';
+  let saveTimer = null;
+
+  function getAllEditable() {
+    return document.querySelectorAll('[contenteditable="true"][data-id]');
+  }
+
+  function updatePlaceholders() {
+    getAllEditable().forEach(el => {
+      if (el.textContent.trim() === '') {
+        el.classList.add('empty-hint');
+      } else {
+        el.classList.remove('empty-hint');
+      }
+    });
+  }
+
+  function saveData() {
+    const data = {};
+    getAllEditable().forEach(el => {
+      data[el.dataset.id] = el.textContent;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('saveStatus').textContent = `💾 自動保存 ${hh}:${mm}`;
+    updatePlaceholders();
+  }
+
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      document.getElementById('saveStatus').textContent = '📝 未保存（入力してね）';
+      updatePlaceholders();
+      return;
+    }
+    const data = JSON.parse(raw);
+    getAllEditable().forEach(el => {
+      if (data[el.dataset.id] !== undefined) {
+        el.textContent = data[el.dataset.id];
+      }
+    });
+    document.getElementById('saveStatus').textContent = '✅ 保存済みデータを読み込んだっちゃ';
+    updatePlaceholders();
+  }
+
+  function clearAll() {
+    if (!confirm('入力した内容をすべてリセットしますか？')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    getAllEditable().forEach(el => { el.textContent = ''; });
+    document.getElementById('saveStatus').textContent = '🗑️ リセットしたっちゃ';
+    updatePlaceholders();
+  }
+
+  getAllEditable().forEach(el => {
+    el.addEventListener('input', () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveData, 800);
+      document.getElementById('saveStatus').textContent = '✏️ 入力中…';
+      updatePlaceholders();
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const els = Array.from(getAllEditable());
+        const idx = els.indexOf(el);
+        const next = els[e.shiftKey ? idx - 1 : idx + 1];
+        if (next) { next.focus(); const r = document.createRange(); r.selectNodeContents(next); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+      }
+    });
+  });
+
+  loadData();
+
+  async function downloadPDF() {
+    const btn = document.getElementById('pdfBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ 生成中…';
+    const toolbar = document.getElementById('toolbar');
+    toolbar.style.display = 'none';
+    try {
+      const page = document.querySelector('.page');
+      const canvas = await html2canvas(page, { scale: 2, useCORS: true, logging: false });
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfMaxH = pdf.internal.pageSize.getHeight();
+      const contentH = (canvas.height * pdfW) / canvas.width;
+      const scale = contentH > pdfMaxH ? pdfMaxH / contentH : 1;
+      const finalW = pdfW * scale;
+      const finalH = contentH * scale;
+      const offsetX = (pdfW - finalW) / 2;
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', offsetX, 0, finalW, finalH);
+      pdf.save('ANELLA_CAFE大分店_緊急連絡網.pdf');
+    } finally {
+      toolbar.style.display = 'flex';
+      btn.disabled = false;
+      btn.textContent = '📄 PDFダウンロード';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+{
+  "project_name": "うちの子再現_テロップ自動",
+  "content": {
+    "total_duration": 46.0,
+    "video_tracks": 1,
+    "audio_tracks": 2,
+    "text_tracks": 1,
+    "text_segments": 25
+  },
+  "telops": [
+    {
+      "index": 0,
+      "start_time": 0.0,
+      "end_time": 1.5,
+      "text": "犬が好きで、",
+      "duration": 1.5,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4029.MOV",
+      "group": "intro_dogs"
+    },
+    {
+      "index": 1,
+      "start_time": 1.6,
+      "end_time": 4.5,
+      "text": "「いつか、自分の手で\n\"うちの子\"を作れたら…」",
+      "duration": 2.9,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4029.MOV",
+      "group": "intro_dogs"
+    },
+    {
+      "index": 2,
+      "start_time": 4.6,
+      "end_time": 6.0,
+      "text": "そう思ったことは\nありませんか？",
+      "duration": 1.4000000000000004,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4029.MOV",
+      "group": "intro_dogs"
+    },
+    {
+      "index": 3,
+      "start_time": 6.1,
+      "end_time": 7.2,
+      "text": "でも、",
+      "duration": 1.1000000000000005,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4029.MOV",
+      "group": "intro_dogs"
+    },
+    {
+      "index": 4,
+      "start_time": 7.3,
+      "end_time": 9.0,
+      "text": "「羊毛フェルトって\n難しそう…」",
+      "duration": 1.7000000000000002,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4040.MOV",
+      "group": "difficulty"
+    },
+    {
+      "index": 5,
+      "start_time": 9.1,
+      "end_time": 10.5,
+      "text": "「私にもできるのかな？」",
+      "duration": 1.4000000000000004,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4040.MOV",
+      "group": "difficulty"
+    },
+    {
+      "index": 6,
+      "start_time": 10.6,
+      "end_time": 12.0,
+      "text": "そんな方も多いんです。",
+      "duration": 1.4000000000000004,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4040.MOV",
+      "group": "difficulty"
+    },
+    {
+      "index": 7,
+      "start_time": 12.1,
+      "end_time": 14.5,
+      "text": "実は羊毛フェルトは、\n羊毛を専用の針で",
+      "duration": 2.4000000000000004,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4040.MOV",
+      "group": "difficulty"
+    },
+    {
+      "index": 8,
+      "start_time": 14.6,
+      "end_time": 16.5,
+      "text": "チクチク刺しながら、\n少しずつ形を作っていく",
+      "duration": 1.9000000000000004,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4009 2.MOV",
+      "group": "technique"
+    },
+    {
+      "index": 9,
+      "start_time": 16.6,
+      "end_time": 18.0,
+      "text": "手仕事なんです。",
+      "duration": 1.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4009 2.MOV",
+      "group": "technique"
+    },
+    {
+      "index": 10,
+      "start_time": 18.1,
+      "end_time": 20.0,
+      "text": "正しい順番で進めれば、\n初心者の方でも",
+      "duration": 1.8999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4009 2.MOV",
+      "group": "technique"
+    },
+    {
+      "index": 11,
+      "start_time": 20.1,
+      "end_time": 22.5,
+      "text": "\"うちの子\"らしい作品が\n作れるようになります。",
+      "duration": 2.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4009 2.MOV",
+      "group": "technique"
+    },
+    {
+      "index": 12,
+      "start_time": 22.6,
+      "end_time": 24.5,
+      "text": "完成した作品を見て、",
+      "duration": 1.8999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4022.mov",
+      "group": "results"
+    },
+    {
+      "index": 13,
+      "start_time": 24.6,
+      "end_time": 26.5,
+      "text": "「本当にうちの子みたい！」",
+      "duration": 1.8999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4022.mov",
+      "group": "results"
+    },
+    {
+      "index": 14,
+      "start_time": 26.6,
+      "end_time": 28.5,
+      "text": "「自分にも作れた！」",
+      "duration": 1.8999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4022.mov",
+      "group": "results"
+    },
+    {
+      "index": 15,
+      "start_time": 28.6,
+      "end_time": 30.0,
+      "text": "そんな喜びの声も\nたくさん届いています。",
+      "duration": 1.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4022.mov",
+      "group": "results"
+    },
+    {
+      "index": 16,
+      "start_time": 30.1,
+      "end_time": 31.5,
+      "text": "今なら、",
+      "duration": 1.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4022.mov",
+      "group": "results"
+    },
+    {
+      "index": 17,
+      "start_time": 31.6,
+      "end_time": 34.0,
+      "text": "写真から\"うちの子\"を\n再現する方法が学べる",
+      "duration": 2.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_4009.MOV",
+      "group": "offer"
+    },
+    {
+      "index": 18,
+      "start_time": 34.1,
+      "end_time": 36.0,
+      "text": "無料講義動画を\nプレゼント中！",
+      "duration": 1.8999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_4009.MOV",
+      "group": "offer"
+    },
+    {
+      "index": 19,
+      "start_time": 36.1,
+      "end_time": 37.5,
+      "text": "下のボタンから",
+      "duration": 1.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_4009.MOV",
+      "group": "offer"
+    },
+    {
+      "index": 20,
+      "start_time": 37.6,
+      "end_time": 39.0,
+      "text": "LINE登録するだけで、",
+      "duration": 1.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_4009.MOV",
+      "group": "offer"
+    },
+    {
+      "index": 21,
+      "start_time": 39.1,
+      "end_time": 40.5,
+      "text": "無料で受け取れます。",
+      "duration": 1.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_2258.mov",
+      "group": "cta"
+    },
+    {
+      "index": 22,
+      "start_time": 40.6,
+      "end_time": 42.5,
+      "text": "「私も作ってみたい」",
+      "duration": 1.8999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_2258.mov",
+      "group": "cta"
+    },
+    {
+      "index": 23,
+      "start_time": 42.6,
+      "end_time": 44.5,
+      "text": "そう思った方は、",
+      "duration": 1.8999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_2258.mov",
+      "group": "cta"
+    },
+    {
+      "index": 24,
+      "start_time": 44.6,
+      "end_time": 46.0,
+      "text": "ぜひ受け取ってください。",
+      "duration": 1.3999999999999986,
+      "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_2258.mov",
+      "group": "cta"
+    }
+  ],
+  "video_assignments": {
+    "groups": [
+      {
+        "group_id": 1,
+        "group_name": "intro_dogs",
+        "description": "Introduction - dogs and desire to create",
+        "time_range": "0.0 - 7.2 seconds",
+        "telop_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4029.MOV",
+        "video_duration": "7.7 seconds",
+        "key_content": [
+          "犬が好きで、",
+          "「いつか、自分の手で\"うちの子\"を作れたら…」",
+          "そう思ったことはありませんか？",
+          "でも、"
+        ]
+      },
+      {
+        "group_id": 2,
+        "group_name": "difficulty",
+        "description": "Concern about difficulty",
+        "time_range": "7.3 - 14.5 seconds",
+        "telop_indices": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4040.MOV",
+        "video_duration": "5.7 seconds",
+        "key_content": [
+          "「羊毛フェルトって難しそう…」",
+          "「私にもできるのかな？」",
+          "そんな方も多いんです。",
+          "実は羊毛フェルトは、羊毛を専用の針で"
+        ]
+      },
+      {
+        "group_id": 3,
+        "group_name": "technique",
+        "description": "Technical explanation - needle work",
+        "time_range": "14.6 - 22.5 seconds",
+        "telop_indices": [
+          8,
+          9,
+          10,
+          11
+        ],
+        "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4009 2.MOV",
+        "video_duration": "6.0 seconds",
+        "key_content": [
+          "チクチク刺しながら、少しずつ形を作っていく",
+          "手仕事なんです。",
+          "正しい順番で進めれば、初心者の方でも",
+          "\"うちの子\"らしい作品が作れるようになります。"
+        ]
+      },
+      {
+        "group_id": 4,
+        "group_name": "results",
+        "description": "Finished product and joy",
+        "time_range": "22.6 - 31.5 seconds",
+        "telop_indices": [
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/gigafile-1104-ef0372dfe6f11ec95bff2a18899e0a16/IMG_4022.mov",
+        "video_duration": "11.9 seconds",
+        "key_content": [
+          "完成した作品を見て、",
+          "「本当にうちの子みたい！」",
+          "「自分にも作れた！」",
+          "そんな喜びの声もたくさん届いています。",
+          "今なら、"
+        ]
+      },
+      {
+        "group_id": 5,
+        "group_name": "offer",
+        "description": "Free lecture offer",
+        "time_range": "31.6 - 39.0 seconds",
+        "telop_indices": [
+          17,
+          18,
+          19,
+          20
+        ],
+        "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_4009.MOV",
+        "video_duration": "6.0 seconds",
+        "key_content": [
+          "写真から\"うちの子\"を再現する方法が学べる",
+          "無料講義動画をプレゼント中！",
+          "下のボタンから",
+          "LINE登録するだけで、"
+        ]
+      },
+      {
+        "group_id": 6,
+        "group_name": "cta",
+        "description": "Call to action - LINE registration",
+        "time_range": "39.1 - 46.0 seconds",
+        "telop_indices": [
+          21,
+          22,
+          23,
+          24
+        ],
+        "assigned_video": "/Users/nakurashun/Downloads/うちの子再現素材/うちの子再現素材２/IMG_2258.mov",
+        "video_duration": "7.4 seconds",
+        "key_content": [
+          "無料で受け取れます。",
+          "「私も作ってみたい」",
+          "そう思った方は、",
+          "ぜひ受け取ってください。"
+        ]
+      }
+    ],
+    "total_videos": 6
+  },
+  "metadata": {
+    "created_date": "2026-07-27",
+    "status": "ready_for_capcut",
+    "notes": [
+      "テロップ25個をCapCutプロジェクトに対応",
+      "動画6グループを自動割り当て",
+      "各テロップの開始・終了時刻を設定"
+    ]
+  }
+}
