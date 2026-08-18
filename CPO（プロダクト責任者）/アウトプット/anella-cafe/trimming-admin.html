@@ -516,6 +516,7 @@
       <button class="status-btn" id="sbBooked"  onclick="changeStatus('予約済み')">予約済み</button>
       <button class="status-btn" id="sbVisited" onclick="changeStatus('来店済み')">来店済み</button>
       <button class="status-btn" id="sbCancelled" onclick="changeStatus('キャンセル')">キャンセル</button>
+      <button class="status-btn" id="sbDeleted" onclick="changeStatus('削除済み')" style="background: #d32f2f; color: white;">削除</button>
     </div>
 
     <div class="section-label">予約詳細</div>
@@ -1246,6 +1247,7 @@ async function changeStatus(status) {
     document.getElementById('sbBooked').className = 'status-btn' + (status === '予約済み' ? ' active-booked' : '');
     document.getElementById('sbVisited').className = 'status-btn' + (status === '来店済み' ? ' active-visited' : '');
     document.getElementById('sbCancelled').className = 'status-btn' + (status === 'キャンセル' ? ' active-cancelled' : '');
+    document.getElementById('sbDeleted').className = 'status-btn' + (status === '削除済み' ? ' active-deleted' : '');
     loadReservations();
   } else {
     console.error('Status update error:', error);
