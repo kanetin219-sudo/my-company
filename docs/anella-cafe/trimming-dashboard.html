@@ -433,8 +433,9 @@ async function fetchData() {
     console.log('取得データ数:', data.length);
     console.log('サンプル (最初の3件):', data.slice(0, 3));
 
-    // 修正: statusフィルター条件を削除し、必須フィールドだけに
-    allData = data.filter(d => d.owner_name && d.visit_date);
+    allData = data
+      .filter(d => d.owner_name && d.visit_date)
+      .filter(d => !['キャンセル', '削除済み'].includes(d.status));
     console.log('フィルター後データ数:', allData.length);
     console.log('statusフィールドの値一覧:', [...new Set(data.map(d => d.status).filter(Boolean))]);
 
