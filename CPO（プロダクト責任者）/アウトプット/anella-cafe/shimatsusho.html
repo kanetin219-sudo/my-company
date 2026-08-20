@@ -115,6 +115,138 @@
       background: #C53030;
     }
 
+    .section-header.part-b2 {
+      background: #B7791F;
+    }
+
+    .section-header.part-c {
+      background: #2E7D32;
+    }
+
+    /* ラジオボタン群 */
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .radio-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 1px solid #bbb;
+      border-radius: 20px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .radio-chip:hover {
+      border-color: #1A3A5C;
+      background: #f0f5f9;
+    }
+
+    .radio-chip input {
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .accept-chip {
+      border-color: #2E7D32;
+    }
+
+    .accept-chip:hover {
+      background: #e8f5e9;
+    }
+
+    /* 写真プレビュー */
+    .photo-preview-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .photo-preview-item {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+
+    .photo-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-preview-remove {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(211, 47, 47, 0.9);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo-preview-remove:hover {
+      background: #b71c1c;
+    }
+
+    /* 編集モードバナー */
+    .edit-mode-banner {
+      background: #fff8e1;
+      border: 1px solid #ffca28;
+      border-radius: 6px;
+      padding: 12px 15px;
+      margin: 20px 0 10px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #795548;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .btn-cancel-edit {
+      background: #f0f0f0;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 5px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-cancel-edit:hover {
+      background: #e0e0e0;
+    }
+
+    /* 印刷用：選択された対応の表示 */
+    .selected-approval {
+      display: none;
+      font-size: 12px;
+      color: #333;
+    }
+
     /* フォーム行 */
     .form-row {
       display: grid;
@@ -311,10 +443,88 @@
 
     .history-item-header {
       display: grid;
-      grid-template-columns: 150px 1fr 150px;
+      grid-template-columns: 1fr auto;
       gap: 15px;
       margin-bottom: 10px;
       font-size: 13px;
+      align-items: center;
+    }
+
+    /* バッジ */
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .badge-handed {
+      background: #e8f5e9;
+      color: #2E7D32;
+    }
+
+    .badge-returned {
+      background: #e3f2fd;
+      color: #1565C0;
+    }
+
+    .badge-agreed {
+      background: #e0f2f1;
+      color: #00695C;
+    }
+
+    .badge-rejected {
+      background: #ffebee;
+      color: #C53030;
+    }
+
+    .badge-none {
+      background: #f5f5f5;
+      color: #999;
+    }
+
+    .badge-accepted {
+      background: #ede7f6;
+      color: #5E35B1;
+    }
+
+    /* 履歴アクションボタン */
+    .history-item-actions {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .btn-toggle-returned {
+      background: #fff;
+      color: #1565C0;
+      border: 1px solid #1565C0;
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-toggle-returned:hover {
+      background: #e3f2fd;
+    }
+
+    .btn-toggle-returned.active {
+      background: #1565C0;
+      color: white;
+    }
+
+    .btn-toggle-returned.active:hover {
+      background: #0d47a1;
     }
 
     .history-item-staff {
@@ -487,6 +697,37 @@
         color: white !important;
       }
 
+      .section-header.part-b2 {
+        background: #888 !important;
+        color: white !important;
+      }
+
+      .section-header.part-c {
+        background: #555 !important;
+        color: white !important;
+      }
+
+      /* ラジオボタンは非表示にして選択済みテキストを表示 */
+      .radio-group {
+        display: none;
+      }
+
+      .selected-approval {
+        display: block;
+      }
+
+      #rejectionPhotoInput {
+        display: none;
+      }
+
+      .photo-preview-remove {
+        display: none !important;
+      }
+
+      .edit-mode-banner {
+        display: none !important;
+      }
+
       /* 入力欄は下線のみ */
       input[type="text"],
       input[type="date"],
@@ -645,6 +886,60 @@
       </div>
     </div>
 
+    <!-- PART B-2: 本人の対応（同意・拒否） -->
+    <div class="section">
+      <div class="section-header part-b2">本人の対応</div>
+
+      <div class="form-row full">
+        <label class="form-label">本人の意思</label>
+        <div class="radio-group" id="approvalRadioGroup">
+          <label class="radio-chip"><input type="radio" name="approvalStatus" value="agreed"> 同意する</label>
+          <label class="radio-chip"><input type="radio" name="approvalStatus" value="rejected"> 拒否する</label>
+          <label class="radio-chip"><input type="radio" name="approvalStatus" value=""> 未対応</label>
+        </div>
+        <div class="selected-approval" id="selectedApprovalDisplay"></div>
+      </div>
+
+      <!-- 拒否した場合のみ表示 -->
+      <div id="rejectionFields" style="display:none;">
+        <div class="form-row full">
+          <label class="form-label">拒否の理由</label>
+          <textarea id="rejectionReason" placeholder="本人が拒否した理由を記入してください"></textarea>
+        </div>
+
+        <div class="form-row full">
+          <label class="form-label">写真（証拠・状況記録）</label>
+          <div>
+            <input type="file" id="rejectionPhotoInput" accept="image/*" multiple style="font-size:12px; margin-bottom:10px;">
+            <div class="photo-preview-list" id="photoPreviewList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PART C: 会社の受理 -->
+    <div class="section">
+      <div class="section-header part-c">会社の受理</div>
+
+      <div class="form-row full">
+        <label class="form-label">受理状況</label>
+        <div class="radio-group">
+          <label class="radio-chip accept-chip"><input type="checkbox" id="isAccepted"> この始末書を受理する</label>
+        </div>
+      </div>
+
+      <div class="form-row two-col">
+        <div>
+          <label class="form-label">受理担当者名</label>
+          <input type="text" id="acceptedBy" placeholder="例：代表 田中">
+        </div>
+        <div>
+          <label class="form-label">受理日</label>
+          <input type="date" id="acceptedDate">
+        </div>
+      </div>
+    </div>
+
     <!-- 署名欄（印刷時のみ） -->
     <div class="signature-section">
       <div class="signature-row">
@@ -658,6 +953,12 @@
           <div class="signature-box-label">代表確認</div>
         </div>
       </div>
+    </div>
+
+    <!-- 編集モード表示 -->
+    <div id="editModeBanner" class="edit-mode-banner" style="display:none;">
+      ✏️ 編集モード：既存の記録を修正しています（<span id="editModeStaff"></span>）
+      <button type="button" class="btn-cancel-edit" onclick="cancelEdit()">新規作成に戻る</button>
     </div>
 
     <!-- ボタン -->
@@ -689,6 +990,11 @@
   <script>
     // Supabase接続確認
     const supabaseUrl = window.supabase ? 'connected' : 'error';
+
+    // 編集中のレコードID（nullなら新規作成）
+    let editingRecordId = null;
+    // アップロードされた写真（Base64データURL配列）
+    let uploadedPhotos = [];
 
     // 今日の日付をデフォルトに設定
     function setDefaultDates() {
@@ -741,6 +1047,15 @@
         const selectedCategories = Array.from(document.querySelectorAll('.chip.selected'))
           .map(chip => chip.getAttribute('data-category'));
 
+        // 本人の対応
+        const approvalRadio = document.querySelector('input[name="approvalStatus"]:checked');
+        const approvalStatus = approvalRadio ? approvalRadio.value : '';
+
+        // 受理情報
+        const isAccepted = document.getElementById('isAccepted').checked;
+        const acceptedBy = document.getElementById('acceptedBy').value.trim();
+        const acceptedDate = document.getElementById('acceptedDate').value;
+
         const data = {
           created_by: instructorName,
           staff_name: staffName,
@@ -752,16 +1067,35 @@
           fact_confirmation: document.getElementById('factConfirmation').value,
           improvement_plan: document.getElementById('improvementPlan').value,
           prevention_pledge: document.getElementById('preventionPledge').value,
-          is_submitted: true
+          is_submitted: true,
+          approval_status: approvalStatus || null,
+          rejection_reason: approvalStatus === 'rejected' ? document.getElementById('rejectionReason').value : null,
+          rejection_photos: approvalStatus === 'rejected' ? uploadedPhotos : [],
+          is_accepted: isAccepted,
+          accepted_by: isAccepted ? (acceptedBy || null) : null,
+          accepted_at: isAccepted ? (acceptedDate || null) : null,
+          updated_at: new Date().toISOString()
         };
 
-        const { error } = await window.supabase
-          .from('shimatsusho_records')
-          .insert([data]);
+        let error;
+        if (editingRecordId) {
+          // 既存レコードを修正（UPDATE）
+          const res = await window.supabase
+            .from('shimatsusho_records')
+            .update(data)
+            .eq('id', editingRecordId);
+          error = res.error;
+        } else {
+          // 新規作成（INSERT）
+          const res = await window.supabase
+            .from('shimatsusho_records')
+            .insert([data]);
+          error = res.error;
+        }
 
         if (error) throw error;
 
-        showMessage('✅ 記録を保存しました！');
+        showMessage(editingRecordId ? '✅ 記録を修正しました！' : '✅ 記録を保存しました！');
         saveBtn.disabled = false;
         saveBtn.textContent = '💾 記録を保存';
       } catch (error) {
@@ -803,23 +1137,47 @@
           return;
         }
 
-        container.innerHTML = data.map(record => `
+        container.innerHTML = data.map(record => {
+          // 対応状況バッジ
+          let approvalBadge = '';
+          if (record.approval_status === 'agreed') {
+            approvalBadge = '<span class="badge badge-agreed">同意</span>';
+          } else if (record.approval_status === 'rejected') {
+            approvalBadge = '<span class="badge badge-rejected">拒否</span>';
+          } else {
+            approvalBadge = '<span class="badge badge-none">未対応</span>';
+          }
+
+          const photoCount = Array.isArray(record.rejection_photos) ? record.rejection_photos.length : 0;
+
+          return `
           <div class="history-item">
             <div class="history-item-header">
               <div class="history-item-staff" onclick="loadRecordToForm('${record.id}')">${escapeHtml(record.staff_name)}</div>
               <div class="history-item-date" onclick="loadRecordToForm('${record.id}')">${record.instruction_date} 記録</div>
-              <div class="history-item-status ${record.is_submitted ? '' : 'pending'}" onclick="loadRecordToForm('${record.id}')">
-                ${record.is_submitted ? '提出済み' : '作成中'}
-              </div>
               <button class="btn-delete history-item-delete" onclick="deleteRecord('${record.id}', '${escapeHtml(record.staff_name)}')">削除</button>
+            </div>
+            <div class="badge-row">
+              ${record.is_submitted ? '<span class="badge badge-handed">本人に渡し済み</span>' : ''}
+              ${record.is_returned ? '<span class="badge badge-returned">提出済み</span>' : ''}
+              ${approvalBadge}
+              ${record.is_accepted ? '<span class="badge badge-accepted">受理済み</span>' : ''}
             </div>
             <div class="history-item-content" onclick="loadRecordToForm('${record.id}')">
               <strong>指導内容:</strong> ${escapeHtml(record.instruction_content || '未記入')} <br>
               <strong>指導者:</strong> ${escapeHtml(record.created_by || '')} <br>
               <strong>種別:</strong> ${(record.categories || []).join('、') || '未設定'}
+              ${record.approval_status === 'rejected' && record.rejection_reason ? `<br><strong style="color:#C53030;">拒否理由:</strong> ${escapeHtml(record.rejection_reason)}` : ''}
+              ${photoCount > 0 ? `<br><strong>写真:</strong> ${photoCount}枚` : ''}
+            </div>
+            <div class="history-item-actions">
+              <button class="btn-toggle-returned ${record.is_returned ? 'active' : ''}" onclick="toggleReturned('${record.id}', ${!record.is_returned})">
+                ${record.is_returned ? '✓ 提出済み（取り消す）' : '提出済みにする'}
+              </button>
             </div>
           </div>
-        `).join('');
+          `;
+        }).join('');
       } catch (error) {
         console.error('読み込みエラー:', error);
         container.innerHTML = '<div class="loading">読み込みエラー: ' + error.message + '</div>';
@@ -853,6 +1211,30 @@
       } catch (error) {
         console.error('削除エラー:', error);
         showMessage('削除に失敗しました: ' + error.message, 'error');
+      }
+    }
+
+    // 「提出済み」状態を切り替え（UPDATE）
+    async function toggleReturned(recordId, newValue) {
+      try {
+        const updateData = {
+          is_returned: newValue,
+          returned_at: newValue ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString()
+        };
+
+        const { error } = await window.supabase
+          .from('shimatsusho_records')
+          .update(updateData)
+          .eq('id', recordId);
+
+        if (error) throw error;
+
+        showMessage(newValue ? '✅ 提出済みにしました' : '提出済みを取り消しました');
+        loadHistory();
+      } catch (error) {
+        console.error('更新エラー:', error);
+        showMessage('更新に失敗しました: ' + error.message, 'error');
       }
     }
 
@@ -894,13 +1276,36 @@
         }
         updateSelectedCategoryDisplay();
 
+        // 本人の対応を読み込み
+        const approvalValue = data.approval_status || '';
+        const approvalRadio = document.querySelector(`input[name="approvalStatus"][value="${approvalValue}"]`);
+        if (approvalRadio) approvalRadio.checked = true;
+        document.getElementById('rejectionFields').style.display = approvalValue === 'rejected' ? 'block' : 'none';
+        document.getElementById('rejectionReason').value = data.rejection_reason || '';
+        updateApprovalDisplay();
+
+        // 写真を読み込み
+        uploadedPhotos = Array.isArray(data.rejection_photos) ? data.rejection_photos.slice() : [];
+        renderPhotoPreviews();
+
+        // 受理情報を読み込み
+        document.getElementById('isAccepted').checked = !!data.is_accepted;
+        document.getElementById('acceptedBy').value = data.accepted_by || '';
+        document.getElementById('acceptedDate').value = data.accepted_at ? data.accepted_at.split('T')[0] : '';
+
+        // 編集モードON
+        editingRecordId = recordId;
+        document.getElementById('editModeStaff').textContent = data.staff_name || '';
+        document.getElementById('editModeBanner').style.display = 'flex';
+
         // 「記入フォーム」タブに切り替え
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelector('.tab-button:first-child').classList.add('active');
         document.getElementById('form-tab').classList.add('active');
+        window.scrollTo(0, 0);
 
-        showMessage(`✅ 記録を読み込みました（${data.staff_name}）`);
+        showMessage(`✅ 記録を読み込みました（${data.staff_name}）※修正して保存できます`);
       } catch (error) {
         console.error('読み込みエラー:', error);
         showMessage('読み込みに失敗しました: ' + error.message, 'error');
@@ -916,6 +1321,100 @@
           updateSelectedCategoryDisplay();
         });
       });
+    }
+
+    // 本人の対応ラジオの処理
+    function setupApprovalListeners() {
+      document.querySelectorAll('input[name="approvalStatus"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          const rejectionFields = document.getElementById('rejectionFields');
+          rejectionFields.style.display = this.value === 'rejected' ? 'block' : 'none';
+          updateApprovalDisplay();
+        });
+      });
+    }
+
+    // 印刷用：選択された対応の表示を更新
+    function updateApprovalDisplay() {
+      const radio = document.querySelector('input[name="approvalStatus"]:checked');
+      const display = document.getElementById('selectedApprovalDisplay');
+      if (!radio || !radio.value) {
+        display.textContent = '未対応';
+        return;
+      }
+      display.textContent = radio.value === 'agreed' ? '同意する' : '拒否する';
+    }
+
+    // 写真アップロード（リサイズしてBase64化）
+    function setupPhotoUpload() {
+      const input = document.getElementById('rejectionPhotoInput');
+      input.addEventListener('change', async function(e) {
+        const files = Array.from(e.target.files);
+        for (const file of files) {
+          try {
+            const dataUrl = await resizeImage(file, 1000, 0.7);
+            uploadedPhotos.push(dataUrl);
+          } catch (err) {
+            console.error('画像処理エラー:', err);
+          }
+        }
+        renderPhotoPreviews();
+        input.value = ''; // 同じファイルを再選択できるようにリセット
+      });
+    }
+
+    // 画像をリサイズしてBase64データURLに変換
+    function resizeImage(file, maxSize, quality) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            let { width, height } = img;
+            if (width > height && width > maxSize) {
+              height = Math.round(height * maxSize / width);
+              width = maxSize;
+            } else if (height > maxSize) {
+              width = Math.round(width * maxSize / height);
+              height = maxSize;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 写真プレビューを描画
+    function renderPhotoPreviews() {
+      const list = document.getElementById('photoPreviewList');
+      list.innerHTML = uploadedPhotos.map((url, index) => `
+        <div class="photo-preview-item">
+          <img src="${url}" alt="写真${index + 1}">
+          <button type="button" class="photo-preview-remove" onclick="removePhoto(${index})">×</button>
+        </div>
+      `).join('');
+    }
+
+    // 写真を削除
+    function removePhoto(index) {
+      uploadedPhotos.splice(index, 1);
+      renderPhotoPreviews();
+    }
+
+    // 編集モードを解除して新規作成に戻る
+    function cancelEdit() {
+      editingRecordId = null;
+      document.getElementById('editModeBanner').style.display = 'none';
+      handleResetSilent();
+      showMessage('新規作成モードに戻りました');
     }
 
     // 選択済みカテゴリーの表示を更新
@@ -935,6 +1434,12 @@
 
     // 印刷処理
     function handlePrint() {
+      // 本人の対応
+      const approvalRadio = document.querySelector('input[name="approvalStatus"]:checked');
+      const approvalStatus = approvalRadio ? approvalRadio.value : '';
+      const approvalLabel = approvalStatus === 'agreed' ? '同意する'
+        : approvalStatus === 'rejected' ? '拒否する' : '未対応';
+
       // 現在のフォーム内容を取得
       const formData = {
         instructionDate: document.getElementById('instructionDate').value,
@@ -946,7 +1451,14 @@
         companyImpact: document.getElementById('companyImpact').value,
         factConfirmation: document.getElementById('factConfirmation').value,
         improvementPlan: document.getElementById('improvementPlan').value,
-        preventionPledge: document.getElementById('preventionPledge').value
+        preventionPledge: document.getElementById('preventionPledge').value,
+        approvalStatus: approvalStatus,
+        approvalLabel: approvalLabel,
+        rejectionReason: document.getElementById('rejectionReason').value,
+        rejectionPhotos: uploadedPhotos.slice(),
+        isAccepted: document.getElementById('isAccepted').checked,
+        acceptedBy: document.getElementById('acceptedBy').value,
+        acceptedDate: document.getElementById('acceptedDate').value
       };
 
       // 印刷用ウィンドウを開く
@@ -1053,6 +1565,46 @@
               </div>
             </div>
 
+            <div class="section">
+              <div class="section-header">本人の対応</div>
+              <div class="form-row">
+                <div class="form-label">本人の意思</div>
+                <div class="form-value">${data.approvalLabel}</div>
+              </div>
+              ${data.approvalStatus === 'rejected' ? `
+              <div class="form-row">
+                <div class="form-label">拒否の理由</div>
+                <div class="form-value" style="grid-column: 2; white-space: pre-wrap; min-height: 50px;">${data.rejectionReason || ''}</div>
+              </div>
+              ${data.rejectionPhotos && data.rejectionPhotos.length > 0 ? `
+              <div style="margin-top: 12px;">
+                <div class="form-label" style="margin-bottom: 8px;">写真</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  ${data.rejectionPhotos.map(url => `<img src="${url}" style="max-width: 45%; max-height: 200px; border: 1px solid #333;">`).join('')}
+                </div>
+              </div>
+              ` : ''}
+              ` : ''}
+            </div>
+
+            <div class="section">
+              <div class="section-header">会社の受理</div>
+              <div class="form-row">
+                <div class="form-label">受理状況</div>
+                <div class="form-value">${data.isAccepted ? '受理済み' : '未受理'}</div>
+              </div>
+              ${data.isAccepted ? `
+              <div class="form-row">
+                <div class="form-label">受理担当者</div>
+                <div class="form-value">${data.acceptedBy || ''}</div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">受理日</div>
+                <div class="form-value">${data.acceptedDate || ''}</div>
+              </div>
+              ` : ''}
+            </div>
+
             <div class="signature-row">
               <div class="signature-box">
                 <div class="signature-label">スタッフ</div>
@@ -1070,34 +1622,59 @@
       `;
     }
 
-    // リセット処理
+    // リセット処理（確認あり）
     function handleReset() {
       if (confirm('本当に全ての入力内容をリセットしますか？')) {
-        document.getElementById('instructionDate').value = '';
-        document.getElementById('instructorName').value = '';
-        document.getElementById('staffName').value = '';
-        document.getElementById('incidentDateTime').value = '';
-        document.getElementById('instructionContent').value = '';
-        document.getElementById('companyImpact').value = '';
-        document.getElementById('factConfirmation').value = '';
-        document.getElementById('improvementPlan').value = '';
-        document.getElementById('preventionPledge').value = '';
-
-        // チップを全て選択解除
-        document.querySelectorAll('.chip').forEach(chip => {
-          chip.classList.remove('selected');
-        });
-        updateSelectedCategoryDisplay();
-
-        // 日付をリセット
-        setDefaultDates();
+        handleResetSilent();
+        // 編集モードも解除
+        editingRecordId = null;
+        document.getElementById('editModeBanner').style.display = 'none';
       }
+    }
+
+    // リセット本体（確認なし）
+    function handleResetSilent() {
+      document.getElementById('instructionDate').value = '';
+      document.getElementById('instructorName').value = '';
+      document.getElementById('staffName').value = '';
+      document.getElementById('incidentDateTime').value = '';
+      document.getElementById('instructionContent').value = '';
+      document.getElementById('companyImpact').value = '';
+      document.getElementById('factConfirmation').value = '';
+      document.getElementById('improvementPlan').value = '';
+      document.getElementById('preventionPledge').value = '';
+
+      // チップを全て選択解除
+      document.querySelectorAll('.chip').forEach(chip => {
+        chip.classList.remove('selected');
+      });
+      updateSelectedCategoryDisplay();
+
+      // 本人の対応をリセット
+      const noneRadio = document.querySelector('input[name="approvalStatus"][value=""]');
+      if (noneRadio) noneRadio.checked = true;
+      document.getElementById('rejectionFields').style.display = 'none';
+      document.getElementById('rejectionReason').value = '';
+      uploadedPhotos = [];
+      renderPhotoPreviews();
+      updateApprovalDisplay();
+
+      // 受理情報をリセット
+      document.getElementById('isAccepted').checked = false;
+      document.getElementById('acceptedBy').value = '';
+      document.getElementById('acceptedDate').value = '';
+
+      // 日付をリセット
+      setDefaultDates();
     }
 
     // 初期化
     window.addEventListener('DOMContentLoaded', function() {
       setDefaultDates();
       setupChipListeners();
+      setupApprovalListeners();
+      setupPhotoUpload();
+      updateApprovalDisplay();
     });
   </script>
 </body>
