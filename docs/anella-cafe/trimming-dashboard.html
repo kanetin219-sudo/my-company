@@ -435,7 +435,7 @@ async function fetchData() {
 
     allData = data
       .filter(d => d.owner_name && d.visit_date)
-      .filter(d => d.status !== 'キャンセル' && d.status !== '削除済み');
+      .filter(d => d.status === '完了' || d.status === '来店済み');
     console.log('フィルター後データ数:', allData.length);
     console.log('statusフィールドの値一覧:', [...new Set(data.map(d => d.status).filter(Boolean))]);
 
