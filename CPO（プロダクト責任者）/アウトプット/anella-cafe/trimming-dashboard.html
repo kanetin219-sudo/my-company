@@ -435,7 +435,7 @@ async function fetchData() {
 
     allData = data
       .filter(d => d.owner_name && d.visit_date)
-      .filter(d => !['キャンセル', '削除済み'].includes(d.status));
+      .filter(d => d.status !== 'キャンセル' && d.status !== '削除済み');
     console.log('フィルター後データ数:', allData.length);
 
     if (allData.length === 0) {
