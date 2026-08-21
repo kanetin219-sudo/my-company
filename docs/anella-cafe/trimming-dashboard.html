@@ -362,11 +362,12 @@
       <table id="repeaterTable">
         <thead>
           <tr>
-            <th style="width: 10%;">#</th>
-            <th style="width: 25%;">顧客名</th>
-            <th style="width: 15%;">来店回数</th>
-            <th style="width: 20%;">担当スタッフ</th>
-            <th style="width: 20%;">最終来店日</th>
+            <th style="width: 8%;">#</th>
+            <th style="width: 20%;">顧客名</th>
+            <th style="width: 15%;">ペット</th>
+            <th style="width: 12%;">来店回数</th>
+            <th style="width: 18%;">担当スタッフ</th>
+            <th style="width: 17%;">最終来店日</th>
             <th style="width: 10%;" class="text-center">ステータス</th>
           </tr>
         </thead>
@@ -701,6 +702,7 @@ function updateTables(customerVisits) {
     <tr>
       <td class="text-center">${idx + 1}</td>
       <td>${name}</td>
+      <td>${data.petName || '-'}</td>
       <td class="text-center"><strong>${data.visits}回</strong></td>
       <td>${data.staff || '-'}</td>
       <td class="text-center">${data.lastDate}</td>

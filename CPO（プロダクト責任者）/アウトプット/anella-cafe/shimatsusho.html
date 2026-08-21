@@ -501,6 +501,120 @@
       margin-top: 12px;
       padding-top: 12px;
       border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .action-label {
+      font-size: 12px;
+      color: #666;
+      margin-left: 8px;
+    }
+
+    /* 同意・拒否ボタン */
+    .btn-approval {
+      padding: 6px 16px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fff;
+    }
+
+    .btn-approval.agreed {
+      color: #00695C;
+      border: 1px solid #00695C;
+    }
+
+    .btn-approval.agreed:hover {
+      background: #e0f2f1;
+    }
+
+    .btn-approval.agreed.active {
+      background: #00695C;
+      color: white;
+    }
+
+    .btn-approval.rejected {
+      color: #C53030;
+      border: 1px solid #C53030;
+    }
+
+    .btn-approval.rejected:hover {
+      background: #ffebee;
+    }
+
+    .btn-approval.rejected.active {
+      background: #C53030;
+      color: white;
+    }
+
+    /* インライン拒否パネル */
+    .reject-panel {
+      margin-top: 12px;
+      padding: 15px;
+      background: #fff5f5;
+      border: 1px solid #f5c6cb;
+      border-radius: 6px;
+    }
+
+    .reject-panel-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #C53030;
+      margin-bottom: 6px;
+      margin-top: 10px;
+    }
+
+    .reject-panel-label:first-child {
+      margin-top: 0;
+    }
+
+    .reject-reason-input {
+      width: 100%;
+      min-height: 60px;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: "Noto Sans JP", sans-serif;
+      font-size: 12px;
+      resize: vertical;
+      background: #fff;
+    }
+
+    .reject-panel-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn-save-reject {
+      background: #C53030;
+      color: white;
+      padding: 8px 18px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-save-reject:hover {
+      background: #a02020;
+    }
+
+    .btn-cancel-reject {
+      background: #f0f0f0;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 8px 18px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-cancel-reject:hover {
+      background: #e0e0e0;
     }
 
     .btn-toggle-returned {
@@ -995,6 +1109,8 @@
     let editingRecordId = null;
     // アップロードされた写真（Base64データURL配列）
     let uploadedPhotos = [];
+    // 履歴レコードをID別に保持（インライン拒否入力用）
+    let historyRecords = {};
 
     // 今日の日付をデフォルトに設定
     function setDefaultDates() {
@@ -1137,6 +1253,13 @@
           return;
         }
 
+        // レコードをID別に保持（写真配列は正規化）
+        historyRecords = {};
+        data.forEach(r => {
+          r.rejection_photos = Array.isArray(r.rejection_photos) ? r.rejection_photos : [];
+          historyRecords[r.id] = r;
+        });
+
         container.innerHTML = data.map(record => {
           // 対応状況バッジ
           let approvalBadge = '';
@@ -1148,7 +1271,8 @@
             approvalBadge = '<span class="badge badge-none">未対応</span>';
           }
 
-          const photoCount = Array.isArray(record.rejection_photos) ? record.rejection_photos.length : 0;
+          const photoCount = record.rejection_photos.length;
+          const isRejected = record.approval_status === 'rejected';
 
           return `
           <div class="history-item">
@@ -1167,17 +1291,42 @@
               <strong>指導内容:</strong> ${escapeHtml(record.instruction_content || '未記入')} <br>
               <strong>指導者:</strong> ${escapeHtml(record.created_by || '')} <br>
               <strong>種別:</strong> ${(record.categories || []).join('、') || '未設定'}
-              ${record.approval_status === 'rejected' && record.rejection_reason ? `<br><strong style="color:#C53030;">拒否理由:</strong> ${escapeHtml(record.rejection_reason)}` : ''}
+              ${isRejected && record.rejection_reason ? `<br><strong style="color:#C53030;">拒否理由:</strong> ${escapeHtml(record.rejection_reason)}` : ''}
               ${photoCount > 0 ? `<br><strong>写真:</strong> ${photoCount}枚` : ''}
             </div>
             <div class="history-item-actions">
               <button class="btn-toggle-returned ${record.is_returned ? 'active' : ''}" onclick="toggleReturned('${record.id}', ${!record.is_returned})">
                 ${record.is_returned ? '✓ 提出済み（取り消す）' : '提出済みにする'}
               </button>
+              <span class="action-label">本人の対応：</span>
+              <button class="btn-approval agreed ${record.approval_status === 'agreed' ? 'active' : ''}" onclick="setApprovalAgreed('${record.id}')">同意</button>
+              <button class="btn-approval rejected ${isRejected ? 'active' : ''}" onclick="toggleRejectPanel('${record.id}')">拒否</button>
+            </div>
+
+            <!-- インライン拒否入力パネル -->
+            <div class="reject-panel" id="rejectPanel-${record.id}" style="display:${isRejected ? 'block' : 'none'};">
+              <div class="reject-panel-label">拒否の理由</div>
+              <textarea id="rejectReason-${record.id}" class="reject-reason-input" placeholder="本人が拒否した理由を記入してください">${escapeHtml(record.rejection_reason || '')}</textarea>
+
+              <div class="reject-panel-label">証拠写真（複数可）</div>
+              <input type="file" id="rejectPhotoInput-${record.id}" accept="image/*" multiple onchange="handleInlinePhoto('${record.id}', this)" style="font-size:12px; margin-bottom:8px;">
+              <div class="photo-preview-list" id="rejectPhotos-${record.id}"></div>
+
+              <div class="reject-panel-buttons">
+                <button class="btn-save-reject" onclick="saveRejection('${record.id}')">💾 拒否を保存</button>
+                <button class="btn-cancel-reject" onclick="closeRejectPanel('${record.id}')">閉じる</button>
+              </div>
             </div>
           </div>
           `;
         }).join('');
+
+        // 既存写真のプレビューを描画（拒否パネルが開いているもの）
+        data.forEach(record => {
+          if (record.approval_status === 'rejected') {
+            renderInlinePhotos(record.id);
+          }
+        });
       } catch (error) {
         console.error('読み込みエラー:', error);
         container.innerHTML = '<div class="loading">読み込みエラー: ' + error.message + '</div>';
@@ -1235,6 +1384,99 @@
       } catch (error) {
         console.error('更新エラー:', error);
         showMessage('更新に失敗しました: ' + error.message, 'error');
+      }
+    }
+
+    // 履歴カードから「同意」に設定（UPDATE）
+    async function setApprovalAgreed(recordId) {
+      try {
+        const { error } = await window.supabase
+          .from('shimatsusho_records')
+          .update({ approval_status: 'agreed', updated_at: new Date().toISOString() })
+          .eq('id', recordId);
+        if (error) throw error;
+        showMessage('✅ 「同意」に設定しました');
+        loadHistory();
+      } catch (error) {
+        console.error('更新エラー:', error);
+        showMessage('更新に失敗しました: ' + error.message, 'error');
+      }
+    }
+
+    // 拒否パネルの開閉
+    function toggleRejectPanel(recordId) {
+      const panel = document.getElementById('rejectPanel-' + recordId);
+      if (!panel) return;
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      if (panel.style.display === 'block') {
+        renderInlinePhotos(recordId);
+      }
+    }
+
+    function closeRejectPanel(recordId) {
+      const panel = document.getElementById('rejectPanel-' + recordId);
+      if (panel) panel.style.display = 'none';
+    }
+
+    // 拒否パネルの写真アップロード
+    async function handleInlinePhoto(recordId, input) {
+      const files = Array.from(input.files);
+      const record = historyRecords[recordId];
+      if (!record) return;
+      for (const file of files) {
+        try {
+          const dataUrl = await resizeImage(file, 1000, 0.7);
+          record.rejection_photos.push(dataUrl);
+        } catch (err) {
+          console.error('画像処理エラー:', err);
+        }
+      }
+      renderInlinePhotos(recordId);
+      input.value = '';
+    }
+
+    // 拒否パネルの写真プレビュー描画
+    function renderInlinePhotos(recordId) {
+      const list = document.getElementById('rejectPhotos-' + recordId);
+      const record = historyRecords[recordId];
+      if (!list || !record) return;
+      list.innerHTML = record.rejection_photos.map((url, index) => `
+        <div class="photo-preview-item">
+          <img src="${url}" alt="写真${index + 1}">
+          <button type="button" class="photo-preview-remove" onclick="removeInlinePhoto('${recordId}', ${index})">×</button>
+        </div>
+      `).join('');
+    }
+
+    // 拒否パネルの写真削除
+    function removeInlinePhoto(recordId, index) {
+      const record = historyRecords[recordId];
+      if (!record) return;
+      record.rejection_photos.splice(index, 1);
+      renderInlinePhotos(recordId);
+    }
+
+    // 拒否を保存（UPDATE）
+    async function saveRejection(recordId) {
+      const record = historyRecords[recordId];
+      if (!record) return;
+      const reason = document.getElementById('rejectReason-' + recordId).value;
+      try {
+        const { error } = await window.supabase
+          .from('shimatsusho_records')
+          .update({
+            approval_status: 'rejected',
+            rejection_reason: reason,
+            rejection_photos: record.rejection_photos,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', recordId);
+        if (error) throw error;
+        showMessage('✅ 拒否を保存しました（理由・写真も記録）');
+        loadHistory();
+      } catch (error) {
+        console.error('保存エラー:', error);
+        showMessage('保存に失敗しました: ' + error.message, 'error');
       }
     }
 
