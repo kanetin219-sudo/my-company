@@ -505,23 +505,26 @@ function applyFilters() {
 
 // ダッシュボード更新
 function updateDashboard() {
-  // サマリ計算
-  const customerVisits = {};
+  // サマリ計算（ペット単位）
+  const petVisits = {};
   filteredData.forEach(d => {
-    if (!customerVisits[d.owner_name]) {
-      customerVisits[d.owner_name] = {
+    const petKey = d.pet_name || '名前なし';
+    if (!petVisits[petKey]) {
+      petVisits[petKey] = {
         visits: 0,
+        ownerName: d.owner_name,
         staff: d.staff,
         lastDate: d.visit_date,
-        phone: d.phone,
         petName: d.pet_name
       };
     }
-    customerVisits[d.owner_name].visits++;
-    if (d.visit_date > customerVisits[d.owner_name].lastDate) {
-      customerVisits[d.owner_name].lastDate = d.visit_date;
+    petVisits[petKey].visits++;
+    if (d.visit_date > petVisits[petKey].lastDate) {
+      petVisits[petKey].lastDate = d.visit_date;
     }
   });
+
+  const customerVisits = petVisits;
 
   const repeaterCustomers = Object.values(customerVisits).filter(c => c.visits >= 2);
   const newCustomers = Object.values(customerVisits).filter(c => c.visits === 1);
@@ -698,11 +701,11 @@ function updateTables(customerVisits) {
     .slice(0, 15);
 
   const repeaterTable = document.getElementById('repeaterTable').querySelector('tbody');
-  repeaterTable.innerHTML = repeaters.map(([name, data], idx) => `
+  repeaterTable.innerHTML = repeaters.map(([petName, data], idx) => `
     <tr>
       <td class="text-center">${idx + 1}</td>
-      <td>${name}</td>
-      <td>${data.petName || '-'}</td>
+      <td>${data.ownerName || '-'}</td>
+      <td>${petName}</td>
       <td class="text-center"><strong>${data.visits}回</strong></td>
       <td>${data.staff || '-'}</td>
       <td class="text-center">${data.lastDate}</td>
@@ -713,11 +716,11 @@ function updateTables(customerVisits) {
   // 新規客リスト（ページング）
   const newCustomers = Object.entries(customerVisits)
     .filter(([_, c]) => c.visits === 1)
-    .map(([name, data]) => ({
-      name,
+    .map(([petName, data]) => ({
+      name: data.ownerName || '-',
+      petName: petName,
       visitDate: data.lastDate,
-      staff: data.staff,
-      petName: data.petName || '-'
+      staff: data.staff
     }))
     .sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
 
