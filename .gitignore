@@ -21,3 +21,34 @@ __pycache__/
 *.csv
 *.txt
 .vercel
+
+# --- セキュリティ棚卸し 2026-09-14 ---
+# 環境変数・認証情報
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*
+service-account*.json
+google_credentials.json
+security_report.md
+# 個人情報・顧客情報・契約書・業務記録・有料講座資料
+*.pdf
+*.xlsx
+*.xls
+*.docx
+*.m4a
+CMO（マーケティング責任者）/戦略/PDF/
+CSO（営業責任者）/顧客管理/*
+!CSO（営業責任者）/顧客管理/顧問先テンプレート/
+CMO（マーケティング責任者）/アウトプット/着物リメイク受講生_LINE名リスト.md
+CPO（プロダクト責任者）/アウトプット/anella-cafe/trimming_visit_data_*.json
+CPO（プロダクト責任者）/アウトプット/pet_visit_summary_*.md
+CFO（財務責任者）/アウトプット/税理士照会_*.md
+# 鍵が直書きされているファイル（鍵を作り直してから安全な形で戻す）
+discord-relay/worker.js
+CMO（マーケティング責任者）/アウトプット/lme_proxy_gas.gs
+CMO（マーケティング責任者）/アウトプット/lme_sync_bookmarklet.html
+CMO（マーケティング責任者）/アウトプット/discord_daily_post.gs
+**/minutes-archive.html
