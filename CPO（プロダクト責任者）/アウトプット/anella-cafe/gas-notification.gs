@@ -1,3 +1,8 @@
+// Supabase の anon キーはスクリプトプロパティ SUPABASE_ANON_KEY に保存（コードに書かない）
+function getNotificationSupabaseKey_() {
+  return PropertiesService.getScriptProperties().getProperty('SUPABASE_ANON_KEY');
+}
+
 
 
 
@@ -13,8 +18,8 @@ function sendReminder1() {
 
   var response = UrlFetchApp.fetch(url + query, {
     headers: {
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU'
+      'apikey': getNotificationSupabaseKey_(),
+      'Authorization': 'Bearer ' + getNotificationSupabaseKey_()
     },
     muteHttpExceptions: true
   });
@@ -40,8 +45,8 @@ function sendReminder2() {
 
   var response = UrlFetchApp.fetch(url + query, {
     headers: {
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU'
+      'apikey': getNotificationSupabaseKey_(),
+      'Authorization': 'Bearer ' + getNotificationSupabaseKey_()
     },
     muteHttpExceptions: true
   });
@@ -66,8 +71,8 @@ function updateReminderFlag(id, field) {
   UrlFetchApp.fetch(url + '?id=eq.' + id, {
     method: 'PATCH',
     headers: {
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFiZWVrb2RlaG9ybHdzbW5ob3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzAzMTksImV4cCI6MjA5Mjc0NjMxOX0.ZgOB2TUuBBRNV8pejae_UOX9kXIiFb-CS7X0alRX1uU',
+      'apikey': getNotificationSupabaseKey_(),
+      'Authorization': 'Bearer ' + getNotificationSupabaseKey_(),
       'Content-Type': 'application/json'
     },
     payload: JSON.stringify(updateData),
